@@ -33,6 +33,7 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot.
     Make direct API request using Drakma. Use for debugging only.
 
 - function [`(get-updates bot &key limit timeout)`](https://core.telegram.org/bots/api#getupdates)
+
     NOTE: The offset parameter is omitted as it is internally managed by the tl-bot:bot class.
 
 ## API methods
