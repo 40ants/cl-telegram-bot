@@ -38,7 +38,7 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot.
 
 ## API methods
 
-NOTE: the keyword argument :reply_to_message_id from the official API was renamed to :reply in every function.
+NOTE: the keyword argument :reply from the official API was renamed to :reply in every function.
 
 - function [`(set-webhook bot &key url certificate)`](https://core.telegram.org/bots/api#setwebhook)
 
