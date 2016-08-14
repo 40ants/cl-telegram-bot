@@ -20,7 +20,7 @@
 ; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 ; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-; SOFTWARE. 
+; SOFTWARE.
 
 (in-package :tl-bot)
 
@@ -29,19 +29,21 @@
 (defclass bot ()
   ((id
     :documentation "Update id"
-    :initform 0)
+    :initform 0
+    :accessor id)
    (token
     :initarg :token
     :documentation "Bot token given by BotFather"
-    :initform Nil)
+    :initform nil)
    (endpoint
     :initarg :endpoint
+    :accessor endpoint
     :documentation "HTTPS endpoint"
-    :initform Nil)))
+    :initform nil)))
 
 (defmethod initialize-instance :after ((b bot) &key)
-  (setf (slot-value b 'endpoint)
-        (concatenate 'string +telegram-api-uri+ (slot-value b 'token) "/")))
+  (setf (endpoint b)
+        (concatenate 'string +telegram-api-uri+ (endpoint b) "/")))
 
 (defun make-bot (token)
   "Create a new bot instance. Takes a token string."
@@ -57,7 +59,7 @@
 (defun make-request (b name options)
   "Perform HTTP request to 'name API method with 'options JSON-encoded object."
   (drakma:http-request
-   (concatenate 'string (slot-value b 'endpoint) name)
+   (concatenate 'string (endpoint b) name)
    :method :post
    :want-stream t
    :content-type "application/json"
@@ -71,7 +73,7 @@
         (return-from access nil))
       (setf current (slot-value current r)))
     current))
-  
+
 (defun get-slot (update slot)
   "Access slot. Since fluid classes signal error on unbound slot access, this instead returns nil."
   (if (slot-boundp update slot)
@@ -95,7 +97,7 @@
 
 (defun get-updates (b &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
-  (let* ((current-id (slot-value b 'id))
+  (let* ((current-id (id b))
          (cl-json:*json-symbols-package* :tl-bot)
          (request
           (decode (make-request b "getUpdates"
@@ -110,8 +112,8 @@
       (let* ((last-update (elt results (- (length results) 1)))
              (id (slot-value last-update 'update--id)))
         (when (= current-id 0)
-          (setf (slot-value b 'id) id))
-        (incf (slot-value b 'id))))
+          (setf (id b) id))
+        (incf (id b))))
     results))
 
 (defun set-webhook (b &key url certificate)
