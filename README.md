@@ -4,7 +4,7 @@ See the [Telegram Bot API](https://core.telegram.org/bots/api).
 
 This library uses [Drakma](http://weitz.de/drakma/) and [CL-JSON](https://common-lisp.net/project/cl-json/) with CLOS semantics.
 
-This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot.
+This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegram-bot.
 
 - function `(make-bot token)`
     Returns a bot instance for a given token. To get a new token, see [here](https://core.telegram.org/bots#3-how-do-i-create-a-bot).
