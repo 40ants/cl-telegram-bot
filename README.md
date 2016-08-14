@@ -42,27 +42,27 @@ NOTE: the keyword argument :reply from the official API was renamed to :reply in
 
 - function [`(set-webhook bot &key url certificate)`](https://core.telegram.org/bots/api#setwebhook)
 
-- function [`(send-message bot chat-id text &key parse-mode disable-web-page-preview disable-notification reply-to-message-id)`](https://core.telegram.org/bots/api#sendmessage)
+- function [`(send-message bot chat-id text &key parse-mode disable-web-page-preview disable-notification reply)`](https://core.telegram.org/bots/api#sendmessage)
 
 - function [`(forward-message bot chat-id from-chat-id message-id &key disable-notification)`](https://core.telegram.org/bots/api#forwardmessage)
 
-- function [`(send-photo bot chat-id photo &key caption disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendphoto)
+- function [`(send-photo bot chat-id photo &key caption disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendphoto)
 
-- function [`(send-audio bot chat-id audio &key duration performer title disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendaudio)
+- function [`(send-audio bot chat-id audio &key duration performer title disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendaudio)
 
-- function [`(send-document bot chat-id document &key caption disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#senddocument)
+- function [`(send-document bot chat-id document &key caption disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#senddocument)
 
-- function [`(send-sticker bot chat-id sticker &key disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendsticker)
+- function [`(send-sticker bot chat-id sticker &key disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendsticker)
 
-- function [`(send-video bot chat-id video &key duration width height caption disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendvideo)
+- function [`(send-video bot chat-id video &key duration width height caption disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendvideo)
 
-- function [`(send-voice bot chat-id voice &key duration disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendvoice)
+- function [`(send-voice bot chat-id voice &key duration disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendvoice)
 
-- function [`(send-location bot chat-id latitude longitude &key disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendlocation)
+- function [`(send-location bot chat-id latitude longitude &key disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendlocation)
 
-- function [`(send-venue bot chat-id latitude longitude title address &key foursquare-id disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendvenue)
+- function [`(send-venue bot chat-id latitude longitude title address &key foursquare-id disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendvenue)
 
-- function [`(send-contact bot chat-id phone-number first-name &key last-name disable-notification reply-to-message-id reply-markup)`](https://core.telegram.org/bots/api#sendcontact)
+- function [`(send-contact bot chat-id phone-number first-name &key last-name disable-notification reply reply-markup)`](https://core.telegram.org/bots/api#sendcontact)
 
 - function [`(send-chat-action bot chat-id action)`](https://core.telegram.org/bots/api#sendchataction)
 
