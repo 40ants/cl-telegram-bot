@@ -24,7 +24,6 @@
 
 (in-package :cl-telegram-bot)
 
-(defconstant +telegram-api-uri+ "https://api.telegram.org/bot")
 
 (defclass bot ()
   ((id
@@ -42,9 +41,9 @@
     :documentation "HTTPS endpoint"
     :initform nil)))
 
-(defmethod initialize-instance :after ((b bot) &key)
+(defmethod initialize-instance :after ((b bot) &key (api-uri "https://api.telegram.org/bot"))
   (setf (endpoint b)
-        (concatenate 'string +telegram-api-uri+ (token b) "/")))
+        (concatenate 'string api-uri (token b) "/")))
 
 (defun make-bot (token)
   "Create a new bot instance. Takes a token string."
