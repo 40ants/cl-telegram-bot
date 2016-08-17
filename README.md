@@ -10,7 +10,7 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegra
     Returns a bot instance for a given token. To get a new token, see [here](https://core.telegram.org/bots#3-how-do-i-create-a-bot).
 
 - function `(access object &rest slot-list)`
-    Convenience function to access nested fields in a JSON object. For example, to access update.message.from.id, you can use
+    Convenience function to access nested fields in a JSON object. Returns NIL if at least one slot is unbound. For example, to access update.message.from.id, you can use
     `(access update 'message 'from 'id)`. This operation is linear in time, so I suggest keeping it at a minimum,
     reusing the fields multiple times, e.g. using a let*. 
     You can use this function from any JSON field, so `(access message 'from 'id)` from a previously accessed message field
@@ -21,7 +21,7 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegra
     `(decode (send-message ...)` returns an object ready to be used (by `access`, for example).
 
 - function `(get-slot obj slot)`
-    Returns slot from obj, NIL is unbound. Use with JSON CLOS object.
+    Returns slot from obj, NIL if unbound. Use with JSON CLOS object.
 
 - error `request-error`
     Used (currently) by get-updates on HTTP error.
@@ -33,12 +33,13 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegra
     Make direct API request using Drakma. Use for debugging only.
 
 - function [`(get-updates bot &key limit timeout)`](https://core.telegram.org/bots/api#getupdates)
+    Returns a vector of updates as CLOS objects.
 
-    NOTE: The offset parameter is omitted as it is internally managed by the tl-bot:bot class.
+    NOTE: The offset parameter is omitted as it is internally managed by the cl-telegram-bot:bot class.
 
 ## API methods
 
-NOTE: the keyword argument :reply from the official API was renamed to :reply in every function.
+NOTE: the keyword argument :reply_to_message_id from the official API was renamed to :reply in every function.
 
 - function [`(set-webhook bot &key url certificate)`](https://core.telegram.org/bots/api#setwebhook)
 
