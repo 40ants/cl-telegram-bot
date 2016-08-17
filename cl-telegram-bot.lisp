@@ -34,6 +34,7 @@
    (token
     :initarg :token
     :documentation "Bot token given by BotFather"
+    :accessor token
     :initform nil)
    (endpoint
     :initarg :endpoint
@@ -43,7 +44,7 @@
 
 (defmethod initialize-instance :after ((b bot) &key)
   (setf (endpoint b)
-        (concatenate 'string +telegram-api-uri+ (endpoint b) "/")))
+        (concatenate 'string +telegram-api-uri+ (token b) "/")))
 
 (defun make-bot (token)
   "Create a new bot instance. Takes a token string."
