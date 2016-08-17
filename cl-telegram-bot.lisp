@@ -22,7 +22,7 @@
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(in-package :tl-bot)
+(in-package :cl-telegram-bot)
 
 (defconstant +telegram-api-uri+ "https://api.telegram.org/bot")
 
@@ -81,7 +81,7 @@
     nil))
 
 (defun decode (obj)
-  (let ((cl-json:*json-symbols-package* :tl-bot)
+  (let ((cl-json:*json-symbols-package* :cl-telegram-bot)
         (decoded-object
           (json:with-decoder-simple-clos-semantics
             (let ((decoded-json (json:decode-json obj)))
@@ -98,7 +98,7 @@
 (defun get-updates (b &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
   (let* ((current-id (id b))
-         (cl-json:*json-symbols-package* :tl-bot)
+         (cl-json:*json-symbols-package* :cl-telegram-bot)
          (request
           (decode (make-request b "getUpdates"
                         (list (cons :offset current-id)

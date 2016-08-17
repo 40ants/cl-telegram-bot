@@ -1,6 +1,6 @@
-(defpackage :tl-bot
+(defpackage :cl-telegram-bot
   (:use #:cl)
-  (:nicknames :telegram-bot :tg-bot :cl-telegram-bot)
+  (:nicknames :telegram-bot :tg-bot)
   (:size 32)
   (:export
    #:bot

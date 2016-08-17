@@ -2,7 +2,8 @@
 (require 'cl-telegram-bot)
 
 (defpackage :example-bot
- (:use #:cl-telegram-bot))
+ (:use #:cl-telegram-bot)
+ (:use #:cl))
 
 (in-package :example-bot)
 
