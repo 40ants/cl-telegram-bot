@@ -103,4 +103,3 @@ NOTE: the keyword argument :reply_to_message_id from the official API was rename
 - function [`(edit-message-reply-markup bot chat-id message-id inline-message-id &key reply-markup)`](https://core.telegram.org/bots/api#editmessagereplymarkup)
 
 - function [`(answer-inline-query bot inline-query-id results &key cache-time is-personal next-offset switch-pm-text)`](https://core.telegram.org/bots/api#answerinlinequery)
-
