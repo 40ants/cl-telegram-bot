@@ -15,7 +15,7 @@
 
 (let ((bot (make-bot "123456789:YOUR TOKEN HERE")))
   (loop
-      (with-package :example-bot
+    (with-package :example-bot
      (loop for update across (get-updates bot) do
         (let* ((message (access update 'message))
 	         (text (access message 'text))
@@ -30,7 +30,7 @@
         (when text
           (match-command "^/echo (.*)$" text
              (lambda (msg args)
-              (format t (read-line (send-message bot
+              (send-message bot
                chat-id
-               (elt args 0))))))))))
+               (elt args 0))))))))
           (sleep 1)))
