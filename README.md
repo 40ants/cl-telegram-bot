@@ -9,6 +9,9 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegra
 - function `(make-bot token)`
     Returns a bot instance for a given token. To get a new token, see [here](https://core.telegram.org/bots#3-how-do-i-create-a-bot).
 
+- macro `(with-package package-name &rest body)`
+    Interns JSON symbols into package-name (usually, the package the bot is being used) while executing `body`.
+
 - function `(access object &rest slot-list)`
     Convenience function to access nested fields in a JSON object. Returns NIL if at least one slot is unbound. For example, to access update.message.from.id, you can use
     `(access update 'message 'from 'id)`. This operation is linear in time, so I suggest keeping it at a minimum,
@@ -16,9 +19,12 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegra
     You can use this function from any JSON field, so `(access message 'from 'id)` from a previously accessed message field
     should be used when many nested fields share a common parent.
 
-- function `(decode json-object)`
+- macro `(decode json-object)`
     Decode JSON object to CLOS object. Use to convert the return value of API calls when needed, e.g.
     `(decode (send-message ...)` returns an object ready to be used (by `access`, for example).
+
+- macro `(find-json-symbol :symbol-name)`
+    Returns JSON-interned symbol.
 
 - function `(get-slot obj slot)`
     Returns slot from obj, NIL if unbound. Use with JSON CLOS object.
@@ -26,11 +32,14 @@ This library has the following aliases: cl-telegram-bot, tl-bot, tg-bot, telegra
 - error `request-error`
     Used (currently) by get-updates on HTTP error.
 
-- function `(cl-telegram-bot::get-class-slots object)` (SBCL only)
+- unexported function `(cl-telegram-bot::get-class-slots object)` (SBCL only)
     Use this function to inspect JSON objects. For debugging only.
 
-- function `(cl-telegram-bot::make-request b method-name options-alist)`
+- unexported function `(cl-telegram-bot::make-request b method-name options-alist)`
     Make direct API request using Drakma. Use for debugging only.
+
+- unexported function `(cl-telegram-bot::trace-http)`
+    Turns on Drakma's HTTP header output. Use for debugging only.
 
 - function [`(get-updates bot &key limit timeout)`](https://core.telegram.org/bots/api#getupdates)
     Returns a vector of updates as CLOS objects.

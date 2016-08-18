@@ -9,14 +9,15 @@
 
 (defun match-command (regex text function)
   (multiple-value-bind (msg match)
-    (cl-ppcre::scan-to-strings regex text)
+    (cl-ppcre:scan-to-strings regex text)
     (when match 
           (funcall function msg match))))
 
-(let ((bot (make-bot "1234567890:YOUR TOKEN HERE")))
+(let ((bot (make-bot "123456789:YOUR TOKEN HERE")))
   (loop
+      (with-package :example-bot
      (loop for update across (get-updates bot) do
-	  (let* ((message (access update 'message))
+        (let* ((message (access update 'message))
 	         (text (access message 'text))
 		     (message-id (access message 'message--id))
 		     (chat-id (access message 'chat 'id))
@@ -29,7 +30,7 @@
         (when text
           (match-command "^/echo (.*)$" text
              (lambda (msg args)
-              (send-message bot
+              (format t (read-line (send-message bot
                chat-id
-               (elt args 0)))))))
+               (elt args 0))))))))))
           (sleep 1)))

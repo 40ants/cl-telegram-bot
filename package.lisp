@@ -1,10 +1,11 @@
 (defpackage :cl-telegram-bot
   (:use #:cl)
   (:nicknames :telegram-bot :tg-bot)
-  (:size 34)
+  (:size 5)
   (:export
    #:bot
    #:make-bot
+   #:with-package
    #:access
    #:request-error
    #:decode
