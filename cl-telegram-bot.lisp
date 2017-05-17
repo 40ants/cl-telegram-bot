@@ -55,12 +55,12 @@
           (sb-mop:class-slots
            (class-of obj))))
 
-(defun make-request (b name options)
+(defun make-request (b name options &key (streamp nil))
   "Perform HTTP request to 'name API method with 'options JSON-encoded object."
   (drakma:http-request
    (concatenate 'string (endpoint b) name)
    :method :post
-   :want-stream t
+   :want-stream streamp
    :content-type "application/json"
    :content (json:encode-json-alist-to-string options)))
 
@@ -84,9 +84,18 @@
 (defmacro with-package (package &rest body)
  `(let ((json:*json-symbols-package* ,package)) ,@body))
 
-(defmacro decode (obj)
- `(json:with-decoder-simple-clos-semantics
-   (json:decode-json ,obj)))
+(defgeneric decode (object))
+
+(defmethod decode ((object stream))
+  (json:with-decoder-simple-clos-semantics
+    (prog1
+        (json:decode-json object)
+      (close object))))
+
+(defmethod decode ((object string))
+  (json:with-decoder-simple-clos-semantics
+    (with-input-from-string (stream object)
+      (json:decode-json stream))))
 
 (define-condition request-error (error)
    ((what :initarg :what :reader what)))
@@ -102,11 +111,11 @@
 (defun get-updates (b &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
   (let* ((current-id (id b))
-         (request
-          (decode (make-request b "getUpdates"
-                        (list (cons :offset current-id)
-                              (cons :limit limit)
-                              (cons :timeout timeout)))))
+         (request    (decode (make-request b "getUpdates"
+                                           (list (cons :offset current-id)
+                                                 (cons :limit limit)
+                                                 (cons :timeout timeout))
+                                           :streamp t)))
          (results (slot-value request (find-json-symbol :result))))
     (when (eql (slot-value request (find-json-symbol :ok)) nil)
       (error 'request-error :what request))
@@ -128,7 +137,7 @@
 (defun send-message (b chat-id text &key parse-mode disable-web-page-preview disable-notification reply)
   "https://core.telegram.org/bots/api#sendmessage"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :text text))))
        (when parse-mode (nconc options `((:parse_mode . ,parse-mode))))
@@ -140,7 +149,7 @@
 (defun forward-message (b chat-id from-chat-id message-id &key disable-notification)
   "https://core.telegram.org/bots/api#forwardmessage"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :from_chat_id from-chat-id)
           (cons :message_id message-id))))
@@ -150,7 +159,7 @@
 (defun send-photo (b chat-id photo &key caption disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendphoto"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :photo photo))))
        (when caption (nconc options `((:caption . ,caption))))
@@ -162,7 +171,7 @@
 (defun send-audio (b chat-id audio &key duration performer title disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendaudio"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :audio audio))))
        (when duration (nconc options `((:duration . ,duration))))
@@ -176,7 +185,7 @@
 (defun send-document (b chat-id document &key caption disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#senddocument"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :document document))))
        (when caption (nconc options `((:caption . ,caption))))
@@ -188,7 +197,7 @@
 (defun send-sticker (b chat-id sticker &key disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendsticker"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :sticker sticker))))
        (when disable-notification (nconc options `((:disable_notification . ,disable-notification))))
@@ -199,7 +208,7 @@
 (defun send-video (b chat-id video &key duration width height caption disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendvideo"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :video video))))
        (when duration (nconc options `((:duration . ,duration))))
@@ -214,7 +223,7 @@
 (defun send-voice (b chat-id voice &key duration disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendvoice"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :voice voice))))
        (when duration (nconc options `((:duration . ,duration))))
@@ -226,7 +235,7 @@
 (defun send-location (b chat-id latitude longitude &key disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendlocation"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :latitude latitude)
           (cons :longitude longitude))))
@@ -238,7 +247,7 @@
 (defun send-venue (b chat-id latitude longitude title address &key foursquare-id disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendvenue"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :latitude latitude)
           (cons :longitude longitude)
@@ -253,7 +262,7 @@
 (defun send-contact (b chat-id phone-number first-name &key last-name disable-notification reply reply-markup)
   "https://core.telegram.org/bots/api#sendcontact"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :phone_number phone-number)
           (cons :first_name first-name))))
@@ -266,7 +275,7 @@
 (defun send-chat-action (b chat-id action)
   "https://core.telegram.org/bots/api#sendchataction"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :action action))))
         (make-request b "sendChatAction" options)))
@@ -274,7 +283,7 @@
 (defun get-user-profile-photos (b user-id &key offset limit)
   "https://core.telegram.org/bots/api#getuserprofilephotos"
   (let ((options
-         (list 
+         (list
           (cons :user_id user-id))))
        (when offset (nconc options `((:offset . ,offset))))
        (when limit (nconc options `((:limit . ,limit))))
@@ -283,14 +292,14 @@
 (defun get-file (b file-id)
   "https://core.telegram.org/bots/api#getfile"
   (let ((options
-         (list 
+         (list
           (cons :file_id file-id))))
         (make-request b "getFile" options)))
 
 (defun kick-chat-member (b chat-id user-id)
   "https://core.telegram.org/bots/api#kickchatmember"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :user_id user-id))))
         (make-request b "kickChatMember" options)))
@@ -298,14 +307,14 @@
 (defun leave-chat (b chat-id)
   "https://core.telegram.org/bots/api#leavechat"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id))))
         (make-request b "leaveChat" options)))
 
 (defun unban-chat-member (b chat-id user-id)
   "https://core.telegram.org/bots/api#unbanchatmember"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :user_id user-id))))
         (make-request b "unbanChatMember" options)))
@@ -313,28 +322,28 @@
 (defun get-chat (b chat-id)
   "https://core.telegram.org/bots/api#getchat"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id))))
         (make-request b "getChat" options)))
 
 (defun get-chat-administrators (b chat-id)
   "https://core.telegram.org/bots/api#getchatadministrators"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id))))
         (make-request b "getChatAdministrators" options)))
 
 (defun get-chat-members-count (b chat-id)
   "https://core.telegram.org/bots/api#getchatmemberscount"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id))))
         (make-request b "getChatMembersCount" options)))
 
 (defun get-chat-member (b chat-id user-id)
   "https://core.telegram.org/bots/api#getchatmember"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :user_id user-id))))
         (make-request b "getChatMember" options)))
@@ -342,7 +351,7 @@
 (defun answer-callback-query (b callback-query-id &key text show-alert)
   "https://core.telegram.org/bots/api#answercallbackquery"
   (let ((options
-         (list 
+         (list
           (cons :callback_query_id callback-query-id))))
        (when text (nconc options `((:text . ,text))))
        (when show-alert (nconc options `((:show_alert . ,show-alert))))
@@ -351,7 +360,7 @@
 (defun edit-message-text (b chat-id message-id inline-message-id text &key parse-mode disable-web-page-preview reply-markup)
   "https://core.telegram.org/bots/api#editmessagetext"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :message_id message-id)
           (cons :inline_message_id inline-message-id)
@@ -364,7 +373,7 @@
 (defun edit-message-caption (b chat-id message-id inline-message-id &key caption reply-markup)
   "https://core.telegram.org/bots/api#editmessagecaption"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :message_id message-id)
           (cons :inline_message_id inline-message-id))))
@@ -375,7 +384,7 @@
 (defun edit-message-reply-markup (b chat-id message-id inline-message-id &key reply-markup)
   "https://core.telegram.org/bots/api#editmessagereplymarkup"
   (let ((options
-         (list 
+         (list
           (cons :chat_id chat-id)
           (cons :message_id message-id)
           (cons :inline_message_id inline-message-id))))
@@ -385,7 +394,7 @@
 (defun answer-inline-query (b inline-query-id results &key cache-time is-personal next-offset switch-pm-text)
   "https://core.telegram.org/bots/api#answerinlinequery"
   (let ((options
-         (list 
+         (list
           (cons :inline_query_id inline-query-id)
           (cons :results results))))
        (when cache-time (nconc options `((:cache_time . ,cache-time))))
@@ -393,4 +402,3 @@
        (when next-offset (nconc options `((:next_offset . ,next-offset))))
        (when switch-pm-text (nconc options `((:switch_pm_text . ,switch-pm-text))))
         (make-request b "answerInlineQuery" options)))
-
