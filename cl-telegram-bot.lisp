@@ -24,6 +24,8 @@
 
 (in-package :cl-telegram-bot)
 
+(define-constant +http-ok+ 200 :test #'=)
+
 (defclass bot ()
   ((id
     :documentation "Update id"
@@ -34,15 +36,27 @@
     :documentation "Bot token given by BotFather"
     :accessor token
     :initform nil)
+   (api-uri
+    :initarg  :api-uri
+    :initform "https://api.telegram.org/"
+    :accessor api-uri)
    (endpoint
     :initarg :endpoint
     :accessor endpoint
-    :documentation "HTTPS endpoint"
+    :documentation "HTTPS endpoint")
+   (file-endpoint
+    :initarg :file-endpoint
+    :accessor file-endpoint
+    :documentation "HTTPS file-endpoint"
     :initform nil)))
 
-(defmethod initialize-instance :after ((b bot) &key (api-uri "https://api.telegram.org/bot"))
-  (setf (endpoint b)
-        (concatenate 'string api-uri (token b) "/")))
+(defmethod initialize-instance :after ((object bot) &key &allow-other-keys)
+  (with-accessors ((token         token)
+                   (endpoint      endpoint)
+                   (file-endpoint file-endpoint)
+                   (api-uri       api-uri)) object
+    (setf endpoint      (concatenate 'string api-uri "bot" token "/")
+          file-endpoint (concatenate 'string api-uri "file/" "bot" token "/"))))
 
 (defun make-bot (token)
   "Create a new bot instance. Takes a token string."
@@ -97,6 +111,9 @@
     (with-input-from-string (stream object)
       (json:decode-json stream))))
 
+(defmethod decode ((object vector))
+  (decode (map 'string #'code-char object)))
+
 (define-condition request-error (error)
    ((what :initarg :what :reader what)))
 
@@ -107,6 +124,12 @@
  '(setf drakma:*header-stream* *standard-output*))
 
 ; Telegram API methods, see https://core.telegram.org/bots/api
+
+(defmacro with-ok-results ((unserialized results) &body body)
+  `(let ((,results (slot-value ,unserialized (find-json-symbol :result))))
+     (if (slot-value ,unserialized (find-json-symbol :ok))
+         (progn ,@body)
+         nil)))
 
 (defun get-updates (b &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
@@ -295,6 +318,19 @@
          (list
           (cons :file_id file-id))))
         (make-request b "getFile" options)))
+
+(defun download-file (b file-id)
+  "Perform HTTP request to 'name API method with 'options JSON-encoded object."
+  (with-package :cl-telegram-bot
+    (let* ((file-spec (decode (get-file b file-id))))
+      (with-ok-results (file-spec results)
+        (when-let* ((path      (access results 'file--path))
+                    (uri       (concatenate 'string (file-endpoint b) path))
+                    (extension (cl-ppcre:scan-to-strings "\\..*$" path)))
+          (multiple-value-bind (body code headers)
+              (drakma:http-request uri :method :get)
+            (when (= code +http-ok+)
+              (values body headers extension))))))))
 
 (defun kick-chat-member (b chat-id user-id)
   "https://core.telegram.org/bots/api#kickchatmember"
