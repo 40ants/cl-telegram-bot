@@ -1,26 +1,22 @@
 (defpackage :cl-telegram-bot
   (:use #:cl)
   (:nicknames :telegram-bot :tg-bot)
-  (:size 36)
+  (:size 55)
   (:export
    #:bot
    #:make-bot
-   #:with-package
-   #:find-json-symbol
-   #:get-slot
    #:access
-   #:request-error
-   #:decode
    #:get-updates
    #:set-webhook
+   #:get-webhook-info
    #:send-message
    #:forward-message
    #:send-photo
    #:send-audio
    #:send-document
-   #:send-sticker
    #:send-video
    #:send-voice
+   #:send-video-note
    #:send-location
    #:send-venue
    #:send-contact
@@ -28,8 +24,17 @@
    #:get-user-profile-photos
    #:get-file
    #:kick-chat-member
-   #:leave-chat
    #:unban-chat-member
+   #:restrict-chat-member
+   #:promote-chat-member
+   #:export-chat-invite-link
+   #:set-chat-photo
+   #:delete-chat-photo
+   #:set-chat-title
+   #:set-chat-description
+   #:pin-chat-message
+   #:unpin-chat-message
+   #:leave-chat
    #:get-chat
    #:get-chat-administrators
    #:get-chat-members-count
@@ -38,4 +43,18 @@
    #:edit-message-text
    #:edit-message-caption
    #:edit-message-reply-markup
-   #:answer-inline-query))
+   #:delete-message
+   #:send-sticker
+   #:get-sticker-set
+   #:upload-sticker-file
+   #:create-new-sticker-set
+   #:add-sticker-to-set
+   #:set-sticker-position-in-set
+   #:delete-sticker-from-set
+   #:answer-inline-query
+   #:send-invoice
+   #:answer-shipping-query
+   #:answer-pre-checkout-query
+   #:send-game
+   #:set-game-score
+   #:get-game-high-scores))
