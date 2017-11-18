@@ -24,7 +24,7 @@
 
 (in-package :cl-telegram-bot)
 
-(define-constant +http-ok+ 200 :test #'=)
+(alexandria:define-constant +http-ok+ 200 :test #'=)
 
 (defclass bot ()
   ((id
