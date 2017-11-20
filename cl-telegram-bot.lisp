@@ -131,7 +131,7 @@
   (with-package :cl-telegram-bot
                 (let* ((file-spec (decode (get-file b file-id))))
                   (with-ok-results (file-spec results)
-                                   (when-let* ((path      (access results 'file--path))
+                                   (alexandria:when-let* ((path      (access results 'file--path))
                                                (uri       (concatenate 'string (file-endpoint b) path))
                                                (extension (cl-ppcre:scan-to-strings "\\..*$" path)))
                                               (multiple-value-bind (body code headers)
