@@ -71,12 +71,18 @@
 
 (defun make-request (b name options &key (streamp nil))
   "Perform HTTP request to 'name API method with 'options JSON-encoded object."
-  (drakma:http-request
-   (concatenate 'string (endpoint b) name)
-   :method :post
-   :want-stream streamp
-   :content-type "application/json"
-   :content (json:encode-json-alist-to-string options)))
+  (let* ((results (multiple-value-list
+                   (drakma:http-request
+                    (concatenate 'string (endpoint b) name)
+                    :method :post
+                    :want-stream streamp
+                    :content-type "application/json"
+                    :content (json:encode-json-alist-to-string options))))
+         (status (cadr results))
+         (reason (car (last results))))
+    (when (<= 400 status 599)
+      (error 'request-error :what (format nil "request to ~A returned ~A (~A)" name status reason)))
+    (apply 'values results)))
 
 (defun access (update &rest args)
   "Access update field. update.first.second. ... => (access update 'first 'second ...). Nil if unbound."
@@ -115,7 +121,9 @@
   (decode (map 'string #'code-char object)))
 
 (define-condition request-error (error)
-  ((what :initarg :what :reader what)))
+  ((what :initarg :what :reader what))
+  (:report (lambda (condition stream)
+             (format stream "Request error: ~A" (what condition)))))
 
 (defmacro find-json-symbol (sym)
   `(find-symbol (symbol-name ,sym) json:*json-symbols-package*))
@@ -131,7 +139,7 @@
   (with-package :cl-telegram-bot
                 (let* ((file-spec (decode (get-file b file-id))))
                   (with-ok-results (file-spec results)
-                                   (when-let* ((path      (access results 'file--path))
+                                   (alexandria:when-let* ((path      (access results 'file--path))
                                                (uri       (concatenate 'string (file-endpoint b) path))
                                                (extension (cl-ppcre:scan-to-strings "\\..*$" path)))
                                               (multiple-value-bind (body code headers)
