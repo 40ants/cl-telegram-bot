@@ -22,7 +22,79 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ;; SOFTWARE.
 
-(in-package :cl-telegram-bot)
+(defpackage :cl-telegram-bot/cl-telegram-bot
+  (:use #:cl)
+  (:nicknames #:cl-telegram-bot
+              #:telegram-bot
+              #:tg-bot)
+  (:import-from #:log4cl)
+  (:import-from #:cl-telegram-bot/update
+                #:get-update-id
+                #:make-update)
+  (:import-from #:cl-ppcre
+                #:regex-replace)
+  (:import-from #:cl-telegram-bot/chat
+                #:get-chat-id)
+  (:import-from #:cl-telegram-bot/message
+                #:get-chat)
+  (:export
+   #:bot
+   #:make-bot
+   #:access
+   #:get-updates
+   #:set-webhook
+   #:get-webhook-info
+   #:send-message
+   #:forward-message
+   #:send-photo
+   #:send-audio
+   #:send-document
+   #:send-video
+   #:send-voice
+   #:send-video-note
+   #:send-location
+   #:send-venue
+   #:send-contact
+   #:send-chat-action
+   #:get-user-profile-photos
+   #:get-file
+   #:kick-chat-member
+   #:unban-chat-member
+   #:restrict-chat-member
+   #:promote-chat-member
+   #:export-chat-invite-link
+   #:set-chat-photo
+   #:delete-chat-photo
+   #:set-chat-title
+   #:set-chat-description
+   #:pin-chat-message
+   #:unpin-chat-message
+   #:leave-chat
+   #:get-chat-by-id
+   #:get-chat-administrators
+   #:get-chat-members-count
+   #:get-chat-member
+   #:answer-callback-query
+   #:edit-message-text
+   #:edit-message-caption
+   #:edit-message-reply-markup
+   #:delete-message
+   #:send-sticker
+   #:get-sticker-set
+   #:upload-sticker-file
+   #:create-new-sticker-set
+   #:add-sticker-to-set
+   #:set-sticker-position-in-set
+   #:delete-sticker-from-set
+   #:answer-inline-query
+   #:send-invoice
+   #:answer-shipping-query
+   #:answer-pre-checkout-query
+   #:send-game
+   #:set-game-score
+   #:get-game-high-scores))
+
+(in-package :cl-telegram-bot/cl-telegram-bot)
 
 (alexandria:define-constant +http-ok+ 200 :test #'=)
 
@@ -58,6 +130,13 @@
                    (setf endpoint      (concatenate 'string api-uri "bot" token "/")
                          file-endpoint (concatenate 'string api-uri "file/" "bot" token "/"))))
 
+
+(defmethod print-object ((bot bot) stream)
+  (print-unreadable-object
+      (bot stream :type t)
+    (format stream
+            "id=~A" (id bot))))
+
 (defun make-bot (token)
   "Create a new bot instance. Takes a token string."
   (make-instance 'bot :token token))
@@ -69,20 +148,22 @@
           (sb-mop:class-slots
            (class-of obj))))
 
+(defun obfuscate (url)
+  (regex-replace "/bot.*?/"
+                 url
+                 "/bot<token>/"))
+
+
 (defun make-request (b name options &key (streamp nil))
   "Perform HTTP request to 'name API method with 'options JSON-encoded object."
-  (let* ((results (multiple-value-list
-                   (drakma:http-request
-                    (concatenate 'string (endpoint b) name)
-                    :method :post
-                    :want-stream streamp
-                    :content-type "application/json"
-                    :content (json:encode-json-alist-to-string options))))
-         (status (cadr results))
-         (reason (car (last results))))
-    (when (<= 400 status 599)
-      (error 'request-error :what (format nil "request to ~A returned ~A (~A)" name status reason)))
-    (apply 'values results)))
+  (let ((url (concatenate 'string (endpoint b) name)))
+    (log:debug "Posting data to"
+               (obfuscate url)
+               options)
+    (dexador:post url
+                  :stream streamp
+                  :headers '(("Content-Type" . "application/json"))
+                  :content (jonathan:to-json options))))
 
 (defun access (update &rest args)
   "Access update field. update.first.second. ... => (access update 'first 'second ...). Nil if unbound."
@@ -107,17 +188,19 @@
 (defgeneric decode (object))
 
 (defmethod decode ((object stream))
+  (error "Decode is not implemented for stream.")
   (json:with-decoder-simple-clos-semantics
-   (prog1
-       (json:decode-json object)
-     (close object))))
+    (prog1
+        (json:decode-json object)
+      (close object))))
+
 
 (defmethod decode ((object string))
-  (json:with-decoder-simple-clos-semantics
-   (with-input-from-string (stream object)
-                           (json:decode-json stream))))
+  (jonathan:parse object))
+
 
 (defmethod decode ((object vector))
+  (error "Decode is not implemented for vector.")
   (decode (map 'string #'code-char object)))
 
 (define-condition request-error (error)
@@ -155,24 +238,37 @@
          (progn ,@body)
        nil)))
 
-(defun get-updates (b &key limit timeout)
+
+(defun get-updates (bot &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
-  (let* ((current-id (id b))
-         (request    (decode (make-request b "getUpdates"
-                                           (list (cons :offset current-id)
-                                                 (cons :limit limit)
-                                                 (cons :timeout timeout))
-                                           :streamp t)))
-         (results (slot-value request (find-json-symbol :result))))
-    (when (eql (slot-value request (find-json-symbol :ok)) nil)
-      (error 'request-error :what request))
-    (when (> (length results) 0)
-      (let* ((last-update (elt results (- (length results) 1)))
-             (id (slot-value last-update (find-json-symbol :update--id))))
-        (when (= current-id 0)
-          (setf (id b) id))
-        (incf (id b))))
-    results))
+  (let* ((current-id (id bot))
+         (response (decode (make-request bot "getUpdates"
+                                         (list :|offset| current-id
+                                               :|limit| limit
+                                               :|timeout| timeout)
+                                         :streamp t)))
+         (results (getf response :|result|)))
+    (when (null (getf response :|ok|))
+      (error 'request-error :what response))
+
+    
+    (let* ((updates (mapcar 'make-update results))
+           ;; Make update can return a nil if this type of
+           ;; update is not supported
+           (updates (remove-if #'null
+                               updates)))
+      (when updates
+        (let ((max-id (reduce #'max
+                              updates
+                              :key #'get-update-id)))
+          ;; In original cl-telegram-bot a bug was here, because
+          ;; it saved update's id only the first time, and after that,
+          ;; just incremented that value
+          (log:debug "Setting new" max-id)
+          (setf (id bot)
+                (+ max-id 1))))
+    
+      (values updates))))
 
 ;; Compiled method list
 
@@ -186,22 +282,45 @@
     (when allowed-updates (nconc options `((:allowed_updates . ,allowed-updates))))
     (make-request b "setWebhook" options)))
 
-(defun get-webhook-info (b)
-  "https://core.telegram.org/bots/api#getwebhookinfo"
-  (let ((options '()))
-    (make-request b "getWebhookInfo" options)))
 
-(defun send-message (b chat-id text &key parse-mode disable-web-page-preview disable-notification reply-to-message-id)
+(defun get-webhook-info (bot)
+  "https://core.telegram.org/bots/api#getwebhookinfo"
+  (log:debug "Retriving webhook info")
+  (make-request bot "getWebhookInfo" nil))
+
+
+(defun send-message (bot chat text &key
+                                     parse-mode
+                                     disable-web-page-preview
+                                     disable-notification
+                                     reply-to-message-id)
   "https://core.telegram.org/bots/api#sendmessage"
+  (log:debug "Sending message" chat text)
   (let ((options
-         (list
-          (cons :chat_id chat-id)
-          (cons :text text))))
-    (when parse-mode (nconc options `((:parse_mode . ,parse-mode))))
-    (when disable-web-page-preview (nconc options `((:disable_web_page_preview . ,disable-web-page-preview))))
-    (when disable-notification (nconc options `((:disable_notification . ,disable-notification))))
-    (when reply-to-message-id (nconc options `((:reply_to_message_id . ,reply-to-message-id))))
-    (make-request b "sendMessage" options)))
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|text| ,text)
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-web-page-preview
+             `(:disable_web_page_preview ,disable-web-page-preview))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id)))))
+    (make-request bot "sendMessage" options)))
+
+
+(defun reply (bot message &rest args)
+  "Works like a send-message, and accepts almost same options,
+   but automatically sends to a chat from where message
+   came from."
+  (log:debug "Replying to" message)
+  (apply #'send-message
+         bot
+         (get-chat message)
+         args))
+
 
 (defun forward-message (b chat-id from-chat-id message-id &key disable-notification)
   "https://core.telegram.org/bots/api#forwardmessage"
