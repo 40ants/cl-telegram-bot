@@ -2,6 +2,12 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
+  (:import-from #:cl-telegram-bot/telegram-call
+                #:prepare-arg
+                #:def-telegram-call
+                #:response)
+  (:import-from #:alexandria
+                #:ensure-symbol)
   (:export
    #:make-chat
    #:get-raw-data
@@ -10,7 +16,24 @@
    #:get-first-name
    #:get-last-name
    #:chat
-   #:private-chat))
+   #:private-chat
+   #:get-chat-by-id
+   #:export-chat-invite-link
+   #:promote-chat-member
+   #:restrict-chat-member
+   #:unban-chat-member
+   #:kick-chat-member
+   #:set-chat-title
+   #:delete-chat-photo
+   #:set-chat-photo
+   #:set-chat-description
+   #:pin-chat-message
+   #:unpin-chat-message
+   #:leave-chat
+   #:get-chat-administrators
+   #:get-chat-members-count
+   #:get-chat-member
+   #:send-chat-action))
 (in-package cl-telegram-bot/chat)
 
 
@@ -52,150 +75,91 @@
             (get-username chat))))
 
 
-(defun get-chat-by-id (bot chat-id)
+(defmethod prepare-arg ((arg (eql :chat)))
+  `(:|chat_id| (get-chat-id
+                ,(ensure-symbol arg))))
+
+
+(def-telegram-call (get-chat-by-id "getChat")
+    (chat-id)
   "https://core.telegram.org/bots/api#getchat"
-  ;; TODO: test
-  (let* ((options `(:|chat_id| ,chat-id))
-         (response (make-request bot "getChat" options)))))
+  (make-chat response))
 
 
-(defun kick-chat-member (bot chat user-id until-date)
-  "https://core.telegram.org/bots/api#kickchatmember"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|user_id| ,user-id
-            :|until_date| ,until-date)))
-    (make-request bot "kickChatMember" options)))
+(def-telegram-call kick-chat-member (chat user-id until-date)
+  "https://core.telegram.org/bots/api#kickchatmember")
 
 
-(defun unban-chat-member (bot chat user-id)
-  "https://core.telegram.org/bots/api#unbanchatmember"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|user_id| ,user-id)))
-    (make-request bot "unbanChatMember" options)))
+(def-telegram-call unban-chat-member (chat user-id)
+  "https://core.telegram.org/bots/api#unbanchatmember")
 
 
-(defun restrict-chat-member (bot chat user-id until-date can-send-messages can-send-media-messages can-send-other-messages can-add-web-page-previews)
-  "https://core.telegram.org/bots/api#restrictchatmember"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|user_id| ,user-id
-            :|until_date| ,until-date
-            :|can_send_messages| ,can-send-messages
-            :|can_send_media_messages| ,can-send-media-messages
-            :|can_send_other_messages| ,can-send-other-messages
-            :|can_add_web_page_previews| ,can-add-web-page-previews)))
-    (make-request bot "restrictChatMember" options)))
+(def-telegram-call restrict-chat-member (chat
+                                         user-id
+                                         until-date
+                                         can-send-messages
+                                         can-send-media-messages
+                                         can-send-other-messages
+                                         can-add-web-page-previews)
+  "https://core.telegram.org/bots/api#restrictchatmember")
 
 
-(defun promote-chat-member (bot chat user-id can-change-info can-post-messages can-edit-messages can-delete-messages can-invite-users can-restrict-members can-pin-messages can-promote-members)
-  "https://core.telegram.org/bots/api#promotechatmember"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|user_id| ,user-id
-            :|can_change_info| ,can-change-info
-            :|can_post_messages| ,can-post-messages
-            :|can_edit_messages| ,can-edit-messages
-            :|can_delete_messages| ,can-delete-messages
-            :|can_invite_users| ,can-invite-users
-            :|can_restrict_members| ,can-restrict-members
-            :|can_pin_messages| ,can-pin-messages
-            :|can_promote_members| ,can-promote-members)))
-    (make-request bot "promoteChatMember" options)))
+(def-telegram-call promote-chat-member (chat
+                                        user-id
+                                        can-change-info
+                                        can-post-messages
+                                        can-edit-messages
+                                        can-delete-messages
+                                        can-invite-users
+                                        can-restrict-members
+                                        can-pin-messages
+                                        can-promote-members)
+  "https://core.telegram.org/bots/api#promotechatmember")
 
 
-(defun export-chat-invite-link (bot chat)
-  "https://core.telegram.org/bots/api#exportchatinvitelink"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat))))
-    (make-request bot "exportChatInviteLink" options)))
+(def-telegram-call export-chat-invite-link (chat)
+  "https://core.telegram.org/bots/api#exportchatinvitelink")
 
 
-(defun set-chat-photo (bot chat photo)
-  "https://core.telegram.org/bots/api#setchatphoto"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|photo| ,photo)))
-    (make-request bot "setChatPhoto" options)))
+(def-telegram-call set-chat-photo (chat photo)
+  "https://core.telegram.org/bots/api#setchatphoto")
 
 
-(defun delete-chat-photo (bot chat)
-  "https://core.telegram.org/bots/api#deletechatphoto"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat))))
-    (make-request bot "deleteChatPhoto" options)))
+(def-telegram-call delete-chat-photo (chat)
+  "https://core.telegram.org/bots/api#deletechatphoto")
 
 
-(defun set-chat-title (bot chat title)
-  "https://core.telegram.org/bots/api#setchattitle"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|title| ,title)))
-    (make-request bot "setChatTitle" options)))
+(def-telegram-call set-chat-title (chat title)
+  "https://core.telegram.org/bots/api#setchattitle")
 
 
-(defun set-chat-description (bot chat description)
-  "https://core.telegram.org/bots/api#setchatdescription"
-  (let ((options
-          `(:|chat_id| ,(get-chat-id chat)
-            :|description| ,description)))
-    (make-request bot "setChatDescription" options)))
+(def-telegram-call set-chat-description (chat description)
+  "https://core.telegram.org/bots/api#setchatdescription")
 
 
-(defun pin-chat-message (bot chat message-id disable-notification)
-  "https://core.telegram.org/bots/api#pinchatmessage"
-  (let ((options
-          (list
-           :|chat_id| (get-chat-id chat)
-           :|message_id| message-id
-           :|disable_notification| disable-notification)))
-    (make-request bot "pinChatMessage" options)))
+(def-telegram-call pin-chat-message (chat message-id disable-notification)
+  "https://core.telegram.org/bots/api#pinchatmessage")
 
 
-(defun unpin-chat-message (bot chat)
-  "https://core.telegram.org/bots/api#unpinchatmessage"
-  (let ((options
-          (list :|chat_id| (get-chat-id chat))))
-    (make-request b "unpinChatMessage" options)))
+(def-telegram-call unpin-chat-message (chat)
+  "https://core.telegram.org/bots/api#unpinchatmessage")
 
 
-(defun leave-chat (bot chat)
-  "https://core.telegram.org/bots/api#leavechat"
-  (let ((options
-          (list :|chat_id| (get-chat-id chat))))
-    (make-request bot "leaveChat" options)))
+(def-telegram-call leave-chat (chat)
+  "https://core.telegram.org/bots/api#leavechat")
 
 
-(defun get-chat-administrators (bot chat)
-  "https://core.telegram.org/bots/api#getchatadministrators"
-  (let ((options
-         (list
-          :|chat_id| (get-chat-id chat))))
-    (make-request bot "getChatAdministrators" options)))
+(def-telegram-call get-chat-administrators (chat)
+  "https://core.telegram.org/bots/api#getchatadministrators")
 
 
-(defun get-chat-members-count (bot chat)
-  "https://core.telegram.org/bots/api#getchatmemberscount"
-  (let ((options
-         (list
-          :|chat_id| (get-chat-id chat))))
-    (make-request bot "getChatMembersCount" options)))
+(def-telegram-call get-chat-members-count (chat)
+  "https://core.telegram.org/bots/api#getchatmemberscount")
 
 
-(defun get-chat-member (bot chat user-id)
-  "https://core.telegram.org/bots/api#getchatmember"
-  (let ((options
-         (list
-          :|chat_id| (get-chat-id chat)
-          :|user_id| user-id)))
-    (make-request bot "getChatMember" options)))
+(def-telegram-call get-chat-member (chat user-id)
+  "https://core.telegram.org/bots/api#getchatmember")
 
 
-(defun send-chat-action (bot chat action)
-  "https://core.telegram.org/bots/api#sendchataction"
-  (let ((options
-         (list
-          :|chat_id| (get-chat-id chat)
-          :|action| action)))
-    (make-request bot "sendChatAction" options)))
+(def-telegram-call send-chat-action (chat action)
+  "https://core.telegram.org/bots/api#sendchataction")
