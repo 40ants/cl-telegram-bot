@@ -18,8 +18,8 @@
 
 (deftest convert-message-into-the-object
   (let* ((data '(:|message|
-                 (:|entities| ((:|type| "bot_command" :|length| 5 :|offset| 0))
-                  :|text| "/echo Привет Мир!"
+                 (:|entities| ((:|type| "bot_command" :|length| 16 :|offset| 0))
+                  :|text| "/reverse_message Привет Мир!"
                   :|date| 1521048276
                   :|chat| (:|type| "private"
                            :|username| "svetlyak40wt"
@@ -47,8 +47,8 @@
 
       (ok (string=
            (get-text message)
-           "/echo Привет Мир!")
-          "And message should have text \"/echo Привет Мир!\"")
+           "/reverse_message Привет Мир!")
+          "And message should have text \"/reverse_message Привет Мир!\"")
 
       (let ((chat (get-chat message)))
         (ok chat
@@ -62,8 +62,8 @@
           (ok (typep entity 'bot-command)
               "Entity should be a bot-command")
           (ok (eql (get-command entity)
-                   :echo)
-              "Command should be :echo")
+                   :reverse-message)
+              "Command should be :reverse-message")
           (ok (equal (get-rest-text entity)
                      "Привет Мир!")
               "Test after the command should be\"Привет Мир!\""))))))
