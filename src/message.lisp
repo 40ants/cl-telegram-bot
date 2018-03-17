@@ -13,6 +13,8 @@
                 #:bot)
   (:import-from #:serapeum
                 #:defvar-unbound)
+  (:import-from #:cl-telegram-bot/utils
+                #:def-telegram-call)
   (:export
    #:make-message
    #:get-text
@@ -86,6 +88,28 @@
            (when reply-to-message-id
              `(:reply_to_message_id ,reply-to-message-id)))))
     (make-request bot "sendMessage" options)))
+
+;; TODO: сделать так чтобы def-telegram-call работал c 
+;; (def-telegram-call send-message (chat text &key
+;;                                       parse-mode
+;;                                       disable-web-page-preview
+;;                                       disable-notification
+;;                                       reply-to-message-id)
+;;   "https://core.telegram.org/bots/api#sendmessage"
+;;   (log:debug "Sending message" chat text)
+;;   (let ((options
+;;           (append
+;;            `(:|chat_id| ,(get-chat-id chat)
+;;              :|text| ,text)
+;;            (when parse-mode
+;;              `(:|parse_mode| ,parse-mode))
+;;            (when disable-web-page-preview
+;;              `(:disable_web_page_preview ,disable-web-page-preview))
+;;            (when disable-notification
+;;              `(:disable_notification ,disable-notification))
+;;            (when reply-to-message-id
+;;              `(:reply_to_message_id ,reply-to-message-id)))))
+;;     (make-request bot "sendMessage" options)))
 
 
 ;; TODO: refactor
@@ -164,13 +188,13 @@
                    By default it does nothing."))
 
 
-(defmethod on-message ((bot bot) text)
+(defmethod on-message ((bot t) text)
   (declare (ignorable text))
   (log:warn "Ignoring messages's text. Define on-message method to process it.")
   (values))
 
 
-(defmethod process ((bot bot) (message message))
+(defmethod process ((bot t) (message message))
   "By default, just calls `process' on each entity. And after that calls (on-message bot text).
 
    This method binds its arguments to *current-bot* and *current-message*

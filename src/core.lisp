@@ -11,13 +11,16 @@
   (:import-from #:cl-telegram-bot/message
                 #:on-message
                 #:reply)
+  (:import-from #:cl-telegram-bot/entities/command
+                #:on-command)
   ;; This package exports only essential symbols, needed
   ;; in 80% cases.
   (:export #:defbot
            #:on-message
            #:reply
            #:start-processing
-           #:stop-processing))
+           #:stop-processing
+           #:on-command))
 (in-package cl-telegram-bot/core)
 
 

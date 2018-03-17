@@ -9,7 +9,11 @@
   (:import-from #:cl-telegram-bot/update
                 #:get-update-id
                 #:get-payload
-                #:make-update))
+                #:make-update)
+  (:import-from #:cl-telegram-bot/entities/command
+                #:get-rest-text
+                #:get-command
+                #:bot-command))
 (in-package cl-telegram-bot-tests/tests)
 
 (deftest convert-message-into-the-object
@@ -55,4 +59,11 @@
         (ok (= (length entities)
                1))
         (let ((entity (first entities)))
-          (ok (typep entity )))))))
+          (ok (typep entity 'bot-command)
+              "Entity should be a bot-command")
+          (ok (eql (get-command entity)
+                   :echo)
+              "Command should be :echo")
+          (ok (equal (get-rest-text entity)
+                     "Привет Мир!")
+              "Test after the command should be\"Привет Мир!\""))))))

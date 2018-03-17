@@ -73,7 +73,7 @@
   (:documentation "By default, this method starts an infinite loop and fetching new updates using long polling."))
 
 
-(defmethod process-updates ((bot bot))
+(defmethod process-updates ((bot t))
   "Starts inifinite loop to process updates using long polling."
   (loop
     do (loop for update in (get-updates bot
@@ -84,7 +84,7 @@
                     :report "Continue processing updates from Telegram")))))
 
 
-(defmethod process ((bot bot) (update update))
+(defmethod process ((bot t) (update update))
   "By default, just calls `process' on the payload."
   (log:debug "Processing update" update)
   (let ((payload (get-payload update)))
