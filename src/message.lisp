@@ -23,7 +23,8 @@
    #:get-entities
    #:message
    #:on-message
-   #:reply))
+   #:reply
+   #:get-current-chat))
 (in-package cl-telegram-bot/message)
 
 
@@ -72,13 +73,16 @@
                                      parse-mode
                                      disable-web-page-preview
                                      disable-notification
-                                     reply-to-message-id)
+                                     reply-to-message-id
+                                     reply-markup)
   "https://core.telegram.org/bots/api#sendmessage"
   (log:debug "Sending message" chat text)
   (let ((options
           (append
            `(:|chat_id| ,(get-chat-id chat)
-             :|text| ,text)
+              :|text| ,text)
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup))
            (when parse-mode
              `(:|parse_mode| ,parse-mode))
            (when disable-web-page-preview
@@ -179,8 +183,13 @@
                 parse-mode
                 disable-web-page-preview
                 disable-notification
-                reply-to-message-id)
-  (declare (ignorable parse-mode disable-web-page-preview disable-notification reply-to-message-id))
+                reply-to-message-id
+                reply-markup)
+  (declare (ignorable parse-mode
+                      disable-web-page-preview
+                      disable-notification
+                      reply-to-message-id
+                      reply-markup))
   "Works like a send-message, but only when an incoming message is processed.
    Automatically sends reply to a chat from where current message came from."
   (unless (and (boundp '*current-bot*)
@@ -231,3 +240,11 @@
                (get-text condition)
                (get-rest-args condition)))))
   (values))
+
+
+(defun get-current-chat ()
+  "Returns a chat where currently processing message was received."
+  (unless (boundp '*current-message*)
+    (error "Seems (get-current-chat) was called outside of processing pipeline, because no current message is available."))
+
+  (get-chat *current-message*))
