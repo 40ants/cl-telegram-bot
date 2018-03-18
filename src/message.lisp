@@ -168,10 +168,19 @@
 
 (define-condition reply-immediately ()
   ((text :initarg :text
-         :reader get-text)))
+         :reader get-text)
+   (args :initarg :args
+         :reader get-rest-args)))
 
 
-(defun reply (text)
+(defun reply (text
+              &rest args
+              &key
+                parse-mode
+                disable-web-page-preview
+                disable-notification
+                reply-to-message-id)
+  (declare (ignorable parse-mode disable-web-page-preview disable-notification reply-to-message-id))
   "Works like a send-message, but only when an incoming message is processed.
    Automatically sends reply to a chat from where current message came from."
   (unless (and (boundp '*current-bot*)
@@ -180,7 +189,8 @@
            text))
 
   (signal 'reply-immediately
-          :text text))
+          :text text
+          :args args))
 
 
 (defgeneric on-message (bot text)
@@ -215,7 +225,9 @@
                            (get-text message)))
       (reply-immediately (condition)
         (log:debug "Replying to" *current-message*)
-        (send-message *current-bot*
-                      (get-chat *current-message*)
-                      (get-text condition)))))
+        (apply #'send-message
+               *current-bot*
+               (get-chat *current-message*)
+               (get-text condition)
+               (get-rest-args condition)))))
   (values))
