@@ -1,5 +1,6 @@
 (defpackage #:cl-telegram-bot/update
   (:use #:cl)
+  (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/message
                 #:make-message)
   (:import-from #:cl-telegram-bot/network
@@ -76,12 +77,21 @@
 (defmethod process-updates ((bot t))
   "Starts inifinite loop to process updates using long polling."
   (loop
-    do (loop for update in (get-updates bot
-                                        :timeout 10)
+    do (loop for update in (restart-case
+                               (get-updates bot
+                                            :timeout 10)
+                             (continue-processing (&optional delay)
+                               :report "Continue processing updates from Telegram"
+                               (when delay
+                                 (sleep delay))
+                               ;; Return no updates
+                               (values)))
              do (restart-case
                     (process bot update)
-                  (continue ()
-                    :report "Continue processing updates from Telegram")))))
+                  (continue-processing (&optional delay)
+                    :report "Continue processing updates from Telegram"
+                    (when delay
+                      (sleep delay)))))))
 
 
 (defmethod process ((bot t) (update update))

@@ -1,5 +1,6 @@
 (defpackage #:cl-telegram-bot/network
   (:use #:cl)
+  (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/utils
                 #:obfuscate)
   (:import-from #:cl-telegram-bot/bot

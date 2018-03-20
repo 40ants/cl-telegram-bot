@@ -1,5 +1,6 @@
 (defpackage #:cl-telegram-bot/entities/command
   (:use #:cl)
+  (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/entities/core
                 #:entity
                 #:make-entity-internal)

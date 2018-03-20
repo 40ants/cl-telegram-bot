@@ -1,5 +1,6 @@
 (defpackage #:cl-telegram-bot/webhooks
-  (:use #:cl))
+  (:use #:cl)
+  (:import-from #:log4cl))
 (in-package cl-telegram-bot/webhooks)
 
 ;; TODO: refactor

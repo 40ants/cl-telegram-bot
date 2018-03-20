@@ -1,5 +1,6 @@
 (defpackage #:cl-telegram-bot/message
   (:use #:cl)
+  (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/chat
                 #:get-chat-id
                 #:make-chat)
