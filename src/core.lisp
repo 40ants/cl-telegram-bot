@@ -55,9 +55,10 @@
 
 
 (defun stop-processing (bot)
-  (when (getf *threads* bot)
-    (log:info "Stopping thread for" bot)
-    
-    (destroy-thread (getf *threads* bot))
-    (setf (getf *threads* bot)
-          nil)))
+  (let ((thread (getf *threads* bot)))
+    (when thread
+      (when (bt:thread-alive-p thread)
+        (log:info "Stopping thread for" bot)
+        (destroy-thread thread))
+      (setf (getf *threads* bot)
+            nil))))

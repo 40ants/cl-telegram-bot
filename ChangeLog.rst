@@ -8,6 +8,7 @@
 * Added a dependency from trivial-timeout and now connect timeout is used when
   doing requests to API.
 * Function ``make-<bot-class>`` now proxie any parameters to the class's constructor.
+* Now function ``stop-processing`` checks if thread is alive before destroying it.
 
 0.1.0
 =====
