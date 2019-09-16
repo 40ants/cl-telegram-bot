@@ -76,9 +76,11 @@
      (defclass ,name (bot)
        ())
 
-     (defun ,(alexandria:symbolicate 'make- name) (token)
-       (make-instance ',name
-                      :token token))))
+     (defun ,(alexandria:symbolicate 'make- name) (token &rest args)
+       (apply 'make-instance
+              ',name
+              :token token
+              args))))
 
 
 (defmethod initialize-instance :after ((bot bot) &key &allow-other-keys)
