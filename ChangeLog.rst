@@ -1,3 +1,8 @@
+
+
+* Added a dependency from trivial-timeout and now connect timeout is used when
+  doing requests to API.
+
 Refactorings
 ============
 
