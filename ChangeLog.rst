@@ -2,6 +2,12 @@
  ChangeLog
 ===========
 
+0.3.0 (2019-09-22)
+==================
+
+* Bot was fixed to use latest Dexador with support
+  of ``read-timeout`` and ``connect-timeout``.
+
 0.2.0 (2019-09-16)
 ===================
 

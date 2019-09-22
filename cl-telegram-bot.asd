@@ -7,7 +7,7 @@
 
 (defsystem cl-telegram-bot
   :description "Telegram Bot API, based on sovietspaceship's work but mostly rewritten."
-  :author "Alexander Artemenko <https://github.com/svetlyak40wt>"
+  :author "Alexander Artemenko <svetlyak.40wt@gmail.com>"
   :version (:read-file-line "ChangeLog.rst" :at search-version-in-changelog)
   :license "MIT"
   :class :package-inferred-system

@@ -27,13 +27,12 @@
                options)
     (let* ((max-timeout (* timeout 10))
            (response
-             ;; TODO: Try new dexador with connect-timeout and read-timeout
-             (with-timeout (max-timeout)
-               (dexador:post url
-                             :stream streamp
-                             :headers '(("Content-Type" . "application/json"))
-                             :content (jonathan:to-json options)
-                             :timeout timeout)))
+             (dexador:post url
+                           :stream streamp
+                           :headers '(("Content-Type" . "application/json"))
+                           :content (jonathan:to-json options)
+                           :read-timeout max-timeout
+                           :connect-timeout max-timeout))
            (data (jonathan:parse response)))
       (unless (getf data :|ok|)
         (log:error "Wrong data received from the server" data)
