@@ -71,5 +71,5 @@ And start communicating with him:
 
 ## Credentials
 
-* [Rei](https://github.com/sovietspaceshipg) – initial version.
+* [Rei](https://github.com/sovietspaceship) – initial version.
 * [Alexander Artemenko](https://github.com/svetlyak40wt) – large refactoring, usage of CLOS classes, etc.
