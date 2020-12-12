@@ -1,6 +1,6 @@
 (defpackage #:cl-telegram-bot/telegram-call
   (:use #:cl)
-  (:import-from #:cl-arrows
+  (:import-from #:arrows
                 #:->)
   (:import-from #:cl-telegram-bot/utils
                 #:make-json-keyword)

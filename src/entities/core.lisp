@@ -2,7 +2,7 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot/utils
                 #:make-keyword)
-  (:import-from #:cl-arrows
+  (:import-from #:arrows
                 #:->)
   (:nicknames #:cl-telegram-bot/entities)
   (:export
