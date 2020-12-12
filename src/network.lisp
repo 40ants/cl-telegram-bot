@@ -5,8 +5,6 @@
                 #:obfuscate)
   (:import-from #:cl-telegram-bot/bot
                 #:get-endpoint)
-  (:import-from #:trivial-timeout
-                #:with-timeout)
   (:export
    #:make-request
    #:request-error))
