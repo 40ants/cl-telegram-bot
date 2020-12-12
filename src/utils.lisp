@@ -1,6 +1,6 @@
 (defpackage #:cl-telegram-bot/utils
   (:use #:cl)
-  (:import-from #:cl-arrows
+  (:import-from #:arrows
                 #:->)
   (:import-from #:cl-ppcre
                 #:regex-replace)
