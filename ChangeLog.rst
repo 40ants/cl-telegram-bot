@@ -2,6 +2,11 @@
  ChangeLog
 ===========
 
+0.3.1 (2020-01-04)
+==================
+
+* Fixed work with latest ``dexador``, because it does not accept ``:stream t`` anymore.
+
 0.3.0 (2019-09-22)
 ==================
 

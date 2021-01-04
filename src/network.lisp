@@ -26,7 +26,6 @@
     (let* ((max-timeout (* timeout 10))
            (response
              (dexador:post url
-                           :stream streamp
                            :headers '(("Content-Type" . "application/json"))
                            :content (jonathan:to-json options)
                            :read-timeout max-timeout
