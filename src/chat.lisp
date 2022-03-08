@@ -9,7 +9,6 @@
   (:import-from #:alexandria
                 #:ensure-symbol)
   (:export
-   #:make-chat
    #:get-raw-data
    #:get-chat-id
    #:get-username

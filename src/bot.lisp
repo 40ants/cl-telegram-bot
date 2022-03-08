@@ -8,7 +8,6 @@
    #:access
    #:set-webhook
    #:get-webhook-info
-   #:send-message
    #:forward-message
    #:send-photo
    #:send-audio

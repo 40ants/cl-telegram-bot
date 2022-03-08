@@ -17,6 +17,7 @@
   (:import-from #:cl-telegram-bot/utils
                 #:def-telegram-call)
   (:export
+   #:send-message
    #:make-message
    #:get-text
    #:get-raw-data
