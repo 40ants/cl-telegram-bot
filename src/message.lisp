@@ -19,6 +19,7 @@
   (:export
    #:send-message
    #:delete-message
+   #:forward-message
    #:make-message
    #:get-text
    #:get-raw-data
@@ -121,19 +122,16 @@
 ;;              `(:reply_to_message_id ,reply-to-message-id)))))
 ;;     (make-request bot "sendMessage" options)))
 
+(defun forward-message (bot chat from-chat message &key disable-notification)
+  "https://core.telegram.org/bots/api#forwardmessage"
+  (let ((options
+         (list :|chat_id| (get-chat-id chat)
+               :|from_chat_id| (get-chat-id from-chat)
+               :|message_id| (get-message-id message))))
+    (when disable-notification (nconc options `((:|disable_notification| . ,disable-notification))))
+    (make-request bot "forwardMessage" options)))
 
 ;; TODO: refactor
-
-;; (defun forward-message (b chat-id from-chat-id message-id &key disable-notification)
-;;   "https://core.telegram.org/bots/api#forwardmessage"
-;;   (let ((options
-;;          (list
-;;           (cons :chat_id chat-id)
-;;           (cons :from_chat_id from-chat-id)
-;;           (cons :message_id message-id))))
-;;     (when disable-notification (nconc options `((:disable_notification . ,disable-notification))))
-;;     (make-request b "forwardMessage" options)))
-
 
 ;; (defun edit-message-text (b text &key chat-id message-id inline-message-id parse-mode disable-web-page-preview reply-markup)
 ;;   "https://core.telegram.org/bots/api#editmessagetext"
