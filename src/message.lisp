@@ -18,6 +18,7 @@
                 #:def-telegram-call)
   (:export
    #:send-message
+   #:delete-message
    #:make-message
    #:get-text
    #:get-raw-data
@@ -38,7 +39,9 @@
 
 
 (defclass message ()
-  ((text :initarg :text
+  ((id :initarg :id
+       :reader get-message-id)
+   (text :initarg :text
          :reader get-text)
    (chat :initarg :chat
          :reader get-chat)
@@ -51,6 +54,7 @@
 
 (defun make-message (data)
   (let ((message (make-instance 'message
+                                :id (getf data :|message_id|)
                                 :text (getf data :|text|)
                                 :chat (make-chat (getf data :|chat|))
                                 :raw-data data)))
@@ -163,13 +167,12 @@
 ;;     (when reply-markup (nconc options `((:reply_markup . ,reply-markup))))
 ;;     (make-request b "editMessageReplyMarkup" options)))
 
-;; (defun delete-message (b chat-id message-id)
-;;   "https://core.telegram.org/bots/api#deletemessage"
-;;   (let ((options
-;;          (list
-;;           (cons :chat_id chat-id)
-;;           (cons :message_id message-id))))
-;;     (make-request b "deleteMessage" options)))
+(defun delete-message (bot chat message)
+  "https://core.telegram.org/bots/api#deletemessage"
+  (let ((options
+         (list :|chat_id| (get-chat-id chat)
+               :|message_id| (get-message-id message))))
+    (make-request bot "deleteMessage" options)))
 
 
 (define-condition reply-immediately ()
