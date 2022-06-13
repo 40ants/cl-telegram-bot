@@ -125,10 +125,11 @@
 (defun forward-message (bot chat from-chat message &key disable-notification)
   "https://core.telegram.org/bots/api#forwardmessage"
   (let ((options
-         (list :|chat_id| (get-chat-id chat)
-               :|from_chat_id| (get-chat-id from-chat)
-               :|message_id| (get-message-id message))))
-    (when disable-notification (nconc options `((:|disable_notification| . ,disable-notification))))
+         (append (list :|chat_id| (get-chat-id chat)
+                       :|from_chat_id| (get-chat-id from-chat)
+                       :|message_id| (get-message-id message))
+                 (when disable-notification
+                   (list :|disable_notification| t)))))
     (make-request bot "forwardMessage" options)))
 
 ;; TODO: refactor
