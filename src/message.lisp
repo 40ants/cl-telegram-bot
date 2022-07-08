@@ -26,6 +26,12 @@
    #:get-chat
    #:get-entities
    #:message
+   #:get-reply-to-message
+   #:reply
+   #:get-forward-from
+   #:get-forward-from-chat
+   #:get-forward-sender-name
+   #:forwarded
    #:on-message
    #:reply
    #:get-current-chat))
@@ -52,13 +58,41 @@
    (raw-data :initarg :raw-data
              :reader get-raw-data)))
 
+(defclass reply (message)
+  ((reply-to-message :initarg :reply-to-message
+                     :reader get-reply-to-message)))
+
+(defclass forwarded (message)
+  ((forward-from :initarg :forward-from
+                 :reader get-forward-from)
+   (forward-sender-name :initarg :forwarded-sender-name
+                        :reader get-forward-sender-name)
+   (forward-from-chat :initarg :forward-from-chat
+                      :reader get-forward-from-chat)))
 
 (defun make-message (data)
-  (let ((message (make-instance 'message
-                                :id (getf data :|message_id|)
-                                :text (getf data :|text|)
-                                :chat (make-chat (getf data :|chat|))
-                                :raw-data data)))
+  (let* ((class (cond
+                  ((getf data :|reply_to_message|) 'reply)
+                  ((or (getf data :|forward_from_chat|)
+                       (getf data :|forward_from|)
+                       (getf data :|forward_sender_name|))
+                   'forwarded)
+                  (t 'message)))
+         (args (append (list :id (getf data :|message_id|)
+                             :text (getf data :|text|)
+                             :chat (make-chat (getf data :|chat|))
+                             :raw-data data)
+                       (case class
+                         (reply
+                          (list :reply-to-message (make-message (getf data :|reply_to_message|))))
+                         (forwarded
+                          (list :forward-from-chat (when (getf data :|forward_from_chat|)
+                                                     (make-chat (getf data :|forward_from_chat|)))
+                                :forward-from (when (getf data :|forward_from_chat|)
+                                                (make-chat (getf data :|forward_from|)))
+                                :forward-sender-name (getf data :|forward_sender_name|)))
+                         (t nil))))
+         (message (apply #'make-instance class args)))
     (setf (slot-value message 'entities)
           (mapcar (lambda (item)
                     (make-entity message item))
