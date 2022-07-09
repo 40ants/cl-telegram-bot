@@ -33,7 +33,6 @@
    #:get-forward-sender-name
    #:forwarded
    #:on-message
-   #:reply
    #:get-current-chat))
 (in-package cl-telegram-bot/message)
 
@@ -65,7 +64,7 @@
 (defclass forwarded (message)
   ((forward-from :initarg :forward-from
                  :reader get-forward-from)
-   (forward-sender-name :initarg :forwarded-sender-name
+   (forward-sender-name :initarg :forward-sender-name
                         :reader get-forward-sender-name)
    (forward-from-chat :initarg :forward-from-chat
                       :reader get-forward-from-chat)))
