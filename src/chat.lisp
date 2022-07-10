@@ -1,5 +1,10 @@
 (defpackage #:cl-telegram-bot/chat
   (:use #:cl)
+  (:import-from #:closer-mop
+                #:class-slots
+                #:slot-definition-initargs)
+  (:import-from #:cffi
+                #:translate-underscore-separated-name)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
   (:import-from #:cl-telegram-bot/telegram-call
@@ -93,33 +98,26 @@
 
 (defun make-chat (data)
   (when data
-    (let ((type (getf data :|type|)))
+    (let* ((type (getf data :|type|))
+           (class (closer-mop:ensure-finalized
+                   (find-class
+                    (cond
+                      ((string-equal type "group") 'group)
+                      ((string-equal type "supergroup") 'supergroup)
+                      ((string-equal type "channel") 'channel)
+                      (t 'private-chat)))))
+           (slots (mapcar (alexandria:compose #'first #'closer-mop:slot-definition-initargs)
+                          (closer-mop:class-slots class)))
+           (underscored-slots
+             (mapcar (lambda (slot)
+                       (intern (cffi:translate-underscore-separated-name slot) :keyword))
+                     slots)))
       (apply #'make-instance
-             (cond
-               ((string-equal type "group") 'group)
-               ((string-equal type "supergroup") 'supergroup)
-               ((string-equal type "channel") 'channel)
-               (t 'private-chat))
-             :id (getf data :|id|)
-             :username (getf data :|username|)
-             :has-protected-content (getf data :|has_protected_contents|)
-             :message-auto-delete-time (getf data :|message_auto_delete_time|)
-             :raw-data data
-             (append
-              (when (string-equal type "private")
-                (list
-                 :has-private-forwards (getf data :|has_private_forwards|)
-                 :first-name (getf data :|first_name|)
-                 :last-name (getf data :|last_name|)
-                 :bio (getf data :|bio|)))
-              (unless (string-equal type "private")
-                (list :linked-chat-id (getf data :|linked_chat_id|)))
-              (when (string-equal type "supergroup")
-                (list :join-to-send-messages (getf data :|join_to_send_messages|)
-                      :join-by-request (getf data :|join_by_request|)
-                      :slow-mode-delay (getf data :|slow_mode_delay|)
-                      :sticker-set-name (getf data :|sticker_set_name|)
-                      :can-set-sticker-set (getf data :|can_set_sticker_set|))))))))
+             class
+             (alexandria:mappend
+              (lambda (slot underscored)
+                (list slot (getf data underscored)))
+              slots underscored-slots)))))
 
 
 (defmethod print-object ((chat private-chat) stream)
