@@ -1,5 +1,9 @@
 (defpackage #:cl-telegram-bot/chat
   (:use #:cl)
+  (:import-from #:closer-mop
+                #:class-slots
+                #:slot-definition-initargs)
+  (:import-from #:kebab)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
   (:import-from #:cl-telegram-bot/telegram-call
@@ -16,6 +20,9 @@
    #:get-last-name
    #:chat
    #:private-chat
+   #:group
+   #:supergroup
+   #:channel
    #:get-chat-by-id
    #:export-chat-invite-link
    #:promote-chat-member
@@ -39,30 +46,74 @@
 (defclass chat ()
   ((id :initarg :id
        :reader get-chat-id)
+   (username :initarg :username
+             :reader get-username)
+   (has-protected-content :initarg :has-protected-content
+                          :reader get-has-protected-content)
+   (message-auto-delete-time :initarg :message-auto-delete-time
+                             :reader get-message-auto-delete-time)
    (raw-data :initarg :raw-data
              :reader get-raw-data)))
 
-
 (defclass private-chat (chat)
-  ((username :initarg :username
-             :reader get-username)
-   (first-name :initarg :first-name
+  ((first-name :initarg :first-name
                :reader get-first-name)
    (last-name :initarg :last-name
-              :reader get-last-name)))
+              :reader get-last-name)
+   (bio :initarg :bio
+        :reader get-bio)
+   (has-private-forwards :initarg :has-private-forwards
+                         :reader get-has-private-forwards)))
 
+(defclass base-group (chat)
+  ((linked-chat-id :initarg :linked-chat-id
+                   :reader get-linked-chat-id)
+   (invite-link :initarg :invite-link
+                :reader get-invite-link)
+   (pinned-message :initarg :pinned-message
+                   :reader get-pinned-message)
+   (title :initarg :title
+          :reader get-title)
+   (description :initarg :description
+                :reader get-description)))
+
+(defclass group (base-group)
+  ())
+
+(defclass super-group (base-group)
+  ((join-to-send-messages :initarg :join-to-send-messages
+                          :reader get-join-to-send-messages)
+   (join-by-request :initarg :join-by-request
+                    :reader get-join-by-request)
+   (slow-mode-delay :initarg :slow-mode-delay
+                    :reader get-slow-mode-delay)
+   (sticker-set-name :initarg :sticker-set-name
+                     :reader get-sticker-set-name)
+   (can-set-sticker-set :initarg :can-set-sticker-set
+                        :reader get-can-set-sticker-set)))
+
+(defclass channel (base-group)
+  ())
 
 (defun make-chat (data)
-  (unless (string-equal (getf data :|type|)
-                        "private")
-    (error "Only private chats are supported for now."))
-  
-  (make-instance 'private-chat
-                 :id (getf data :|id|)
-                 :username (getf data :|username|)
-                 :first-name (getf data :|first_name|)
-                 :last-name (getf data :|last_name|)
-                 :raw-data data))
+  (when data
+    (let* ((type (getf data :|type|))
+           (class (closer-mop:ensure-finalized
+                   (find-class
+                    (cond
+                      ((string-equal type "group") 'group)
+                      ((string-equal type "supergroup") 'supergroup)
+                      ((string-equal type "channel") 'channel)
+                      (t 'private-chat)))))
+           (slots (mapcar (alexandria:compose #'first #'closer-mop:slot-definition-initargs)
+                          (closer-mop:class-slots class)))
+           (underscored-slots (mapcar #'kebab:to-snake-case slots)))
+      (apply #'make-instance
+             class
+             (alexandria:mappend
+              (lambda (slot underscored)
+                (list slot (getf data underscored)))
+              slots underscored-slots)))))
 
 
 (defmethod print-object ((chat private-chat) stream)
