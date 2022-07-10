@@ -2,6 +2,13 @@
  ChangeLog
 ===========
 
+0.3.2 (2022-07-10)
+==================
+
+* Add ``id`` slot to ``message``; add ``forward-message``, ``delete-message`` functions reliant on ``id``.
+* Add more ``message`` types: ``reply``, ``forwarded``.
+* Add more ``chat`` types: ``group``, ``supergroup``, and ``channel``.
+
 0.3.1 (2020-01-04)
 ==================
 
