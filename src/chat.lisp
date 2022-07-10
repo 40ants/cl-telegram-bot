@@ -3,8 +3,7 @@
   (:import-from #:closer-mop
                 #:class-slots
                 #:slot-definition-initargs)
-  (:import-from #:cffi
-                #:translate-underscore-separated-name)
+  (:import-from #:kebab)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
   (:import-from #:cl-telegram-bot/telegram-call
