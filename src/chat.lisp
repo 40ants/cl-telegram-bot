@@ -108,10 +108,7 @@
                       (t 'private-chat)))))
            (slots (mapcar (alexandria:compose #'first #'closer-mop:slot-definition-initargs)
                           (closer-mop:class-slots class)))
-           (underscored-slots
-             (mapcar (lambda (slot)
-                       (intern (cffi:translate-underscore-separated-name slot) :keyword))
-                     slots)))
+           (underscored-slots (mapcar #'kebab:to-snake-case slots)))
       (apply #'make-instance
              class
              (alexandria:mappend
