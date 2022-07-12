@@ -105,11 +105,13 @@
                       ((string-equal type "supergroup") 'supergroup)
                       ((string-equal type "channel") 'channel)
                       (t 'private-chat)))))
-           (slots (mapcar (alexandria:compose #'first #'closer-mop:slot-definition-initargs)
-                          (closer-mop:class-slots class)))
+           (slots (remove :raw-data
+                          (mapcar (alexandria:compose #'first #'closer-mop:slot-definition-initargs)
+                                  (closer-mop:class-slots class))))
            (underscored-slots (mapcar #'kebab:to-snake-case slots)))
       (apply #'make-instance
              class
+             :raw-data data
              (alexandria:mappend
               (lambda (slot underscored)
                 (list slot (getf data underscored)))
