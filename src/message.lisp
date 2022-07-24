@@ -209,7 +209,7 @@
     :initarg :photo-options
     :reader get-photo-options)))
 
-(defmethod initialize-instance :after ((message file-message)
+(defmethod initialize-instance :after ((message photo-message)
                                        &key data &allow-other-keys)
   (when data
     (setf (slot-value message 'photo-options) (mapcar (lambda (option)
