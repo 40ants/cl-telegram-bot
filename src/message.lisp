@@ -319,6 +319,24 @@ https://core.telegram.org/bots/api#sendphoto"
              `(:|reply_markup| ,reply-markup)))))
     (make-request bot "sendPhoto" options)))
 
+(defmethod send-photo (bot chat (photo photo)
+                       &key caption parse-mode caption-entities
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for photo sending based on photo object.
+
+https://core.telegram.org/bots/api#sendphoto"
+  (log:debug "Sending photo" chat (get-file-name photo))
+  (send-photo bot chat (get-file-id photo)
+              :caption caption
+              :parse-mode parse-mode
+              :caption-entities caption-entities
+              :disable-notification disable-notification
+              :protect-content protect-content
+              :reply-to-message-id reply-to-message-id
+              :allow-sending-without-reply allow-sending-without-reply
+              :reply-markup reply-markup))
+
 ;; TODO: сделать так чтобы def-telegram-call работал c 
 ;; (def-telegram-call send-message (chat text &key
 ;;                                       parse-mode
