@@ -19,6 +19,7 @@
   (:export
    #:send-message
    #:send-photo
+   #:send-audio
    #:delete-message
    #:forward-message
    #:make-message
@@ -331,6 +332,69 @@ https://core.telegram.org/bots/api#sendphoto"
               :caption caption
               :parse-mode parse-mode
               :caption-entities caption-entities
+              :disable-notification disable-notification
+              :protect-content protect-content
+              :reply-to-message-id reply-to-message-id
+              :allow-sending-without-reply allow-sending-without-reply
+              :reply-markup reply-markup))
+
+(defmethod send-audio (bot chat (audio string)
+                       &key caption parse-mode caption-entities
+                         duration performer title thumb
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for audio sending based on photo ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#sendaudio"
+  (log:debug "Sending audio" chat audio)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|audio| ,audio)
+           (when caption
+             `(:|caption| ,caption))
+           (when caption-entities
+             `(:|caption_entities| ,caption-entities))
+           (when duration
+             `(:|duration| ,duration))
+           (when performer
+             `(:|performer| ,performer))
+           (when title
+             `(:|title| ,title))
+           (when thumb
+             `(:|thumb| ,thumb))
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendAudio" options)))
+
+(defmethod send-audio (bot chat (audio audio)
+                       &key caption parse-mode caption-entities
+                         duration performer title thumb
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for photo sending based on photo object.
+
+https://core.telegram.org/bots/api#sendaudio"
+  (send-audio bot chat (get-file-id audio)
+              :caption caption
+              :parse-mode parse-mode
+              :caption-entities caption-entities
+              :duration duration
+              :performer performer
+              :title title
+              :thumb thumb
               :disable-notification disable-notification
               :protect-content protect-content
               :reply-to-message-id reply-to-message-id
