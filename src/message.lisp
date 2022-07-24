@@ -55,7 +55,13 @@
              :initform nil
              :reader get-entities)
    (raw-data :initarg :raw-data
-             :reader get-raw-data)))
+             :reader get-raw-data)
+   (forward-from :initarg :forward-from
+                 :reader get-forward-from)
+   (forward-sender-name :initarg :forward-sender-name
+                        :reader get-forward-sender-name)
+   (forward-from-chat :initarg :forward-from-chat
+                      :reader get-forward-from-chat)))
 
 (defmethod initialize-instance :after ((message message) &key data &allow-other-keys)
   (when data
@@ -65,7 +71,12 @@
           (slot-value message 'entities) (mapcar (lambda (item)
                                                    (make-entity message item))
                                                  (getf data :|entities|))
-          (slot-value message 'raw-data) data)))
+          (slot-value message 'raw-data) data
+          (slot-value message 'forward-from-chat) (when (getf data :|forward_from_chat|)
+                                                    (make-chat (getf data :|forward_from_chat|)))
+          (slot-value message 'forward-from) (when (getf data :|forward_from_chat|)
+                                               (make-chat (getf data :|forward_from|)))
+          (slot-value message 'forward-sender-name) (getf data :|forward_sender_name|))))
 
 (defclass reply (message)
   ((reply-to-message :initarg :reply-to-message
@@ -76,35 +87,10 @@
     (setf (slot-value reply 'reply-to-message)
           (make-message (getf data :|reply_to_message|)))))
 
-(defclass forwarded (message)
-  ((forward-from :initarg :forward-from
-                 :reader get-forward-from)
-   (forward-sender-name :initarg :forward-sender-name
-                        :reader get-forward-sender-name)
-   (forward-from-chat :initarg :forward-from-chat
-                      :reader get-forward-from-chat)))
-
-(defmethod initialize-instance :after ((forwarded forwarded) &key data &allow-other-keys)
-  (when data
-    (with-slots (forward-from-chat forward-from forward-sender-name)
-        forwarded
-      (setf (slot-value forwarded 'forward-from-chat)
-            (when (getf data :|forward_from_chat|)
-              (make-chat (getf data :|forward_from_chat|)))
-            (slot-value forwarded 'forward-from)
-            (when (getf data :|forward_from_chat|)
-              (make-chat (getf data :|forward_from|)))
-            (slot-value forwarded 'forward-sender-name)
-            (getf data :|forward_sender_name|)))))
-
 (defun make-message (data)
   (when data
     (let* ((class (cond
                     ((getf data :|reply_to_message|) 'reply)
-                    ((or (getf data :|forward_from_chat|)
-                         (getf data :|forward_from|)
-                         (getf data :|forward_sender_name|))
-                     'forwarded)
                     (t 'message))))
       (make-instance class :data data))))
 
