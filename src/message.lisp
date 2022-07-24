@@ -207,6 +207,8 @@
 
 (defclass document-message (file-message) ())
 
+(defclass animation-message (file-message) ())
+
 (defclass photo-message (file-message)
   ((photo-options
     :initarg :photo-options
