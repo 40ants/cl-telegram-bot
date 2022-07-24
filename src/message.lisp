@@ -23,6 +23,7 @@
    #:send-document
    #:send-video
    #:send-animation
+   #:send-video-note
    #:delete-message
    #:forward-message
    #:make-message
@@ -589,6 +590,66 @@ https://core.telegram.org/bots/api#sendanimation"
               :reply-to-message-id reply-to-message-id
               :allow-sending-without-reply allow-sending-without-reply
               :reply-markup reply-markup))
+
+(defmethod send-video-note (bot chat (video-note string)
+                            &key caption parse-mode caption-entities
+                              duration length thumb
+                              disable-notification protect-content reply-to-message-id
+                              allow-sending-without-reply reply-markup)
+  "A method for video note sending based on ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#sendvideonote"
+  (log:debug "Sending video note" chat video-note)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|video_note| ,video-note)
+           (when caption
+             `(:|caption| ,caption))
+           (when caption-entities
+             `(:|caption_entities| ,caption-entities))
+           (when duration
+             `(:|duration| ,duration))
+           (when length
+             `(:|length| ,length))
+           (when thumb
+             `(:|thumb| ,thumb))
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendVideoNote" options)))
+
+(defmethod send-video-note (bot chat (video-note video-note)
+                            &key caption parse-mode caption-entities
+                              duration length thumb
+                              disable-notification protect-content reply-to-message-id
+                              allow-sending-without-reply reply-markup)
+  "A method for video note sending based on video-note object.
+
+https://core.telegram.org/bots/api#sendvideonote"
+  (send-video-note bot chat (get-file-id video-note)
+                   :caption caption
+                   :parse-mode parse-mode
+                   :caption-entities caption-entities
+                   :duration duration
+                   :length length
+                   :thumb thumb
+                   :disable-notification disable-notification
+                   :protect-content protect-content
+                   :reply-to-message-id reply-to-message-id
+                   :allow-sending-without-reply allow-sending-without-reply
+                   :reply-markup reply-markup))
 
 ;; TODO: сделать так чтобы def-telegram-call работал c 
 ;; (def-telegram-call send-message (chat text &key
