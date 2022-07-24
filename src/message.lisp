@@ -24,6 +24,7 @@
    #:send-video
    #:send-animation
    #:send-video-note
+   #:send-voice
    #:delete-message
    #:forward-message
    #:make-message
@@ -650,6 +651,60 @@ https://core.telegram.org/bots/api#sendvideonote"
                    :reply-to-message-id reply-to-message-id
                    :allow-sending-without-reply allow-sending-without-reply
                    :reply-markup reply-markup))
+
+(defmethod send-voice (bot chat (voice string)
+                       &key caption parse-mode caption-entities
+                         duration
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for voice message sending based on its ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#sendvoice"
+  (log:debug "Sending voice" chat voice)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|voice| ,voice)
+           (when caption
+             `(:|caption| ,caption))
+           (when caption-entities
+             `(:|caption_entities| ,caption-entities))
+           (when duration
+             `(:|duration| ,duration))
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendVoice" options)))
+
+(defmethod send-voice (bot chat (voice voice)
+                       &key caption parse-mode caption-entities
+                         duration
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for voice sending based on voice object.
+
+https://core.telegram.org/bots/api#sendvoice"
+  (send-voice bot chat (get-file-id voice)
+              :caption caption
+              :parse-mode parse-mode
+              :caption-entities caption-entities
+              :duration duration
+              :disable-notification disable-notification
+              :protect-content protect-content
+              :reply-to-message-id reply-to-message-id
+              :allow-sending-without-reply allow-sending-without-reply
+              :reply-markup reply-markup))
 
 ;; TODO: сделать так чтобы def-telegram-call работал c 
 ;; (def-telegram-call send-message (chat text &key
