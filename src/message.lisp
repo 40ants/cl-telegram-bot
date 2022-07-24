@@ -57,9 +57,24 @@
    (raw-data :initarg :raw-data
              :reader get-raw-data)))
 
+(defmethod initialize-instance :after ((message message) &key data &allow-other-keys)
+  (when data
+    (setf (slot-value message 'id) (getf data :|message_id|)
+          (slot-value message 'text) (getf data :|text|)
+          (slot-value message 'chat) (make-chat (getf data :|chat|))
+          (slot-value message 'entities) (mapcar (lambda (item)
+                                                   (make-entity message item))
+                                                 (getf data :|entities|))
+          (slot-value message 'raw-data) data)))
+
 (defclass reply (message)
   ((reply-to-message :initarg :reply-to-message
                      :reader get-reply-to-message)))
+
+(defmethod initialize-instance :after ((reply reply) &key data &allow-other-keys)
+  (when data
+    (setf (slot-value reply 'reply-to-message)
+          (make-message (getf data :|reply_to_message|)))))
 
 (defclass forwarded (message)
   ((forward-from :initarg :forward-from
@@ -69,35 +84,29 @@
    (forward-from-chat :initarg :forward-from-chat
                       :reader get-forward-from-chat)))
 
-(defun make-message (data)
-  (let* ((class (cond
-                  ((getf data :|reply_to_message|) 'reply)
-                  ((or (getf data :|forward_from_chat|)
-                       (getf data :|forward_from|)
-                       (getf data :|forward_sender_name|))
-                   'forwarded)
-                  (t 'message)))
-         (args (append (list :id (getf data :|message_id|)
-                             :text (getf data :|text|)
-                             :chat (make-chat (getf data :|chat|))
-                             :raw-data data)
-                       (case class
-                         (reply
-                          (list :reply-to-message (make-message (getf data :|reply_to_message|))))
-                         (forwarded
-                          (list :forward-from-chat (when (getf data :|forward_from_chat|)
-                                                     (make-chat (getf data :|forward_from_chat|)))
-                                :forward-from (when (getf data :|forward_from_chat|)
-                                                (make-chat (getf data :|forward_from|)))
-                                :forward-sender-name (getf data :|forward_sender_name|)))
-                         (t nil))))
-         (message (apply #'make-instance class args)))
-    (setf (slot-value message 'entities)
-          (mapcar (lambda (item)
-                    (make-entity message item))
-                  (getf data :|entities|)))
+(defmethod initialize-instance :after ((forwarded forwarded) &key data &allow-other-keys)
+  (when data
+    (with-slots (forward-from-chat forward-from forward-sender-name)
+        forwarded
+      (setf (slot-value forwarded 'forward-from-chat)
+            (when (getf data :|forward_from_chat|)
+              (make-chat (getf data :|forward_from_chat|)))
+            (slot-value forwarded 'forward-from)
+            (when (getf data :|forward_from_chat|)
+              (make-chat (getf data :|forward_from|)))
+            (slot-value forwarded 'forward-sender-name)
+            (getf data :|forward_sender_name|)))))
 
-    (values message)))
+(defun make-message (data)
+  (when data
+    (let* ((class (cond
+                    ((getf data :|reply_to_message|) 'reply)
+                    ((or (getf data :|forward_from_chat|)
+                         (getf data :|forward_from|)
+                         (getf data :|forward_sender_name|))
+                     'forwarded)
+                    (t 'message))))
+      (make-instance class :data data))))
 
 
 (defmethod print-object ((message message) stream)
@@ -202,8 +211,8 @@
 (defun delete-message (bot chat message)
   "https://core.telegram.org/bots/api#deletemessage"
   (let ((options
-         (list :|chat_id| (get-chat-id chat)
-               :|message_id| (get-message-id message))))
+          (list :|chat_id| (get-chat-id chat)
+                :|message_id| (get-message-id message))))
     (make-request bot "deleteMessage" options)))
 
 
