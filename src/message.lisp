@@ -20,6 +20,7 @@
    #:send-message
    #:send-photo
    #:send-audio
+   #:send-document
    #:delete-message
    #:forward-message
    #:make-message
@@ -400,6 +401,64 @@ https://core.telegram.org/bots/api#sendaudio"
               :reply-to-message-id reply-to-message-id
               :allow-sending-without-reply allow-sending-without-reply
               :reply-markup reply-markup))
+
+(defmethod send-document (bot chat (document string)
+                          &key caption parse-mode caption-entities
+                            disable-content-type-detection thumb
+                            disable-notification protect-content reply-to-message-id
+                            allow-sending-without-reply reply-markup)
+  "A method for document sending based on ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#senddocument"
+  (log:debug "Sending document" chat document)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|document| ,document)
+           (when caption
+             `(:|caption| ,caption))
+           (when caption-entities
+             `(:|caption_entities| ,caption-entities))
+           (when disable-content-type-detection
+             `(:|disable_content_type_detection| ,disable-content-type-detection))
+           (when thumb
+             `(:|thumb| ,thumb))
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendDocument" options)))
+
+(defmethod send-document (bot chat (document document)
+                       &key caption parse-mode caption-entities
+                         disable-content-type-detection thumb
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for document sending based on document object.
+
+https://core.telegram.org/bots/api#senddocument"
+  (log:debug "Sending document" chat (get-file-name document))
+  (send-document bot chat (get-file-id document)
+                 :caption caption
+                 :parse-mode parse-mode
+                 :caption-entities caption-entities
+                 :disable-content-type-detection disable-content-type-detection
+                 :thumb thumb
+                 :disable-notification disable-notification
+                 :protect-content protect-content
+                 :reply-to-message-id reply-to-message-id
+                 :allow-sending-without-reply allow-sending-without-reply
+                 :reply-markup reply-markup))
 
 ;; TODO: сделать так чтобы def-telegram-call работал c 
 ;; (def-telegram-call send-message (chat text &key
