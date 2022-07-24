@@ -58,15 +58,25 @@
    #:get-emoji
    #:get-set-name
    #:get-file
+   #:file-message
+   #:file
    #:animation-message
+   #:animation
    #:audio-message
+   #:audio
    #:get-photo-options
    #:photo-message
+   #:photo
    #:document-message
+   #:document
    #:video-message
+   #:video
    #:video-note-message
+   #:video-note
    #:voice-message
-   #:sticker-message))
+   #:voice
+   #:sticker-message
+   #:sticker))
 (in-package cl-telegram-bot/message)
 
 
