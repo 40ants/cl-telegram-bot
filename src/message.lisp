@@ -18,6 +18,7 @@
                 #:def-telegram-call)
   (:export
    #:send-message
+   #:send-photo
    #:delete-message
    #:forward-message
    #:make-message
@@ -285,6 +286,38 @@
            (when reply-to-message-id
              `(:reply_to_message_id ,reply-to-message-id)))))
     (make-request bot "sendMessage" options)))
+
+(defmethod send-photo (bot chat (photo string)
+                       &key caption parse-mode caption-entities
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for photo sending based on photo ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#sendphoto"
+  (log:debug "Sending photo" chat photo)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|photo| ,photo)
+           (when caption
+             `(:|caption| ,caption))
+           (when caption-entities
+             `(:|caption_entities| ,caption-entities))
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendPhoto" options)))
 
 ;; TODO: сделать так чтобы def-telegram-call работал c 
 ;; (def-telegram-call send-message (chat text &key
