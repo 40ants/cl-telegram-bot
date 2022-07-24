@@ -25,6 +25,7 @@
    #:send-animation
    #:send-video-note
    #:send-voice
+   #:send-sticker
    #:delete-message
    #:forward-message
    #:make-message
@@ -704,6 +705,46 @@ https://core.telegram.org/bots/api#sendvoice"
               :reply-to-message-id reply-to-message-id
               :allow-sending-without-reply allow-sending-without-reply
               :reply-markup reply-markup))
+
+(defmethod send-sticker (bot chat (sticker string)
+                         &key disable-notification protect-content reply-to-message-id
+                           allow-sending-without-reply reply-markup)
+  "A method for sticker sending based on ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#sendsticker"
+  (log:debug "Sending sticker" chat sticker)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|sticker| ,sticker)
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendSticker" options)))
+
+(defmethod send-sticker (bot chat (sticker sticker)
+                         &key disable-notification protect-content reply-to-message-id
+                           allow-sending-without-reply reply-markup)
+  "A method for sticker sending based on sticker object.
+
+https://core.telegram.org/bots/api#sendsticker"
+  (send-sticker bot chat (get-file-id sticker)
+                :disable-notification disable-notification
+                :protect-content protect-content
+                :reply-to-message-id reply-to-message-id
+                :allow-sending-without-reply allow-sending-without-reply
+                :reply-markup reply-markup))
+
+
 
 ;; TODO: сделать так чтобы def-telegram-call работал c 
 ;; (def-telegram-call send-message (chat text &key
