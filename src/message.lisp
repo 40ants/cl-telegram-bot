@@ -22,18 +22,43 @@
    #:forward-message
    #:make-message
    #:get-text
+   #:get-caption
    #:get-raw-data
    #:get-chat
    #:get-entities
-   #:message
-   #:get-reply-to-message
-   #:reply
    #:get-forward-from
    #:get-forward-from-chat
    #:get-forward-sender-name
-   #:forwarded
+   #:message
+   #:get-reply-to-message
+   #:reply
+   #:get-duration
+   #:get-length
+   #:get-width
+   #:get-height
+   #:get-file-id
+   #:get-file-unique-id
+   #:get-file-name
+   #:get-file-size
+   #:get-mime-type
    #:on-message
-   #:get-current-chat))
+   #:get-current-chat
+   #:get-performer
+   #:get-title
+   #:get-is-animation
+   #:get-is-video
+   #:get-emoji
+   #:get-set-name
+   #:get-file
+   #:animation-message
+   #:audio-message
+   #:get-photo-options
+   #:photo-message
+   #:document-message
+   #:video-message
+   #:video-note-message
+   #:voice-message
+   #:sticker-message))
 (in-package cl-telegram-bot/message)
 
 
@@ -49,6 +74,9 @@
        :reader get-message-id)
    (text :initarg :text
          :reader get-text)
+   ;; Caption for file messages
+   (caption :initarg :caption
+            :reader get-caption)
    (chat :initarg :chat
          :reader get-chat)
    (entities :initarg :entities
@@ -76,7 +104,125 @@
                                                     (make-chat (getf data :|forward_from_chat|)))
           (slot-value message 'forward-from) (when (getf data :|forward_from_chat|)
                                                (make-chat (getf data :|forward_from|)))
-          (slot-value message 'forward-sender-name) (getf data :|forward_sender_name|))))
+          (slot-value message 'forward-sender-name) (getf data :|forward_sender_name|)
+          (slot-value message 'caption) (getf data :|caption|))))
+
+(defclass temporal ()
+  ((duration
+    :initarg :duration
+    :reader get-duration)))
+
+(defclass spatial ()
+  ((height
+    :initarg :height
+    :reader get-height)
+   (width
+    :initarg :width
+    :reader get-width)))
+
+(defclass unispatial ()
+  ((length
+    :initarg :length
+    :reader get-length)))
+
+(defclass file ()
+  ((file-id
+    :initarg :file-id
+    :reader get-file-id)
+   (file-unique-id
+    :initarg :file-unique-id
+    :reader get-file-unique-id)
+   (file-name
+    :initarg :file-name
+    :reader get-file-name)
+   (file-size
+    :initarg :file-size
+    :reader get-file-size)
+   (mime-type
+    :initarg :mime-type
+    :reader get-mime-type)))
+
+(defclass photo (file spatial) ())
+
+(defclass audio (file temporal)
+  ((performer
+    :initarg :performer
+    :reader get-performer)
+   (title
+    :initarg :title
+    :reader get-title)))
+
+(defclass animation (file temporal spatial) ())
+
+(defclass document (file) ())
+
+(defclass video (file temporal spatial) ())
+
+(defclass video-note (file temporal unispatial) ())
+
+(defclass voice (file temporal) ())
+
+;; TODO: premium_animation, thumb, mask_position
+(defclass sticker (file spatial)
+  ((is-animated
+    :initarg :is-animated
+    :reader get-is-animated)
+   (is-video
+    :initarg :is-video
+    :reader get-is-video)
+   (emoji
+    :initarg :emoji
+    :reader get-emoji)
+   (set-name
+    :initarg :set-name
+    :reader get-set-name)))
+
+(defmethod initialize-instance :after ((file file) &key data &allow-other-keys)
+  (when data
+    (let ((slots (mapcar #'closer-mop:slot-definition-name
+                         (closer-mop:class-slots (class-of file)))))
+      (mapc
+       (lambda (slot underscored)
+         (setf (slot-value file slot) (getf data underscored)))
+       slots
+       (mapcar (lambda (slot)
+                 (kebab:to-snake-case (intern (symbol-name slot) :keyword)))
+               slots)))))
+
+(defclass file-message (message)
+  ((file :initarg :file
+         :reader get-file)))
+
+(defmethod initialize-instance :after ((message file-message)
+                                       &key data file-attribute-name file-class &allow-other-keys)
+  (when data
+    (setf (slot-value message 'file)
+          (make-instance file-class :data (getf data file-attribute-name)))))
+
+(defclass audio-message (file-message) ())
+
+(defclass document-message (file-message) ())
+
+(defclass photo-message (file-message)
+  ((photo-options
+    :initarg :photo-options
+    :reader get-photo-options)))
+
+(defmethod initialize-instance :after ((message file-message)
+                                       &key data &allow-other-keys)
+  (when data
+    (setf (slot-value message 'photo-options) (mapcar (lambda (option)
+                                                        (make-instance 'photo :data option))
+                                                      (getf data :|photo|))
+          (slot-value message 'file) (alexandria:lastcar (slot-value message 'photo-options)))))
+
+(defclass sticker-message (file-message) ())
+
+(defclass video-message (file-message) ())
+
+(defclass video-note-message (file-message) ())
+
+(defclass voice-message (file-message) ())
 
 (defclass reply (message)
   ((reply-to-message :initarg :reply-to-message
@@ -89,10 +235,22 @@
 
 (defun make-message (data)
   (when data
-    (let* ((class (cond
-                    ((getf data :|reply_to_message|) 'reply)
-                    (t 'message))))
-      (make-instance class :data data))))
+    (destructuring-bind (class &optional file-attribute-name file-class)
+        (cond
+          ((getf data :|reply_to_message|) '(reply))
+          ((getf data :|audio|) '(audio-message :|audio| audio))
+          ((getf data :|animation|) '(animation-message :|animation| animation))
+          ((getf data :|document|) '(document-message :|document| document))
+          ((getf data :|photo|) '(photo-message :|photo| photo))
+          ((getf data :|sticker|) '(sticker-message :|sticker| sticker))
+          ((getf data :|video|) '(video-message :|video| video))
+          ((getf data :|video-note|) '(video-note-message :|video_note| vide-note))
+          ((getf data :|voice|) '(voice-message :|voice| voice))
+          (t 'message))
+      (make-instance
+       class :data data
+       :file-attribute-name file-attribute-name
+       :file-class file-class))))
 
 
 (defmethod print-object ((message message) stream)
