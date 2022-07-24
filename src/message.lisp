@@ -22,6 +22,7 @@
    #:send-audio
    #:send-document
    #:send-video
+   #:send-animation
    #:delete-message
    #:forward-message
    #:make-message
@@ -513,6 +514,69 @@ https://core.telegram.org/bots/api#sendvideo"
 
 https://core.telegram.org/bots/api#sendvideo"
   (send-video bot chat (get-file-id video)
+              :caption caption
+              :parse-mode parse-mode
+              :caption-entities caption-entities
+              :duration duration
+              :width width
+              :height height
+              :thumb thumb
+              :disable-notification disable-notification
+              :protect-content protect-content
+              :reply-to-message-id reply-to-message-id
+              :allow-sending-without-reply allow-sending-without-reply
+              :reply-markup reply-markup))
+
+(defmethod send-animation (bot chat (animation string)
+                           &key caption parse-mode caption-entities
+                             duration width height thumb
+                             disable-notification protect-content reply-to-message-id
+                             allow-sending-without-reply reply-markup)
+  "A method for animation sending based on ID.
+
+The file-based method does not work yet.
+
+https://core.telegram.org/bots/api#sendanimation"
+  (log:debug "Sending animation" chat animation)
+  (let ((options
+          (append
+           `(:|chat_id| ,(get-chat-id chat)
+              :|animation| ,animation)
+           (when caption
+             `(:|caption| ,caption))
+           (when caption-entities
+             `(:|caption_entities| ,caption-entities))
+           (when duration
+             `(:|duration| ,duration))
+           (when height
+             `(:|height| ,height))
+           (when width
+             `(:|width| ,width))
+           (when thumb
+             `(:|thumb| ,thumb))
+           (when parse-mode
+             `(:|parse_mode| ,parse-mode))
+           (when disable-notification
+             `(:disable_notification ,disable-notification))
+           (when protect-content
+             `(:|protect_content| ,protect-content))
+           (when reply-to-message-id
+             `(:reply_to_message_id ,reply-to-message-id))
+           (when allow-sending-without-reply
+             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
+           (when reply-markup
+             `(:|reply_markup| ,reply-markup)))))
+    (make-request bot "sendAnimation" options)))
+
+(defmethod send-animation (bot chat (animation animation)
+                           &key caption parse-mode caption-entities
+                             duration width height thumb
+                             disable-notification protect-content reply-to-message-id
+                             allow-sending-without-reply reply-markup)
+  "A method for animation sending based on animation object.
+
+https://core.telegram.org/bots/api#sendanimation"
+  (send-video bot chat (get-file-id animation)
               :caption caption
               :parse-mode parse-mode
               :caption-entities caption-entities
