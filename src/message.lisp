@@ -350,7 +350,7 @@ https://core.telegram.org/bots/api#sendphoto"
                          duration performer title thumb
                          disable-notification protect-content reply-to-message-id
                          allow-sending-without-reply reply-markup)
-  "A method for audio sending based on photo ID.
+  "A method for audio sending based on its ID.
 
 The file-based method does not work yet.
 
@@ -391,7 +391,7 @@ https://core.telegram.org/bots/api#sendaudio"
                          duration performer title thumb
                          disable-notification protect-content reply-to-message-id
                          allow-sending-without-reply reply-markup)
-  "A method for photo sending based on photo object.
+  "A method for audio sending based on audio object.
 
 https://core.telegram.org/bots/api#sendaudio"
   (send-audio bot chat (get-file-id audio)
@@ -453,7 +453,6 @@ https://core.telegram.org/bots/api#senddocument"
   "A method for document sending based on document object.
 
 https://core.telegram.org/bots/api#senddocument"
-  (log:debug "Sending document" chat (get-file-name document))
   (send-document bot chat (get-file-id document)
                  :caption caption
                  :parse-mode parse-mode
