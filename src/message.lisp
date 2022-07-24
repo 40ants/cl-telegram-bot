@@ -255,7 +255,7 @@
           ((getf data :|video|) '(video-message :|video| video))
           ((getf data :|video-note|) '(video-note-message :|video_note| vide-note))
           ((getf data :|voice|) '(voice-message :|voice| voice))
-          (t 'message))
+          (t '(message)))
       (make-instance
        class :data data
        :file-attribute-name file-attribute-name
