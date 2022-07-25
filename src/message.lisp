@@ -120,7 +120,7 @@
           (slot-value message 'raw-data) data
           (slot-value message 'forward-from-chat) (when (getf data :|forward_from_chat|)
                                                     (make-chat (getf data :|forward_from_chat|)))
-          (slot-value message 'forward-from) (when (getf data :|forward_from_chat|)
+          (slot-value message 'forward-from) (when (getf data :|forward_from|)
                                                (make-chat (getf data :|forward_from|)))
           (slot-value message 'forward-sender-name) (getf data :|forward_sender_name|)
           (slot-value message 'caption) (getf data :|caption|))))
