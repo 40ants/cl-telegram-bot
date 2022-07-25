@@ -244,8 +244,7 @@ the file.")
        (lambda (slot underscored)
          (setf (slot-value file slot) (getf data underscored)))
        slots
-       (mapcar (lambda (slot)
-                 (kebab:to-snake-case (intern (symbol-name slot) :keyword)))
+       (mapcar (alexandria:compose #'kebab:to-snake-case #'alexandria:make-keyword)
                slots)))))
 
 (defclass file-message (message)
