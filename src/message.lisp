@@ -3,7 +3,8 @@
   (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/chat
                 #:get-chat-id
-                #:make-chat)
+                #:make-chat
+                #:chat)
   (:import-from #:cl-telegram-bot/entities/core
                 #:make-entity)
   (:import-from #:cl-telegram-bot/network
@@ -91,23 +92,35 @@
   ((id :initarg :id
        :reader get-message-id)
    (text :initarg :text
+         :type (or null string)
          :reader get-text)
    ;; Caption for file messages
    (caption :initarg :caption
-            :reader get-caption)
+            :type (or null string)
+            :reader get-caption
+            :documentation "Caption for the animation, audio, document, photo, video or voice.")
    (chat :initarg :chat
+         :type chat
          :reader get-chat)
    (entities :initarg :entities
              :initform nil
+             :type list
              :reader get-entities)
    (raw-data :initarg :raw-data
              :reader get-raw-data)
    (forward-from :initarg :forward-from
-                 :reader get-forward-from)
+                 :type (or null chat)
+                 :reader get-forward-from
+                 :documentation "For forwarded messages, sender of the original message.")
    (forward-sender-name :initarg :forward-sender-name
-                        :reader get-forward-sender-name)
+                        :type (or null string)
+                        :reader get-forward-sender-name
+                        :documentation "For forwarded messages, sender of the original message.")
    (forward-from-chat :initarg :forward-from-chat
-                      :reader get-forward-from-chat)))
+                      :type (or null chat)
+                      :reader get-forward-from-chat
+                      :documentation "For messages forwarded from channels or from anonymous
+administrators, information about the original sender chat.")))
 
 (defmethod initialize-instance :after ((message message) &key data &allow-other-keys)
   (when data
@@ -128,47 +141,70 @@
 (defclass temporal ()
   ((duration
     :initarg :duration
-    :reader get-duration)))
+    :type (or null integer)
+    :reader get-duration
+    :documentation "Duration of the file in seconds as defined by sender.")))
 
 (defclass spatial ()
   ((height
     :initarg :height
-    :reader get-height)
+    :type (or null integer)
+    :reader get-height
+    :documentation "File height as defined by sender.")
    (width
     :initarg :width
-    :reader get-width)))
+    :type (or null integer)
+    :reader get-width
+    :documentation "File width as defined by sender.")))
 
 (defclass unispatial ()
   ((length
     :initarg :length
+    :type (or null integer)
     :reader get-length)))
 
 (defclass file ()
   ((file-id
     :initarg :file-id
-    :reader get-file-id)
+    :type (or null string)
+    :reader get-file-id
+    :documentation "Identifier for this file, which can be used to download or reuse the file.")
    (file-unique-id
     :initarg :file-unique-id
-    :reader get-file-unique-id)
+    :type (or null string)
+    :reader get-file-unique-id
+    :documentation "Unique identifier for this file, which is supposed to be the same
+over time and for different bots. Can't be used to download or reuse
+the file.")
    (file-name
     :initarg :file-name
-    :reader get-file-name)
+    :type (or null string)
+    :reader get-file-name
+    :documentation "Original filename as defined by sender.")
    (file-size
     :initarg :file-size
-    :reader get-file-size)
+    :type (or null integer)
+    :reader get-file-size
+    :documentation "File size in bytes.")
    (mime-type
     :initarg :mime-type
-    :reader get-mime-type)))
+    :type (or null string)
+    :reader get-mime-type
+    :documentation "MIME type of the file as defined by sender.")))
 
 (defclass photo (file spatial) ())
 
 (defclass audio (file temporal)
   ((performer
     :initarg :performer
-    :reader get-performer)
+    :type (or null string)
+    :reader get-performer
+    :documentation "Performer of the audio as defined by sender or by audio tags.")
    (title
     :initarg :title
-    :reader get-title)))
+    :type (or null string)
+    :reader get-title
+    :documentation "Title of the audio as defined by sender or by audio tags.")))
 
 (defclass animation (file temporal spatial) ())
 
@@ -184,16 +220,21 @@
 (defclass sticker (file spatial)
   ((is-animated
     :initarg :is-animated
-    :reader get-is-animated)
+    :reader get-is-animated
+    :documentation "True if the sticker is animated.")
    (is-video
     :initarg :is-video
-    :reader get-is-video)
+    :reader get-is-video
+    :documentation "True if the sticker is a video sticker.")
    (emoji
     :initarg :emoji
-    :reader get-emoji)
+    :reader get-emoji
+    :documentation "Emoji associated with the sticker")
    (set-name
     :initarg :set-name
-    :reader get-set-name)))
+    :type (or null string)
+    :reader get-set-name
+    :documentation "Name of the sticker set to which the sticker belongs.")))
 
 (defmethod initialize-instance :after ((file file) &key data &allow-other-keys)
   (when data
