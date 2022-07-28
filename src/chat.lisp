@@ -55,6 +55,23 @@
    (raw-data :initarg :raw-data
              :reader get-raw-data)))
 
+(defmethod initialize-instance :after ((chat chat) &key data &allow-other-keys)
+  (when data
+    (let* ((slots (remove
+                   'pinned-message
+                   (remove
+                    'raw-data
+                    (mapcar #'closer-mop:slot-definition-name
+                            (closer-mop:class-slots (class-of chat))))))
+           (underscored-slots (mapcar (lambda (slot)
+                                        (kebab:to-snake-case (intern (symbol-name slot) :keyword)))
+                                      slots)))
+      (mapc
+       (lambda (slot underscored)
+         (setf (slot-value chat slot) (getf data underscored)))
+       slots underscored-slots)
+      (setf (slot-value chat 'raw-data) data))))
+
 (defclass private-chat (chat)
   ((first-name :initarg :first-name
                :reader get-first-name)
@@ -76,6 +93,12 @@
           :reader get-title)
    (description :initarg :description
                 :reader get-description)))
+
+(defmethod initialize-instance :after ((chat base-group) &key data &allow-other-keys)
+  (when data
+    (setf (slot-value chat 'pinned-message)
+          ;; FIXME: There should be make-message, but it's not available yet.
+          (getf data :|pinned_message|))))
 
 (defclass group (base-group)
   ())
@@ -104,18 +127,8 @@
                       ((string-equal type "group") 'group)
                       ((string-equal type "supergroup") 'supergroup)
                       ((string-equal type "channel") 'channel)
-                      (t 'private-chat)))))
-           (slots (remove :raw-data
-                          (mapcar (alexandria:compose #'first #'closer-mop:slot-definition-initargs)
-                                  (closer-mop:class-slots class))))
-           (underscored-slots (mapcar #'kebab:to-snake-case slots)))
-      (apply #'make-instance
-             class
-             :raw-data data
-             (alexandria:mappend
-              (lambda (slot underscored)
-                (list slot (getf data underscored)))
-              slots underscored-slots)))))
+                      (t 'private-chat))))))
+      (make-instance class :data data))))
 
 
 (defmethod print-object ((chat private-chat) stream)

@@ -105,9 +105,9 @@
       `(defun ,func-name (,bot-var ,@args)
          ,(get-docstring body)
          (let* ((,opts-var (list ,@prepared-args))
-                (response (make-request ,bot-var
-                                        ,telegram-method-name
-                                        ,opts-var)))
+                (response (apply #'make-request ,bot-var
+                                 ,telegram-method-name
+                                 ,opts-var)))
            (declare (ignorable response))
            ,@(or (without-docstring
                    body)
