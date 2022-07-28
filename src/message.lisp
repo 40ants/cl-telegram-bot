@@ -253,7 +253,7 @@ the file.")
 
 (defmethod initialize-instance :after ((message file-message)
                                        &key data file-attribute-name file-class &allow-other-keys)
-  (when data
+  (when (and data file-attribute-name file-class)
     (setf (slot-value message 'file)
           (make-instance file-class :data (getf data file-attribute-name)))))
 
@@ -301,7 +301,7 @@ the file.")
           ((getf data :|audio|) '(audio-message :|audio| audio))
           ((getf data :|animation|) '(animation-message :|animation| animation))
           ((getf data :|document|) '(document-message :|document| document))
-          ((getf data :|photo|) '(photo-message :|photo| photo))
+          ((getf data :|photo|) '(photo-message))
           ((getf data :|sticker|) '(sticker-message :|sticker| sticker))
           ((getf data :|video|) '(video-message :|video| video))
           ((getf data :|video-note|) '(video-note-message :|video_note| vide-note))
