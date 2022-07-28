@@ -251,11 +251,14 @@ the file.")
   ((file :initarg :file
          :reader get-file)))
 
+(defmethod set-file ((message file-message) data &key file-attribute-name file-class &allow-other-keys)
+  (setf (slot-value message 'file)
+        (make-instance file-class :data (getf data file-attribute-name))))
+
 (defmethod initialize-instance :after ((message file-message)
                                        &key data file-attribute-name file-class &allow-other-keys)
-  (when (and data file-attribute-name file-class)
-    (setf (slot-value message 'file)
-          (make-instance file-class :data (getf data file-attribute-name)))))
+  (when data
+    (set-file message data :file-class file-class :file-attribute-name file-attribute-name)))
 
 (defclass audio-message (file-message) ())
 
@@ -268,13 +271,11 @@ the file.")
     :initarg :photo-options
     :reader get-photo-options)))
 
-(defmethod initialize-instance :after ((message photo-message)
-                                       &key data &allow-other-keys)
-  (when data
-    (setf (slot-value message 'photo-options) (mapcar (lambda (option)
-                                                        (make-instance 'photo :data option))
-                                                      (getf data :|photo|))
-          (slot-value message 'file) (alexandria:lastcar (slot-value message 'photo-options)))))
+(defmethod set-file ((message photo-message) data &key &allow-other-keys)
+  (setf (slot-value message 'photo-options) (mapcar
+                                             (lambda (option) (make-instance 'photo :data option))
+                                             (getf data :|photo|))
+        (slot-value message 'file) (alexandria:lastcar (slot-value message 'photo-options))))
 
 (defclass sticker-message (file-message) ())
 
