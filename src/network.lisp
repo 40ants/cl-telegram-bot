@@ -17,17 +17,24 @@
              (format stream "Request error: ~A" (what condition)))))
 
 
-(defun make-request (bot name options &key (streamp nil) (timeout 3))
+(defun make-request (bot name &rest options &key (streamp nil) (timeout 3) &allow-other-keys)
   "Perform HTTP request to 'name API method with 'options JSON-encoded object."
   (let ((url (concatenate 'string (get-endpoint bot) name)))
     (log:debug "Posting data to"
                (obfuscate url)
                options)
     (let* ((max-timeout (* timeout 10))
+           (processed-options (loop for (key value)
+                                      on (alexandria:remove-from-plistf options :timeout :streamp)
+                                        by 'cddr
+                                    when value
+                                      collect (kebab:to-snake-case key)
+                                      and
+                                        collect value))
            (response
              (dexador:post url
                            :headers '(("Content-Type" . "application/json"))
-                           :content (jonathan:to-json options)
+                           :content (jonathan:to-json processed-options)
                            :read-timeout max-timeout
                            :connect-timeout max-timeout))
            (data (jonathan:parse response)))

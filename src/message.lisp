@@ -322,31 +322,24 @@ the file.")
             (get-chat message))))
 
 
-(defun send-message (bot chat text &key
-                                     parse-mode
-                                     disable-web-page-preview
-                                     disable-notification
-                                     reply-to-message-id
-                                     reply-markup)
+(defun send-message (bot chat text
+                     &rest options
+                     &key parse-mode
+                       disable-web-page-preview
+                       disable-notification
+                       reply-to-message-id
+                       reply-markup)
   "https://core.telegram.org/bots/api#sendmessage"
+  (declare (ignorable parse-mode disable-web-page-preview disable-notification
+                      reply-to-message-id reply-markup))
   (log:debug "Sending message" chat text)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|text| ,text)
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-web-page-preview
-             `(:disable_web_page_preview ,disable-web-page-preview))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id)))))
-    (make-request bot "sendMessage" options)))
+  (apply #'make-request bot "sendMessage"
+         :|chat_id| (get-chat-id chat)
+         :|text| text
+         options))
 
 (defmethod send-photo (bot chat (photo string)
+                       &rest options
                        &key caption parse-mode caption-entities
                          disable-notification protect-content reply-to-message-id
                          allow-sending-without-reply reply-markup)
@@ -355,48 +348,31 @@ the file.")
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendphoto"
+  (declare (ignorable caption parse-mode caption-entities
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending photo" chat photo)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|photo| ,photo)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendPhoto" options)))
+  (apply #'make-request bot "sendPhoto"
+         :|chat_id| (get-chat-id chat)
+         :|photo| photo
+         options))
 
 (defmethod send-photo (bot chat (photo photo)
+                       &rest options
                        &key caption parse-mode caption-entities
                          disable-notification protect-content reply-to-message-id
                          allow-sending-without-reply reply-markup)
   "A method for photo sending based on photo object.
 
 https://core.telegram.org/bots/api#sendphoto"
+  (declare (ignorable caption parse-mode caption-entities
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending photo" chat (get-file-name photo))
-  (send-photo bot chat (get-file-id photo)
-              :caption caption
-              :parse-mode parse-mode
-              :caption-entities caption-entities
-              :disable-notification disable-notification
-              :protect-content protect-content
-              :reply-to-message-id reply-to-message-id
-              :allow-sending-without-reply allow-sending-without-reply
-              :reply-markup reply-markup))
+  (apply #'send-photo bot chat (get-file-id photo) options))
 
 (defmethod send-audio (bot chat (audio string)
+                       &rest options
                        &key caption parse-mode caption-entities
                          duration performer title thumb
                          disable-notification protect-content reply-to-message-id
@@ -406,38 +382,18 @@ https://core.telegram.org/bots/api#sendphoto"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendaudio"
+  (declare (ignorable caption parse-mode caption-entities
+                      duration performer title thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending audio" chat audio)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|audio| ,audio)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when duration
-             `(:|duration| ,duration))
-           (when performer
-             `(:|performer| ,performer))
-           (when title
-             `(:|title| ,title))
-           (when thumb
-             `(:|thumb| ,thumb))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendAudio" options)))
+  (apply #'make-request bot "sendAudio"
+         :|chat_id| (get-chat-id chat)
+         :|audio| audio
+         options))
 
 (defmethod send-audio (bot chat (audio audio)
+                       &rest options
                        &key caption parse-mode caption-entities
                          duration performer title thumb
                          disable-notification protect-content reply-to-message-id
@@ -445,21 +401,14 @@ https://core.telegram.org/bots/api#sendaudio"
   "A method for audio sending based on audio object.
 
 https://core.telegram.org/bots/api#sendaudio"
-  (send-audio bot chat (get-file-id audio)
-              :caption caption
-              :parse-mode parse-mode
-              :caption-entities caption-entities
-              :duration duration
-              :performer performer
-              :title title
-              :thumb thumb
-              :disable-notification disable-notification
-              :protect-content protect-content
-              :reply-to-message-id reply-to-message-id
-              :allow-sending-without-reply allow-sending-without-reply
-              :reply-markup reply-markup))
+  (declare (ignorable caption parse-mode caption-entities
+                      duration performer title thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-audio bot chat (get-file-id audio) options))
 
 (defmethod send-document (bot chat (document string)
+                          &rest options
                           &key caption parse-mode caption-entities
                             disable-content-type-detection thumb
                             disable-notification protect-content reply-to-message-id
@@ -469,54 +418,33 @@ https://core.telegram.org/bots/api#sendaudio"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#senddocument"
+  (declare (ignorable caption parse-mode caption-entities
+                      disable-content-type-detection thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending document" chat document)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|document| ,document)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when disable-content-type-detection
-             `(:|disable_content_type_detection| ,disable-content-type-detection))
-           (when thumb
-             `(:|thumb| ,thumb))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendDocument" options)))
+  (apply #'make-request bot "sendDocument"
+         :|chat_id| (get-chat-id chat)
+         :|document| document
+         options))
 
 (defmethod send-document (bot chat (document document)
-                       &key caption parse-mode caption-entities
-                         disable-content-type-detection thumb
-                         disable-notification protect-content reply-to-message-id
-                         allow-sending-without-reply reply-markup)
+                          &rest options
+                          &key caption parse-mode caption-entities
+                            disable-content-type-detection thumb
+                            disable-notification protect-content reply-to-message-id
+                            allow-sending-without-reply reply-markup)
   "A method for document sending based on document object.
 
 https://core.telegram.org/bots/api#senddocument"
-  (send-document bot chat (get-file-id document)
-                 :caption caption
-                 :parse-mode parse-mode
-                 :caption-entities caption-entities
-                 :disable-content-type-detection disable-content-type-detection
-                 :thumb thumb
-                 :disable-notification disable-notification
-                 :protect-content protect-content
-                 :reply-to-message-id reply-to-message-id
-                 :allow-sending-without-reply allow-sending-without-reply
-                 :reply-markup reply-markup))
+  (declare (ignorable caption parse-mode caption-entities
+                      disable-content-type-detection thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-document bot chat (get-file-id document) options))
 
 (defmethod send-video (bot chat (video string)
+                       &rest options
                        &key caption parse-mode caption-entities
                          duration width height thumb
                          disable-notification protect-content reply-to-message-id
@@ -526,38 +454,18 @@ https://core.telegram.org/bots/api#senddocument"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendvideo"
+  (declare (ignorable caption parse-mode caption-entities
+                      duration width height thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending video" chat video)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|video| ,video)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when duration
-             `(:|duration| ,duration))
-           (when height
-             `(:|height| ,height))
-           (when width
-             `(:|width| ,width))
-           (when thumb
-             `(:|thumb| ,thumb))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendVideo" options)))
+  (apply #'make-request bot "sendVideo"
+         :|chat_id| (get-chat-id chat)
+         :|video| video
+         options))
 
 (defmethod send-video (bot chat (video video)
+                       &rest options
                        &key caption parse-mode caption-entities
                          duration width height thumb
                          disable-notification protect-content reply-to-message-id
@@ -565,21 +473,14 @@ https://core.telegram.org/bots/api#sendvideo"
   "A method for video sending based on video object.
 
 https://core.telegram.org/bots/api#sendvideo"
-  (send-video bot chat (get-file-id video)
-              :caption caption
-              :parse-mode parse-mode
-              :caption-entities caption-entities
-              :duration duration
-              :width width
-              :height height
-              :thumb thumb
-              :disable-notification disable-notification
-              :protect-content protect-content
-              :reply-to-message-id reply-to-message-id
-              :allow-sending-without-reply allow-sending-without-reply
-              :reply-markup reply-markup))
+  (declare (ignorable caption parse-mode caption-entities
+                      duration width height thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-video bot chat (get-file-id video) options))
 
 (defmethod send-animation (bot chat (animation string)
+                           &rest options
                            &key caption parse-mode caption-entities
                              duration width height thumb
                              disable-notification protect-content reply-to-message-id
@@ -589,38 +490,18 @@ https://core.telegram.org/bots/api#sendvideo"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendanimation"
+  (declare (ignorable caption parse-mode caption-entities
+                      duration width height thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending animation" chat animation)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|animation| ,animation)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when duration
-             `(:|duration| ,duration))
-           (when height
-             `(:|height| ,height))
-           (when width
-             `(:|width| ,width))
-           (when thumb
-             `(:|thumb| ,thumb))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendAnimation" options)))
+  (apply #'make-request bot "sendAnimation"
+         :|chat_id| (get-chat-id chat)
+         :|animation| animation
+         options))
 
 (defmethod send-animation (bot chat (animation animation)
+                           &rest options
                            &key caption parse-mode caption-entities
                              duration width height thumb
                              disable-notification protect-content reply-to-message-id
@@ -628,21 +509,14 @@ https://core.telegram.org/bots/api#sendanimation"
   "A method for animation sending based on animation object.
 
 https://core.telegram.org/bots/api#sendanimation"
-  (send-video bot chat (get-file-id animation)
-              :caption caption
-              :parse-mode parse-mode
-              :caption-entities caption-entities
-              :duration duration
-              :width width
-              :height height
-              :thumb thumb
-              :disable-notification disable-notification
-              :protect-content protect-content
-              :reply-to-message-id reply-to-message-id
-              :allow-sending-without-reply allow-sending-without-reply
-              :reply-markup reply-markup))
+  (declare (ignorable caption parse-mode caption-entities
+                      duration width height thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-video bot chat (get-file-id animation) options))
 
 (defmethod send-video-note (bot chat (video-note string)
+                            &rest options
                             &key caption parse-mode caption-entities
                               duration length thumb
                               disable-notification protect-content reply-to-message-id
@@ -652,36 +526,18 @@ https://core.telegram.org/bots/api#sendanimation"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendvideonote"
+  (declare (ignorable caption parse-mode caption-entities
+                      duration length thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending video note" chat video-note)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|video_note| ,video-note)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when duration
-             `(:|duration| ,duration))
-           (when length
-             `(:|length| ,length))
-           (when thumb
-             `(:|thumb| ,thumb))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendVideoNote" options)))
+  (apply #'make-request bot "sendVideoNote"
+         :|chat_id| (get-chat-id chat)
+         :|video_note| video-note
+         options))
 
 (defmethod send-video-note (bot chat (video-note video-note)
+                            &rest options
                             &key caption parse-mode caption-entities
                               duration length thumb
                               disable-notification protect-content reply-to-message-id
@@ -689,20 +545,14 @@ https://core.telegram.org/bots/api#sendvideonote"
   "A method for video note sending based on video-note object.
 
 https://core.telegram.org/bots/api#sendvideonote"
-  (send-video-note bot chat (get-file-id video-note)
-                   :caption caption
-                   :parse-mode parse-mode
-                   :caption-entities caption-entities
-                   :duration duration
-                   :length length
-                   :thumb thumb
-                   :disable-notification disable-notification
-                   :protect-content protect-content
-                   :reply-to-message-id reply-to-message-id
-                   :allow-sending-without-reply allow-sending-without-reply
-                   :reply-markup reply-markup))
+  (declare (ignorable caption parse-mode caption-entities
+                      duration length thumb
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-video-note bot chat (get-file-id video-note) options))
 
 (defmethod send-voice (bot chat (voice string)
+                       &rest options
                        &key caption parse-mode caption-entities
                          duration
                          disable-notification protect-content reply-to-message-id
@@ -712,32 +562,18 @@ https://core.telegram.org/bots/api#sendvideonote"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendvoice"
+  (declare (ignorable caption parse-mode caption-entities
+                      duration
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending voice" chat voice)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|voice| ,voice)
-           (when caption
-             `(:|caption| ,caption))
-           (when caption-entities
-             `(:|caption_entities| ,caption-entities))
-           (when duration
-             `(:|duration| ,duration))
-           (when parse-mode
-             `(:|parse_mode| ,parse-mode))
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendVoice" options)))
+  (apply #'make-request bot "sendVoice"
+         :|chat_id| (get-chat-id chat)
+         :|voice| voice
+         options))
 
 (defmethod send-voice (bot chat (voice voice)
+                       &rest options
                        &key caption parse-mode caption-entities
                          duration
                          disable-notification protect-content reply-to-message-id
@@ -745,18 +581,14 @@ https://core.telegram.org/bots/api#sendvoice"
   "A method for voice sending based on voice object.
 
 https://core.telegram.org/bots/api#sendvoice"
-  (send-voice bot chat (get-file-id voice)
-              :caption caption
-              :parse-mode parse-mode
-              :caption-entities caption-entities
-              :duration duration
-              :disable-notification disable-notification
-              :protect-content protect-content
-              :reply-to-message-id reply-to-message-id
-              :allow-sending-without-reply allow-sending-without-reply
-              :reply-markup reply-markup))
+  (declare (ignorable caption parse-mode caption-entities
+                      duration
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-voice bot chat (get-file-id voice) options))
 
 (defmethod send-sticker (bot chat (sticker string)
+                         &rest options
                          &key disable-notification protect-content reply-to-message-id
                            allow-sending-without-reply reply-markup)
   "A method for sticker sending based on ID.
@@ -764,35 +596,24 @@ https://core.telegram.org/bots/api#sendvoice"
 The file-based method does not work yet.
 
 https://core.telegram.org/bots/api#sendsticker"
+  (declare (ignorable disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
   (log:debug "Sending sticker" chat sticker)
-  (let ((options
-          (append
-           `(:|chat_id| ,(get-chat-id chat)
-              :|sticker| ,sticker)
-           (when disable-notification
-             `(:disable_notification ,disable-notification))
-           (when protect-content
-             `(:|protect_content| ,protect-content))
-           (when reply-to-message-id
-             `(:reply_to_message_id ,reply-to-message-id))
-           (when allow-sending-without-reply
-             `(:|allow_sending_without_reply| ,allow-sending-without-reply))
-           (when reply-markup
-             `(:|reply_markup| ,reply-markup)))))
-    (make-request bot "sendSticker" options)))
+  (apply #'make-request bot "sendSticker"
+         :|chat_id| (get-chat-id chat)
+         :|sticker| sticker
+         options))
 
 (defmethod send-sticker (bot chat (sticker sticker)
+                         &rest options
                          &key disable-notification protect-content reply-to-message-id
                            allow-sending-without-reply reply-markup)
   "A method for sticker sending based on sticker object.
 
 https://core.telegram.org/bots/api#sendsticker"
-  (send-sticker bot chat (get-file-id sticker)
-                :disable-notification disable-notification
-                :protect-content protect-content
-                :reply-to-message-id reply-to-message-id
-                :allow-sending-without-reply allow-sending-without-reply
-                :reply-markup reply-markup))
+  (declare (ignorable disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (apply #'send-sticker bot chat (get-file-id sticker) options))
 
 
 
@@ -826,7 +647,7 @@ https://core.telegram.org/bots/api#sendsticker"
                        :|message_id| (get-message-id message))
                  (when disable-notification
                    (list :|disable_notification| t)))))
-    (make-request bot "forwardMessage" options)))
+    (apply #'make-request bot "forwardMessage" options)))
 
 ;; TODO: refactor
 
@@ -864,10 +685,9 @@ https://core.telegram.org/bots/api#sendsticker"
 
 (defun delete-message (bot chat message)
   "https://core.telegram.org/bots/api#deletemessage"
-  (let ((options
-          (list :|chat_id| (get-chat-id chat)
-                :|message_id| (get-message-id message))))
-    (make-request bot "deleteMessage" options)))
+  (make-request bot "deleteMessage"
+                :|chat_id| (get-chat-id chat)
+                :|message_id| (get-message-id message)))
 
 
 (define-condition reply-immediately ()

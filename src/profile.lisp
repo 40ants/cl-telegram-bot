@@ -12,4 +12,4 @@
           (cons :user_id user-id))))
     (when offset (nconc options `((:offset . ,offset))))
     (when limit (nconc options `((:limit . ,limit))))
-    (make-request b "getUserProfilePhotos" options)))
+    (apply #'make-request b "getUserProfilePhotos" options)))

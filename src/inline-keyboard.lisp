@@ -12,5 +12,5 @@
     (when text (nconc options `((:text . ,text))))
     (when show-alert (nconc options `((:show_alert . ,show-alert))))
     (when url (nconc options `((:url . ,url))))
-    (make-request b "answerCallbackQuery" options)))
+    (apply #'make-request b "answerCallbackQuery" options)))
 
