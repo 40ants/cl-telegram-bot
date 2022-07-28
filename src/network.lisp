@@ -25,7 +25,7 @@
                options)
     (let* ((max-timeout (* timeout 10))
            (processed-options (loop for (key value)
-                                      on (alexandria:remove-from-plistf options :timeout :streamp)
+                                      on (alexandria:remove-from-plist options :timeout :streamp)
                                         by 'cddr
                                     when value
                                       collect (kebab:to-snake-case key)
