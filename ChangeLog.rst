@@ -5,8 +5,10 @@
 0.3.2 (2022-07-10)
 ==================
 
+* Change the parameters of ``make-request`` to allow passing request parameters straight into it.
 * Add ``id`` slot to ``message``; add ``forward-message``, ``delete-message`` functions reliant on ``id``.
-* Add more ``message`` types: ``reply``, ``forwarded``.
+* Add more ``message`` types: ``reply``, ``video-message``, ``document-message`` and other media message types.
+* Add ``send-*`` media-sending message types.
 * Add more ``chat`` types: ``group``, ``supergroup``, and ``channel``.
 
 0.3.1 (2020-01-04)

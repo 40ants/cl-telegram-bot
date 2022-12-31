@@ -29,7 +29,7 @@
     (when disable-notification (nconc options `((:disable_notification . ,disable-notification))))
     (when reply-to-message-id (nconc options `((:reply_to_message_id . ,reply-to-message-id))))
     (when reply-markup (nconc options `((:reply_markup . ,reply-markup))))
-    (make-request b "sendInvoice" options)))
+    (apply #'make-request b "sendInvoice" options)))
 
 
 (defun answer-shipping-query (b shipping-query-id ok &key shipping-options error-message)
@@ -40,7 +40,7 @@
           (cons :ok ok))))
     (when shipping-options (nconc options `((:shipping_options . ,shipping-options))))
     (when error-message (nconc options `((:error_message . ,error-message))))
-    (make-request b "answerShippingQuery" options)))
+    (apply #'make-request b "answerShippingQuery" options)))
 
 
 (defun answer-pre-checkout-query (b pre-checkout-query-id ok &key error-message)
@@ -50,4 +50,4 @@
           (cons :pre_checkout_query_id pre-checkout-query-id)
           (cons :ok ok))))
     (when error-message (nconc options `((:error_message . ,error-message))))
-    (make-request b "answerPreCheckoutQuery" options)))
+    (apply #'make-request b "answerPreCheckoutQuery" options)))

@@ -47,9 +47,9 @@
   "https://core.telegram.org/bots/api#getupdates"
   (let* ((current-id (get-last-update-id bot))
          (results (make-request bot "getUpdates"
-                                (list :|offset| current-id
-                                      :|limit| limit
-                                      :|timeout| timeout)
+                                :|offset| current-id
+                                :|limit| limit
+                                :|timeout| timeout
                                 :streamp t
                                 :timeout timeout)))
     
