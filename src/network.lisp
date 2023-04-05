@@ -26,6 +26,8 @@
 
 (defun make-request (bot name &rest options &key (streamp nil) (timeout 3) &allow-other-keys)
   "Perform HTTP request to 'name API method with 'options JSON-encoded object."
+  (declare (ignore streamp))
+
   (let ((url (concatenate 'string (get-endpoint bot) name)))
     (log:debug "Posting data to"
                (obfuscate url)
@@ -33,7 +35,7 @@
     (let* ((max-timeout (* timeout 10))
            (processed-options (loop for (key value)
                                       on (alexandria:remove-from-plist options :timeout :streamp)
-                                        by 'cddr
+                                        by #'cddr
                                     when value
                                       collect (kebab:to-snake-case key)
                                       and
