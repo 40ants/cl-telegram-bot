@@ -11,12 +11,10 @@
    #:set-proxy))
 (in-package cl-telegram-bot/network)
 
-(defparameter *proxyp* nil)
-(defparameter *proxy* "")
+(defvar *proxy* nil)
 
 (defun set-proxy (proxy)
-  (setf *proxy* proxy)
-  (setf *proxyp* t))
+  (setf *proxy* proxy))
 
 (define-condition request-error (error)
   ((what :initarg :what :reader what))
@@ -41,18 +39,18 @@
                                       and
                                         collect value))
            (response
-             (if *proxyp*
+             (if *proxy*
                  (dexador:post url
-                           :headers '(("Content-Type" . "application/json"))
-                           :content (jonathan:to-json processed-options)
-                           :read-timeout max-timeout
-                           :connect-timeout max-timeout
-                           :proxy *proxy*)
+                               :headers '(("Content-Type" . "application/json"))
+                               :content (jonathan:to-json processed-options)
+                               :read-timeout max-timeout
+                               :connect-timeout max-timeout
+                               :proxy *proxy*)
                  (dexador:post url
-                           :headers '(("Content-Type" . "application/json"))
-                           :content (jonathan:to-json processed-options)
-                           :read-timeout max-timeout
-                           :connect-timeout max-timeout)))
+                               :headers '(("Content-Type" . "application/json"))
+                               :content (jonathan:to-json processed-options)
+                               :read-timeout max-timeout
+                               :connect-timeout max-timeout)))
            (data (jonathan:parse response)))
       (unless (getf data :|ok|)
         (log:error "Wrong data received from the server" data)
