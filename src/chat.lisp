@@ -125,7 +125,7 @@
                    (find-class
                     (cond
                       ((string-equal type "group") 'group)
-                      ((string-equal type "supergroup") 'supergroup)
+                      ((string-equal type "supergroup") 'super-group)
                       ((string-equal type "channel") 'channel)
                       (t 'private-chat))))))
       (make-instance class :data data))))
