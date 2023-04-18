@@ -1,5 +1,4 @@
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-40README-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29">
-</a>
+<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-40README-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
 # cl-telegram-bot - Telegram Bot API, based on sovietspaceship's work but mostly rewritten.
 
