@@ -3,7 +3,7 @@
   "on": {
     "push": {
       "branches": [
-        "master"
+        "clos-everywhere"
       ]
     },
     "pull_request": null,
