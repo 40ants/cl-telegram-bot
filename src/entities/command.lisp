@@ -20,7 +20,7 @@
 
 
 (defclass bot-command (entity)
-  ((command :type :keyword
+  ((command :type keyword
             :initarg :command
             :reader get-command)
    (rest-text :type string
