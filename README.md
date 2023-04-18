@@ -6,7 +6,7 @@
 
 ## CL-TELEGRAM-BOT ASDF System Details
 
-* Version: 0.1.0
+* Version: 0.3.2
 
 * Description: Telegram Bot `API`, based on sovietspaceship's work but mostly rewritten.
 
