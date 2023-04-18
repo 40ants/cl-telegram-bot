@@ -1,0 +1,24 @@
+;;; -*- Mode: common-lisp; -*-
+(:api-version "0.4")
+
+(:source "quicklisp"
+ :url "https://beta.quicklisp.org/dist/quicklisp.txt"
+ :type :quicklisp)
+
+;; Don't move abover quicklisp before this issue
+;; will be resolved:
+;; https://github.com/ultralisp/ultralisp/issues/197
+(:source "ultralisp"
+ :url "https://clpi.ultralisp.org/"
+ :type :clpi)
+
+;; Does not work because https://dist.ultralisp.org/ultralisp-versions.txt is missing
+;; (:source "ultralisp"
+;;  :url "https://dist.ultralisp.org/ultralisp.txt"
+;;  :type :quicklisp)
+
+(:asd "cl-telegram-bot.asd")
+(:asd "cl-telegram-bot-tests.asd")
+(:asd "cl-telegram-bot-ci.asd")
+(:asd "cl-telegram-bot-docs.asd")
+

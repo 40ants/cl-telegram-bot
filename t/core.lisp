@@ -1,7 +1,5 @@
-(defpackage #:cl-telegram-bot-tests/tests
-  (:use #:cl
-        #:rove
-        #:cl-arrows)
+(uiop:define-package #:cl-telegram-bot-tests/core
+  (:use #:cl)
   (:import-from #:cl-telegram-bot/message
                 #:get-entities
                 #:get-text
@@ -13,8 +11,12 @@
   (:import-from #:cl-telegram-bot/entities/command
                 #:get-rest-text
                 #:get-command
-                #:bot-command))
-(in-package cl-telegram-bot-tests/tests)
+                #:bot-command)
+  (:import-from #:rove
+                #:ok
+                #:deftest))
+(in-package #:cl-telegram-bot-tests/core)
+
 
 (deftest convert-message-into-the-object
   (let* ((data '(:|message|
