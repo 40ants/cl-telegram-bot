@@ -1,4 +1,4 @@
-(defpackage #:cl-telegram-bot/telegram-call
+(uiop:define-package #:cl-telegram-bot/telegram-call
   (:use #:cl)
   (:import-from #:arrows
                 #:->)
@@ -11,9 +11,7 @@
                 #:ensure-symbol
                 #:make-keyword)
   (:import-from #:kebab
-                #:to-camel-case)
-  (:export
-   #:response))
+                #:to-camel-case))
 (in-package cl-telegram-bot/telegram-call)
 
 

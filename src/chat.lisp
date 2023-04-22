@@ -1,4 +1,4 @@
-(defpackage #:cl-telegram-bot/chat
+(uiop:define-package #:cl-telegram-bot/chat
   (:use #:cl)
   (:import-from #:closer-mop
                 #:class-slots
@@ -12,34 +12,42 @@
                 #:response)
   (:import-from #:alexandria
                 #:ensure-symbol)
-  (:export
-   #:get-raw-data
-   #:get-chat-id
-   #:get-username
-   #:get-first-name
-   #:get-last-name
-   #:chat
-   #:private-chat
-   #:group
-   #:supergroup
-   #:channel
-   #:get-chat-by-id
-   #:export-chat-invite-link
-   #:promote-chat-member
-   #:restrict-chat-member
-   #:unban-chat-member
-   #:kick-chat-member
-   #:set-chat-title
-   #:delete-chat-photo
-   #:set-chat-photo
-   #:set-chat-description
-   #:pin-chat-message
-   #:unpin-chat-message
-   #:leave-chat
-   #:get-chat-administrators
-   #:get-chat-members-count
-   #:get-chat-member
-   #:send-chat-action))
+  (:export #:get-raw-data
+           #:get-chat-id
+           #:get-username
+           #:get-first-name
+           #:get-last-name
+           #:chat
+           #:private-chat
+           #:group
+           #:super-group
+           #:channel
+           #:get-chat-by-id
+           #:export-chat-invite-link
+           #:promote-chat-member
+           #:restrict-chat-member
+           #:unban-chat-member
+           #:kick-chat-member
+           #:set-chat-title
+           #:delete-chat-photo
+           #:set-chat-photo
+           #:set-chat-description
+           #:pin-chat-message
+           #:unpin-chat-message
+           #:leave-chat
+           #:get-chat-administrators
+           #:get-chat-members-count
+           #:get-chat-member
+           #:send-chat-action
+           #:get-has-private-forwards
+           #:get-bio
+           #:get-message-auto-delete-time
+           #:get-has-protected-content
+           #:get-sticker-set-name
+           #:get-slow-mode-delay
+           #:get-join-by-request
+           #:get-join-to-send-messages
+           #:get-can-set-sticker-set))
 (in-package cl-telegram-bot/chat)
 
 
@@ -102,6 +110,7 @@
 
 (defclass group (base-group)
   ())
+
 
 (defclass super-group (base-group)
   ((join-to-send-messages :initarg :join-to-send-messages

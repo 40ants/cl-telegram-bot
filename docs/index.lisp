@@ -13,6 +13,8 @@
                 #:@changelog)
   (:import-from #:docs-config
                 #:docs-config)
+  (:import-from #:40ants-doc/autodoc
+                #:defautodoc)
   (:export #:@index
            #:@readme
            #:@changelog))
@@ -32,12 +34,15 @@
   
   (list :theme
         (find-symbol "40ANTS-THEME"
-                     (find-package "40ANTS-DOC-THEME-40ANTS"))))
+                     (find-package "40ANTS-DOC-THEME-40ANTS"))
+        :full-package-names nil))
 
 
-(defsection @index (:title "cl-telegram-bot - Telegram Bot API, based on sovietspaceship's work but mostly rewritten."
+(defsection @index (:title "cl-telegram-bot - Telegram Bot API"
                     :ignore-words ("JSON"
                                    "HTTP"
+                                   "HTTPS"
+                                   "MIME"
                                    "TODO"
                                    "MIT"
                                    "API"
@@ -52,6 +57,7 @@
 "
   (@installation section)
   (@quickstart section)
+  (@api section)
   (@credits section))
 
 
@@ -142,3 +148,6 @@ And start communicating with him:
 * [Rei](https://github.com/sovietspaceship) – initial version.
 * [Alexander Artemenko](https://github.com/svetlyak40wt) – large refactoring, usage of CLOS classes, etc.
 ")
+
+
+(defautodoc @api (:system :cl-telegram-bot))
