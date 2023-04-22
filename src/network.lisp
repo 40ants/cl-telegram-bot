@@ -8,7 +8,8 @@
   (:export
    #:make-request
    #:request-error
-   #:set-proxy))
+   #:set-proxy
+   #:what))
 (in-package cl-telegram-bot/network)
 
 (defvar *proxy* nil)
@@ -17,7 +18,8 @@
   (setf *proxy* proxy))
 
 (define-condition request-error (error)
-  ((what :initarg :what :reader what))
+  ((what :initarg :what
+         :reader what))
   (:report (lambda (condition stream)
              (format stream "Request error: ~A" (what condition)))))
 

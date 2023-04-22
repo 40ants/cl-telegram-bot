@@ -1,4 +1,4 @@
-(defpackage #:cl-telegram-bot/update
+(uiop:define-package #:cl-telegram-bot/update
   (:use #:cl)
   (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/message
@@ -10,12 +10,12 @@
                 #:bot)
   (:import-from #:cl-telegram-bot/pipeline
                 #:process)
-  (:export
-   #:make-update
-   #:get-message
-   #:get-raw-data
-   #:get-update-id
-   #:process-updates))
+  (:export #:make-update
+           #:get-raw-data
+           #:get-update-id
+           #:process-updates
+           #:update
+           #:get-payload))
 (in-package cl-telegram-bot/update)
 
 

@@ -1,4 +1,4 @@
-(defpackage #:cl-telegram-bot/utils
+(uiop:define-package #:cl-telegram-bot/utils
   (:use #:cl)
   (:import-from #:arrows
                 #:->)
@@ -9,10 +9,8 @@
   (:import-from #:kebab
                 #:to-snake-case)
 
-  (:export
-   #:make-keyword
-   #:obfuscate
-   #:def-telegram-call))
+  (:export #:make-keyword
+           #:obfuscate))
 (in-package cl-telegram-bot/utils)
 
 

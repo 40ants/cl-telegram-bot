@@ -1,4 +1,4 @@
-(defpackage #:cl-telegram-bot/message
+(uiop:define-package #:cl-telegram-bot/message
   (:use #:cl)
   (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/chat
@@ -17,67 +17,70 @@
                 #:defvar-unbound)
   (:import-from #:cl-telegram-bot/utils
                 #:def-telegram-call)
-  (:export
-   #:send-message
-   #:send-photo
-   #:send-audio
-   #:send-document
-   #:send-video
-   #:send-animation
-   #:send-video-note
-   #:send-voice
-   #:send-sticker
-   #:delete-message
-   #:forward-message
-   #:make-message
-   #:get-text
-   #:get-caption
-   #:get-raw-data
-   #:get-chat
-   #:get-entities
-   #:get-forward-from
-   #:get-forward-from-chat
-   #:get-forward-sender-name
-   #:message
-   #:get-reply-to-message
-   #:reply
-   #:get-duration
-   #:get-length
-   #:get-width
-   #:get-height
-   #:get-file-id
-   #:get-file-unique-id
-   #:get-file-name
-   #:get-file-size
-   #:get-mime-type
-   #:on-message
-   #:get-current-chat
-   #:get-performer
-   #:get-title
-   #:get-is-animation
-   #:get-is-video
-   #:get-emoji
-   #:get-set-name
-   #:get-file
-   #:file-message
-   #:file
-   #:animation-message
-   #:animation
-   #:audio-message
-   #:audio
-   #:get-photo-options
-   #:photo-message
-   #:photo
-   #:document-message
-   #:document
-   #:video-message
-   #:video
-   #:video-note-message
-   #:video-note
-   #:voice-message
-   #:voice
-   #:sticker-message
-   #:sticker))
+  (:export #:send-message
+           #:send-photo
+           #:send-audio
+           #:send-document
+           #:send-video
+           #:send-animation
+           #:send-video-note
+           #:send-voice
+           #:send-sticker
+           #:delete-message
+           #:forward-message
+           #:make-message
+           #:get-text
+           #:get-caption
+           #:get-raw-data
+           #:get-chat
+           #:get-entities
+           #:get-forward-from
+           #:get-forward-from-chat
+           #:get-forward-sender-name
+           #:message
+           #:get-reply-to-message
+           #:reply
+           #:get-duration
+           #:get-length
+           #:get-width
+           #:get-height
+           #:get-file-id
+           #:get-file-unique-id
+           #:get-file-name
+           #:get-file-size
+           #:get-mime-type
+           #:on-message
+           #:get-current-chat
+           #:get-performer
+           #:get-title
+           #:get-is-animated
+           #:get-is-video
+           #:get-emoji
+           #:get-set-name
+           #:get-file
+           #:file-message
+           #:file
+           #:animation-message
+           #:animation
+           #:audio-message
+           #:audio
+           #:get-photo-options
+           #:photo-message
+           #:photo
+           #:document-message
+           #:document
+           #:video-message
+           #:video
+           #:video-note-message
+           #:video-note
+           #:voice-message
+           #:voice
+           #:sticker-message
+           #:sticker
+           #:unispatial
+           #:spatial
+           #:temporal
+           #:get-message-id))
 (in-package cl-telegram-bot/message)
 
 
@@ -339,6 +342,12 @@ the file.")
          :|text| text
          options))
 
+(defgeneric send-photo (bot chat photo
+                       &rest options
+                       &key caption parse-mode caption-entities
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup))
+
 (defmethod send-photo (bot chat (photo string)
                        &rest options
                        &key caption parse-mode caption-entities
@@ -393,6 +402,13 @@ https://core.telegram.org/bots/api#sendaudio"
          :|audio| audio
          options))
 
+(defgeneric send-audio (bot chat audio
+                       &rest options
+                       &key caption parse-mode caption-entities
+                         duration performer title thumb
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup))
+
 (defmethod send-audio (bot chat (audio audio)
                        &rest options
                        &key caption parse-mode caption-entities
@@ -428,6 +444,13 @@ https://core.telegram.org/bots/api#senddocument"
          :|chat_id| (get-chat-id chat)
          :|document| document
          options))
+
+(defgeneric send-document (bot chat document
+                          &rest options
+                          &key caption parse-mode caption-entities
+                            disable-content-type-detection thumb
+                            disable-notification protect-content reply-to-message-id
+                            allow-sending-without-reply reply-markup))
 
 (defmethod send-document (bot chat (document document)
                           &rest options
@@ -465,6 +488,13 @@ https://core.telegram.org/bots/api#sendvideo"
          :|video| video
          options))
 
+(defgeneric send-video (bot chat video
+                       &rest options
+                       &key caption parse-mode caption-entities
+                         duration width height thumb
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup))
+
 (defmethod send-video (bot chat (video video)
                        &rest options
                        &key caption parse-mode caption-entities
@@ -501,6 +531,14 @@ https://core.telegram.org/bots/api#sendanimation"
          :|animation| animation
          options))
 
+(defgeneric send-animation (bot chat animation
+                           &rest options
+                           &key caption parse-mode caption-entities
+                             duration width height thumb
+                             disable-notification protect-content reply-to-message-id
+                             allow-sending-without-reply reply-markup)
+  (:documentation "Sends animation to a chat."))
+
 (defmethod send-animation (bot chat (animation animation)
                            &rest options
                            &key caption parse-mode caption-entities
@@ -515,6 +553,13 @@ https://core.telegram.org/bots/api#sendanimation"
                       disable-notification protect-content reply-to-message-id
                       allow-sending-without-reply reply-markup))
   (apply #'send-video bot chat (get-file-id animation) options))
+
+(defgeneric send-video-note (bot chat video-note
+                            &rest options
+                            &key caption parse-mode caption-entities
+                              duration length thumb
+                              disable-notification protect-content reply-to-message-id
+                              allow-sending-without-reply reply-markup))
 
 (defmethod send-video-note (bot chat (video-note string)
                             &rest options
@@ -552,6 +597,13 @@ https://core.telegram.org/bots/api#sendvideonote"
                       allow-sending-without-reply reply-markup))
   (apply #'send-video-note bot chat (get-file-id video-note) options))
 
+(defgeneric send-voice (bot chat voice
+                       &rest options
+                       &key caption parse-mode caption-entities
+                         duration
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup))
+
 (defmethod send-voice (bot chat (voice string)
                        &rest options
                        &key caption parse-mode caption-entities
@@ -587,6 +639,12 @@ https://core.telegram.org/bots/api#sendvoice"
                       disable-notification protect-content reply-to-message-id
                       allow-sending-without-reply reply-markup))
   (apply #'send-voice bot chat (get-file-id voice) options))
+
+(defgeneric send-sticker (bot chat sticker
+                          &rest options
+                          &key disable-notification protect-content reply-to-message-id
+                            allow-sending-without-reply reply-markup)
+  (:documentation "A function to send sticker."))
 
 (defmethod send-sticker (bot chat (sticker string)
                          &rest options
