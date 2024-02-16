@@ -355,8 +355,6 @@ the file.")
                          allow-sending-without-reply reply-markup)
   "A method for photo sending based on photo ID.
 
-The file-based method does not work yet.
-
 https://core.telegram.org/bots/api#sendphoto"
   (declare (ignorable caption parse-mode caption-entities
                       disable-notification protect-content reply-to-message-id
@@ -380,6 +378,24 @@ https://core.telegram.org/bots/api#sendphoto"
                       allow-sending-without-reply reply-markup))
   (log:debug "Sending photo" chat (get-file-name photo))
   (apply #'send-photo bot chat (get-file-id photo) options))
+
+(defmethod send-photo (bot chat (photo pathname)
+                       &rest options
+                       &key caption parse-mode caption-entities
+                         disable-notification protect-content reply-to-message-id
+                         allow-sending-without-reply reply-markup)
+  "A method for photo sending based on pathname.
+
+https://core.telegram.org/bots/api#sendphoto"
+  (declare (ignorable caption parse-mode caption-entities
+                      disable-notification protect-content reply-to-message-id
+                      allow-sending-without-reply reply-markup))
+  (log:debug "Sending photo" chat photo)
+  (apply #'make-request bot "sendPhoto"
+         :|chat_id| (get-chat-id chat)
+         :|photo| photo
+	 :pathname-p t
+         options))
 
 (defmethod send-audio (bot chat (audio string)
                        &rest options
