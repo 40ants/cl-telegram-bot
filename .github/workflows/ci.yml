@@ -20,7 +20,7 @@
         "matrix": {
           "lisp": [
             "sbcl-bin",
-            "ccl-bin/1.12.0"
+            "ccl-bin"
           ]
         }
       },
