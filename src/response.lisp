@@ -23,7 +23,8 @@
            #:alert
            #:response
            #:url-to-open
-           #:rest-args))
+           #:rest-args
+           #:response-with-text))
 (in-package #:cl-telegram-bot/response)
 
 
