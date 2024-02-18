@@ -3,13 +3,15 @@
   (:import-from #:log4cl)
   (:import-from #:dexador)
   (:import-from #:jonathan)
-  (:export #:bot
-           #:get-last-update-id
+  (:export #:api-uri
+           #:bot
+           #:debug-mode
            #:defbot
-           #:token
            #:file-endpoint
-           #:api-uri
-           #:get-endpoint))
+           #:get-endpoint
+           #:get-last-update-id
+           #:token
+           #:sent-commands-cache))
 
 (in-package cl-telegram-bot/bot)
 
@@ -36,7 +38,18 @@
     :initarg :file-endpoint
     :accessor file-endpoint
     :documentation "HTTPS file-endpoint"
-    :initform nil)))
+    :initform nil)
+   (debug-mode
+    :initform nil
+    :initarg :debug-mode
+    :accessor debug-mode
+    :documentation "When debug mode is T, then interactive debugger will be called on each error.")
+   (sent-commands-cache :initform nil
+                        :documentation "Command processing code will use this cache to update commands list on the server
+                                        when a new method for CL-TELEGRAM-BOT/ENTITIES/COMMAND:ON-COMMAND generic-function is defined.
+
+                                        This slot is for internal use."
+                        :accessor sent-commands-cache)))
 
 
 (defmacro defbot (name)

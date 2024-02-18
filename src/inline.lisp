@@ -4,11 +4,12 @@
 
 
 (defun answer-inline-query (b inline-query-id results &key cache-time is-personal next-offset switch-pm-text)
-  "https://core.telegram.org/bots/api#answerinlinequery"
+  "https://core.telegram.org/bots/api#answerinlinequery
+   https://core.telegram.org/bots/inline"
   (let ((options
-         (list
-          (cons :inline_query_id inline-query-id)
-          (cons :results results))))
+          (list
+           (cons :inline_query_id inline-query-id)
+           (cons :results results))))
     (when cache-time (nconc options `((:cache_time . ,cache-time))))
     (when is-personal (nconc options `((:is_personal . ,is-personal))))
     (when next-offset (nconc options `((:next_offset . ,next-offset))))

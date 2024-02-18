@@ -2,6 +2,7 @@
   (:use #:cl)
   (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/message
+                #:*current-bot*
                 #:make-message)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
@@ -10,6 +11,8 @@
                 #:bot)
   (:import-from #:cl-telegram-bot/pipeline
                 #:process)
+  (:import-from #:cl-telegram-bot/callback
+                #:make-callback)
   (:export #:make-update
            #:get-raw-data
            #:get-update-id
@@ -28,19 +31,40 @@
              :reader get-raw-data)))
 
 
+(defclass callback-query (update)
+  ())
+
+
 (defun make-update (data)
-  (let ((message-data (getf data :|message|)))
-    (if message-data
-        (make-instance 'update
-                       :id (getf data :|update_id|)
-                       :payload (make-message message-data)
-                       :raw-data data)
-        (progn (log:warn "Received not supported update"
-                         data)
-               (make-instance 'update
-                              :id (getf data :|update_id|)
-                              :payload nil
-                              :raw-data data)))))
+  (cond
+    ((getf data :|message|)
+     (let ((message-data (getf data :|message|)))
+       (make-instance 'update
+                      :id (getf data :|update_id|)
+                      :payload (make-message message-data)
+                      :raw-data data)))
+    ((getf data :|callback_query|)
+     (let* ((callback-data (getf data :|callback_query|))
+            ;; (callback-id (getf query :|id|))
+            ;; (callback-data (getf query :|data|))
+            ;; (message-data (getf query :|message|))
+            )
+       (make-instance 'callback-query
+                      :id (getf data :|update_id|)
+                      :payload (make-callback *current-bot*
+                                              callback-data
+                                              ;; callback-id
+                                              ;; callback-data
+                                              ;; (make-message message-data)
+                                              )
+                      :raw-data data)))
+    (t
+     (log:warn "Received not supported update"
+               data)
+     (make-instance 'update
+                    :id (getf data :|update_id|)
+                    :payload nil
+                    :raw-data data))))
 
 
 (defun get-updates (bot &key limit timeout)
@@ -76,7 +100,7 @@
 
 (defmethod process-updates ((bot t))
   "Starts inifinite loop to process updates using long polling."
-  (loop
+  (loop with *current-bot* = bot
     do (loop for update in (restart-case
                                (get-updates bot
                                             :timeout 10)

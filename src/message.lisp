@@ -17,70 +17,74 @@
                 #:defvar-unbound)
   (:import-from #:cl-telegram-bot/utils
                 #:def-telegram-call)
-  (:export #:send-message
-           #:send-photo
-           #:send-audio
-           #:send-document
-           #:send-video
-           #:send-animation
-           #:send-video-note
-           #:send-voice
-           #:send-sticker
+  (:import-from #:cl-telegram-bot/response-processing
+                #:process-response
+                #:interrupt-processing)
+  (:export #:animation
+           #:animation-message
+           #:audio
+           #:audio-message
            #:delete-message
+           #:document
+           #:document-message
+           #:file
+           #:file-message
            #:forward-message
-           #:make-message
-           #:get-text
            #:get-caption
-           #:get-raw-data
            #:get-chat
+           #:get-current-chat
+           #:get-current-message
+           #:get-duration
+           #:get-emoji
            #:get-entities
+           #:get-file
+           #:get-file-id
+           #:get-file-name
+           #:get-file-size
+           #:get-file-unique-id
            #:get-forward-from
            #:get-forward-from-chat
            #:get-forward-sender-name
-           #:message
-           #:get-reply-to-message
-           #:reply
-           #:get-duration
-           #:get-length
-           #:get-width
            #:get-height
-           #:get-file-id
-           #:get-file-unique-id
-           #:get-file-name
-           #:get-file-size
-           #:get-mime-type
-           #:on-message
-           #:get-current-chat
-           #:get-performer
-           #:get-title
            #:get-is-animated
            #:get-is-video
-           #:get-emoji
-           #:get-set-name
-           #:get-file
-           #:file-message
-           #:file
-           #:animation-message
-           #:animation
-           #:audio-message
-           #:audio
+           #:get-length
+           #:get-message-id
+           #:get-mime-type
+           #:get-performer
            #:get-photo-options
-           #:photo-message
+           #:get-raw-data
+           #:get-reply-to-message
+           #:get-set-name
+           #:get-text
+           #:get-title
+           #:get-width
+           #:make-message
+           #:message
+           #:on-message
            #:photo
-           #:document-message
-           #:document
-           #:video-message
-           #:video
-           #:video-note-message
-           #:video-note
-           #:voice-message
-           #:voice
-           #:sticker-message
-           #:sticker
-           #:unispatial
+           #:photo-message
+           #:reply
+           #:send-animation
+           #:send-audio
+           #:send-document
+           #:send-message
+           #:send-photo
+           #:send-sticker
+           #:send-video
+           #:send-video-note
+           #:send-voice
            #:spatial
+           #:sticker
+           #:sticker-message
            #:temporal
-           #:get-message-id))
+           #:unispatial
+           #:video
+           #:video-message
+           #:video-note
+           #:video-note-message
+           #:voice
+           #:voice-message))
 (in-package cl-telegram-bot/message)
 
 
@@ -288,14 +292,17 @@ the file.")
 
 (defclass voice-message (file-message) ())
 
+
 (defclass reply (message)
   ((reply-to-message :initarg :reply-to-message
                      :reader get-reply-to-message)))
+
 
 (defmethod initialize-instance :after ((reply reply) &key data &allow-other-keys)
   (when data
     (setf (slot-value reply 'reply-to-message)
           (make-message (getf data :|reply_to_message|)))))
+
 
 (defun make-message (data)
   (when data
@@ -338,7 +345,10 @@ the file.")
                       reply-to-message-id reply-markup))
   (log:debug "Sending message" chat text)
   (apply #'make-request bot "sendMessage"
-         :|chat_id| (get-chat-id chat)
+         :|chat_id| (typecase chat
+                      (string chat)
+                      (t
+                       (get-chat-id chat)))
          :|text| text
          options))
 
@@ -749,38 +759,6 @@ https://core.telegram.org/bots/api#sendsticker"
                 :|message_id| (get-message-id message)))
 
 
-(define-condition reply-immediately ()
-  ((text :initarg :text
-         :reader get-text)
-   (args :initarg :args
-         :reader get-rest-args)))
-
-
-(defun reply (text
-              &rest args
-              &key
-                parse-mode
-                disable-web-page-preview
-                disable-notification
-                reply-to-message-id
-                reply-markup)
-  (declare (ignorable parse-mode
-                      disable-web-page-preview
-                      disable-notification
-                      reply-to-message-id
-                      reply-markup))
-  "Works like a send-message, but only when an incoming message is processed.
-   Automatically sends reply to a chat from where current message came from."
-  (unless (and (boundp '*current-bot*)
-               (boundp '*current-message*))
-    (error "Seems (reply ~S) was called outside of processing pipeline, because no current message is available."
-           text))
-
-  (signal 'reply-immediately
-          :text text
-          :args args))
-
-
 (defgeneric on-message (bot text)
   (:documentation "This method gets called with raw text from the message.
                    By default it does nothing."))
@@ -811,14 +789,17 @@ https://core.telegram.org/bots/api#sendsticker"
 
                (on-message bot
                            (get-text message)))
-      (reply-immediately (condition)
-        (log:debug "Replying to" *current-message*)
-        (apply #'send-message
-               *current-bot*
-               (get-chat *current-message*)
-               (get-text condition)
-               (get-rest-args condition)))))
+      (interrupt-processing (condition)
+        (declare (ignore condition))
+        (log:debug "Interrupting processing of message"))))
   (values))
+
+
+(defun get-current-message ()
+  "Returns currently processed message."
+  (unless (boundp '*current-message*)
+    (error "Seems (get-current-message) was called outside of processing pipeline, because no current message is available."))
+  (values *current-message*))
 
 
 (defun get-current-chat ()
