@@ -1,5 +1,7 @@
 (defpackage #:cl-telegram-bot/network
   (:use #:cl)
+  (:import-from #:alexandria)
+  (:import-from #:dexador)
   (:import-from #:log4cl)
   (:import-from #:cl-telegram-bot/utils
                 #:obfuscate)
@@ -25,9 +27,8 @@
 
 
 (defun make-request (bot name &rest options &key (streamp nil) (timeout 3) &allow-other-keys)
-  "Perform HTTP request to 'name API method with 'options JSON-encoded object."
   (declare (ignore streamp))
-
+  "Perform HTTP request to 'name API method with 'options JSON-encoded object."
   (let ((url (concatenate 'string (get-endpoint bot) name)))
     (log:debug "Posting data to"
                (obfuscate url)

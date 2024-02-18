@@ -9,7 +9,35 @@
                               "ASDF"
                               "API"
                               "REPL"
+                              "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
+  (0.5.0 2024-02-18
+         "
+Added
+=====
+
+* Now bot can be started in debug mode. When this mode is on, then interactive debugger will pop up on errors.
+* If bot defines some commands implementing CL-TELEGRAM-BOT/ENTITIES/COMMAND:ON-COMMAND generic-function, then
+  these commands will be reported to the telegram server automatically and it will show the to user when he
+  starts text with `/`.
+* Added support for buttons with callbacks. To define a callback, implement a method for
+  CL-TELEGRAM-BOT/CALLBACK:ON-CALLBACK generic-function. After that, you can construct an inline keyboard
+  using CL-TELEGRAM-BOT/INLINE-KEYBOARD:INLINE-KEYBOARD function and CL-TELEGRAM-BOT/INLINE-KEYBOARD:CALLBACK-BUTTON function.
+  This keyboard object can be supplied as :REPLY-MARKUP argument to CL-TELEGRAM-BOT/RESPONSE:REPLY function.
+* New functions CL-TELEGRAM-BOT/RESPONSE:ALERT and CL-TELEGRAM-BOT/RESPONSE:NOTIFY were added. An example usage of these functions
+  along with inline keyboard was added to `example/bot.lisp`.
+* Function CL-TELEGRAM-BOT/RESPONSE-PROCESSING:INTERRUPT-PROCESSING was added in case if you want to interrupt processing of
+  current message and skip the rest of the handler.
+* Function CL-TELEGRAM-BOT/MESSAGE:GET-CURRENT-MESSAGE was added.
+* Function CL-TELEGRAM-BOT/MESSAGE:GET-CURRENT-CHAT was added.
+
+Removed
+=======
+
+* Function CL-TELEGRAM-BOT/MESSAGE:REPLY was removed and replaced with CL-TELEGRAM-BOT/RESPONSE:REPLY function.
+  Previously it interrupted the processing flow and you only was able to reply once. With the new function
+  you can respond with different pieces, for example to show user a image and text with inline keyboard.
+")
   (0.4.0 2023-04-22
          "
 * Changed a lot of imports some symbols not bound to functions were removed, some readers and accessors are exported.
