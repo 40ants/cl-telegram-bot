@@ -23,20 +23,18 @@
   (:report (lambda (condition stream)
              (format stream "Request error: ~A" (what condition)))))
 
-(defun process-options (&rest options &key (pathname-p nil) &allow-other-keys)
-  (loop for (key value)
-          on (alexandria:remove-from-plist options :timeout :streamp :pathname-p)
-	by #'cddr
-	when value
-	  if pathname-p
-	    collect (cons (kebab:to-snake-case key) value)
-	else
-	  collect (kebab:to-snake-case key)
-	  and
-            collect value))
+(defun process-options (options return-alist-p)
+  "Process request options, returning alist if required"
+  (let* ((options (alexandria:remove-from-plist options :timeout :streamp))
+	 (sanitized-options (loop for (key value) on options by #'cddr
+				  when value
+				    collect (kebab:to-snake-case key)
+				    and collect value)))
+    (if return-alist-p
+	(alexandria:plist-alist sanitized-options)
+	sanitized-options)))
 
-
-(defun make-request (bot name &rest options &key (streamp nil) (timeout 3) (pathname-p nil) &allow-other-keys)
+(defun make-request (bot name &rest options &key (streamp nil) (timeout 3) &allow-other-keys)
   "Perform HTTP request to 'name API method with 'options JSON-encoded object or multi-part form-data."
   (declare (ignore streamp))
 
@@ -45,11 +43,14 @@
                (obfuscate url)
                options)
     (let* ((max-timeout (* timeout 10))
-           (processed-options (apply #'process-options options))
+	   (multipart-required (find-if #'pathnamep options))
+           (processed-options (process-options options multipart-required))
            (response
              (dexador:post url
-                           :headers (unless pathname-p '(("Content-Type" . "application/json")))
-                           :content (if pathname-p processed-options (jonathan:to-json processed-options))
+                           :headers (unless multipart-required '(("Content-Type" . "application/json")))
+                           :content (if multipart-required
+					processed-options
+					(jonathan:to-json processed-options))
                            :read-timeout max-timeout
                            :connect-timeout max-timeout
                            :proxy (if *proxy* *proxy* dex:*default-proxy*)))

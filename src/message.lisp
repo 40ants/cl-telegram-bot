@@ -394,7 +394,6 @@ https://core.telegram.org/bots/api#sendphoto"
   (apply #'make-request bot "sendPhoto"
          :|chat_id| (get-chat-id chat)
          :|photo| photo
-	 :pathname-p t
          options))
 
 (defmethod send-audio (bot chat (audio string)
