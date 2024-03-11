@@ -33,13 +33,14 @@
       "steps": [
         {
           "name": "Checkout Code",
-          "uses": "actions/checkout@v3"
+          "uses": "actions/checkout@v4"
         },
         {
           "name": "Setup Common Lisp Environment",
-          "uses": "40ants/setup-lisp@v3",
+          "uses": "40ants/setup-lisp@v4",
           "with": {
-            "asdf-system": "cl-telegram-bot"
+            "asdf-system": "cl-telegram-bot",
+            "cache": "true"
           }
         },
         {
