@@ -11,9 +11,9 @@
            #:get-endpoint
            #:get-last-update-id
            #:token
-           #:sent-commands-cache))
-
-(in-package cl-telegram-bot/bot)
+           #:sent-commands-cache
+           #:bot-info))
+(in-package #:cl-telegram-bot/bot)
 
 
 (defclass bot ()
@@ -39,6 +39,9 @@
     :accessor file-endpoint
     :documentation "HTTPS file-endpoint"
     :initform nil)
+   (bot-info :initform nil
+             :documentation "This slot will be filled with CL-TELEGRAM-BOT/USER:USER object on first access using a call to GET-ME generic-function."
+             :reader bot-info)
    (debug-mode
     :initform nil
     :initarg :debug-mode
@@ -52,10 +55,11 @@
                         :accessor sent-commands-cache)))
 
 
-(defmacro defbot (name)
+(defmacro defbot (name &optional slots options)
   `(progn
      (defclass ,name (bot)
-       ())
+       ,slots
+       ,@options)
 
      (defun ,(alexandria:symbolicate 'make- name) (token &rest args)
        (apply 'make-instance
@@ -79,5 +83,3 @@
       (bot stream :type t)
     (format stream
             "id=~A" (get-last-update-id bot))))
-
-

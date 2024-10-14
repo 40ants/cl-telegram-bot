@@ -11,6 +11,15 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
+  (0.6.0 2024-07-07
+         "
+Changed
+=======
+
+* CL-TELEGRAM-BOT/CHAT:GET-CHAT generic-function is now exported from cl-telegram-bot/chat package instead of cl-telegram-bot/message.
+  Also, now it is applicable to updates, and other objects which can be associated with a chat.
+
+")
   (0.5.0 2024-02-18
          "
 Added

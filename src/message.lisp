@@ -4,8 +4,9 @@
   (:import-from #:cl-telegram-bot/chat
                 #:get-chat-id
                 #:make-chat
-                #:chat)
-  (:import-from #:cl-telegram-bot/entities/core
+                #:chat
+                #:get-chat)
+  (:import-from #:cl-telegram-bot/entities/generic
                 #:make-entity)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
@@ -16,10 +17,13 @@
   (:import-from #:serapeum
                 #:defvar-unbound)
   (:import-from #:cl-telegram-bot/utils
+                #:split-by-lines
                 #:def-telegram-call)
   (:import-from #:cl-telegram-bot/response-processing
                 #:process-response
                 #:interrupt-processing)
+  (:import-from #:alexandria
+                #:remove-from-plistf)
   (:export #:animation
            #:animation-message
            #:audio
@@ -31,7 +35,6 @@
            #:file-message
            #:forward-message
            #:get-caption
-           #:get-chat
            #:get-current-chat
            #:get-current-message
            #:get-duration
@@ -84,7 +87,9 @@
            #:video-note
            #:video-note-message
            #:voice
-           #:voice-message))
+           #:voice-message
+           #:get-sender-chat
+           #:get-current-bot))
 (in-package cl-telegram-bot/message)
 
 
@@ -115,6 +120,10 @@
              :reader get-entities)
    (raw-data :initarg :raw-data
              :reader get-raw-data)
+   (sender-chat :initarg :sender-chat
+                :type (or null chat)
+                :reader get-sender-chat
+                :documentation "Sender of the message, sent on behalf of a chat. For example, the channel itself for channel posts, the supergroup itself for messages from anonymous group administrators, the linked channel for messages automatically forwarded to the discussion group.")
    (forward-from :initarg :forward-from
                  :type (or null chat)
                  :reader get-forward-from
@@ -138,6 +147,8 @@ administrators, information about the original sender chat.")))
                                                    (make-entity message item))
                                                  (getf data :|entities|))
           (slot-value message 'raw-data) data
+          (slot-value message 'sender-chat) (when (getf data :|sender_chat|)
+                                              (make-chat (getf data :|sender_chat|)))
           (slot-value message 'forward-from-chat) (when (getf data :|forward_from_chat|)
                                                     (make-chat (getf data :|forward_from_chat|)))
           (slot-value message 'forward-from) (when (getf data :|forward_from|)
@@ -336,27 +347,40 @@ the file.")
 (defun send-message (bot chat text
                      &rest options
                      &key parse-mode
-                       disable-web-page-preview
-                       disable-notification
-                       reply-to-message-id
-                       reply-markup)
+                          disable-web-page-preview
+                          disable-notification
+                          reply-to-message-id
+                          (autosplit nil)
+                          reply-markup)
   "https://core.telegram.org/bots/api#sendmessage"
   (declare (ignorable parse-mode disable-web-page-preview disable-notification
                       reply-to-message-id reply-markup))
   (log:debug "Sending message" chat text)
-  (apply #'make-request bot "sendMessage"
-         :|chat_id| (typecase chat
-                      (string chat)
-                      (t
-                       (get-chat-id chat)))
-         :|text| text
-         options))
+
+  (remove-from-plistf options :autosplit)
+
+  (flet ((send (text)
+           (apply #'make-request bot "sendMessage"
+                  :|chat_id| (typecase chat
+                               (string chat)
+                               (t
+                                (get-chat-id chat)))
+                  :|text| text
+                  options)))
+    (cond
+      ((and (serapeum:length< 4096 text)
+            autosplit)
+       (mapc #'send
+             (split-by-lines text :max-size 4096)))
+      (t
+       (send text)))))
+
 
 (defgeneric send-photo (bot chat photo
-                       &rest options
-                       &key caption parse-mode caption-entities
-                         disable-notification protect-content reply-to-message-id
-                         allow-sending-without-reply reply-markup))
+                        &rest options
+                        &key caption parse-mode caption-entities
+                             disable-notification protect-content reply-to-message-id
+                             allow-sending-without-reply reply-markup))
 
 (defmethod send-photo (bot chat (photo string)
                        &rest options
@@ -793,6 +817,13 @@ https://core.telegram.org/bots/api#sendsticker"
         (declare (ignore condition))
         (log:debug "Interrupting processing of message"))))
   (values))
+
+
+(defun get-current-bot ()
+  "Returns a bot to which message was addressed."
+  (unless (boundp '*current-bot*)
+    (error "Seems (get-current-bot) was called outside of processing pipeline, because no current bot is available."))
+  (values *current-bot*))
 
 
 (defun get-current-message ()

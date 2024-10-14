@@ -21,4 +21,7 @@
 (defmethod process (bot object)
   "By default, processing does nothing"
   (declare (ignorable bot object))
+  (break)
+  (log:warn "No PROCESS method for processing objects of ~A type."
+            (type-of object))
   (values))
