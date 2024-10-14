@@ -57,7 +57,9 @@
                          (make-keyword))
                      value)))
 
-(serapeum:-> split-by-lines (string &key (:max-size positive-fixnum))
+(serapeum:-> split-by-lines (string &key
+                                    (:max-size positive-fixnum)
+                                    (:trim-whitespaces-p boolean))
              (values (soft-list-of string)))
 
 (defun split-by-lines (text &key (max-size 4096) (trim-whitespaces-p t))
