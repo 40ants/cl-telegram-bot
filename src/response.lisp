@@ -86,8 +86,6 @@
     (error "Seems (reply ~S) was called outside of processing pipeline, because no current message is available."
            text))
 
-  ;; (log:error "REPLY called" immediately *reply-immediately*)
-
   (when reply-markup
     (setf (getf args :reply-markup)
           (to-markup reply-markup)))
