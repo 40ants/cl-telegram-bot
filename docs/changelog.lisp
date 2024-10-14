@@ -11,7 +11,7 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
-  (0.6.0 2024-07-07
+  (0.6.0 2024-10-15
          "
 Changed
 =======
