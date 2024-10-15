@@ -2,6 +2,33 @@
 
 # ChangeLog
 
+<a id="x-28CL-TELEGRAM-BOT-DOCS-2FCHANGELOG-3A-3A-7C0-2E6-2E0-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
+
+## 0.6.0 (2024-10-15)
+
+<a id="changed"></a>
+
+### Changed
+
+* [`cl-telegram-bot/chat:get-chat`][9069] generic-function is now exported from cl-telegram-bot/chat package instead of cl-telegram-bot/message.
+  Also, now it is applicable to updates, and other objects which can be associated with a chat.
+* `callback-chat` function was removed from cl-telegram-bot/callback package. Use abovementionned `get-chat` generic-function.
+
+<a id="added"></a>
+
+### Added
+
+* [`cl-telegram-bot/bot:bot-info`][94df] was added to [`cl-telegram-bot/bot:bot`][53e8] class.
+* Macro [`cl-telegram-bot/bot:defbot`][ee67] now accepts optional slots and options like `DEFCLASS` macro does.
+* Class [`cl-telegram-bot/entities/command:bot-command`][f080] now has bot-username slot and [`cl-telegram-bot/entities/command:on-command`][56c0]
+  generic-function is called in a group chat only if the command was addressed to a current bot. Previously, bot was not
+  able to process commands in group chats.
+* Some kinds of messages are wrapped into an envelope class now to distinguish between edited message, channel posts, and edited channel post. These envelope classes are gathered in package cl-telegram-bot/envelope.
+* [`cl-telegram-bot/message:get-sender-chat`][4a23] was added.
+* [`cl-telegram-bot/message:get-current-bot`][1054] function was added.
+* Functions [`cl-telegram-bot/payments:send-invoice`][2b69], [`cl-telegram-bot/payments:answer-shipping-query`][891c] and [`cl-telegram-bot/payments:answer-pre-checkout-query`][2afa] were fixed.
+* Package cl-telegram-bot/user was added with a bunch of classes and functions.
+
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FCHANGELOG-3A-3A-7C0-2E5-2E0-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
 ## 0.5.0 (2024-02-18)
@@ -85,12 +112,22 @@ Project was broken down to subpackages, nicknames `telegram-bot` and
 package-inferred-system class and each file have it's own separate packages.
 
 
+[53e8]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FBOT-3ABOT-20CLASS-29
+[94df]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FBOT-3ABOT-INFO-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29
+[ee67]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FBOT-3ADEFBOT-20-2840ANTS-DOC-2FLOCATIVES-3AMACRO-29-29
 [1b93]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FCALLBACK-3AON-CALLBACK-20GENERIC-FUNCTION-29
+[9069]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-20GENERIC-FUNCTION-29
+[f080]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3ABOT-COMMAND-20CLASS-29
 [56c0]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3AON-COMMAND-20GENERIC-FUNCTION-29
 [734b]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ACALLBACK-BUTTON-20FUNCTION-29
 [35e0]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AINLINE-KEYBOARD-20FUNCTION-29
+[1054]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CURRENT-BOT-20FUNCTION-29
 [e428]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CURRENT-CHAT-20FUNCTION-29
 [4af2]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CURRENT-MESSAGE-20FUNCTION-29
+[4a23]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-SENDER-CHAT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29
+[2afa]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FPAYMENTS-3AANSWER-PRE-CHECKOUT-QUERY-20FUNCTION-29
+[891c]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FPAYMENTS-3AANSWER-SHIPPING-QUERY-20FUNCTION-29
+[2b69]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FPAYMENTS-3ASEND-INVOICE-20FUNCTION-29
 [4b97]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FRESPONSE-3AALERT-20CLASS-29
 [61ac]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FRESPONSE-3AALERT-20FUNCTION-29
 [0817]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FRESPONSE-3ANOTIFY-20CLASS-29
