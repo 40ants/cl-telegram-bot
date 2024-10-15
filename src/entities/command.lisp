@@ -1,9 +1,10 @@
 (uiop:define-package #:cl-telegram-bot/entities/command
   (:use #:cl)
   (:import-from #:log4cl)
-  (:import-from #:cl-telegram-bot/entities/core
-                #:entity
+  (:import-from #:cl-telegram-bot/entities/generic
                 #:make-entity-internal)
+  (:import-from #:cl-telegram-bot/entities/core
+                #:entity)
   (:import-from #:cl-telegram-bot/message
                 #:message
                 #:get-text)
@@ -12,6 +13,7 @@
   (:import-from #:cl-telegram-bot/pipeline
                 #:process)
   (:import-from #:cl-telegram-bot/bot
+                #:bot-info
                 #:bot
                 #:sent-commands-cache)
   (:import-from #:alexandria
@@ -26,8 +28,11 @@
                 #:set-my-commands)
   (:import-from #:str
                 #:replace-all)
+  (:import-from #:cl-telegram-bot/user
+                #:username)
   (:export #:get-command
            #:bot-command
+           #:bot-username
            #:get-rest-text
            #:on-command))
 (in-package #:cl-telegram-bot/entities/command)
@@ -37,6 +42,9 @@
   ((command :type keyword
             :initarg :command
             :reader get-command)
+   (bot-username :type (or null string)
+                 :initarg :bot-username
+                 :reader bot-username)
    (rest-text :type string
               :initarg :rest-text
               :reader get-rest-text)))
@@ -44,20 +52,27 @@
 
 (defmethod make-entity-internal ((entity-type (eql :bot-command))
                                  (payload message) data)
-  (declare (ignorable payload entity-type))
+  (declare (ignorable entity-type))
   (let* ((text (get-text payload))
          (offset (getf data :|offset|))
          (length (getf data :|length|))
-         (command (make-keyword (subseq text
-                                        (+ offset 1)
-                                        (+ offset length))))
+         (command-and-probably-bot-username
+           (subseq text
+                   (+ offset 1)
+                   (+ offset length)))
          (rest-text (string-trim " "
                                  (subseq text
                                          (+ offset length)))))
-    (make-instance 'bot-command
-                   :command command
-                   :rest-text rest-text
-                   :raw-data data)))
+    (destructuring-bind (command &optional bot-username)
+        (str:split #\@ command-and-probably-bot-username
+                   :omit-nulls t
+                   :limit 2)
+      (make-instance 'bot-command
+                     :command (make-keyword command)
+                     :payload payload
+                     :bot-username bot-username
+                     :rest-text rest-text
+                     :raw-data data))))
 
 
 (defgeneric on-command (bot command rest-text)
@@ -129,7 +144,11 @@
       (setf (sent-commands-cache bot)
             (update-commands bot
                              :command-name-to-check command-str-name)))
-    
-    (on-command bot
-                command-name
-                (get-rest-text command))))
+
+    (when (or (null (bot-username command))
+              (string-equal (bot-username command)
+                            (username (bot-info bot))))
+        (on-command bot
+                    command-name
+                    (get-rest-text command)))))
+

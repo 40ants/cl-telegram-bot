@@ -2,7 +2,8 @@
   (:use #:cl)
   (:import-from #:alexandria)
   (:import-from #:dexador)
-  (:import-from #:log4cl)
+  (:import-from #:log)
+  (:import-from #:yason)
   (:import-from #:cl-telegram-bot/utils
                 #:obfuscate)
   (:import-from #:cl-telegram-bot/bot
@@ -12,7 +13,7 @@
    #:request-error
    #:set-proxy
    #:what))
-(in-package cl-telegram-bot/network)
+(in-package #:cl-telegram-bot/network)
 
 (defvar *proxy* nil)
 
@@ -41,19 +42,31 @@
                                       collect (kebab:to-snake-case key)
                                       and
                                         collect value))
+           (encoded-content (jonathan:to-json processed-options))
            (response
              (if *proxy*
                  (dexador:post url
                                :headers '(("Content-Type" . "application/json"))
-                               :content (jonathan:to-json processed-options)
+                               :content encoded-content
                                :read-timeout max-timeout
                                :connect-timeout max-timeout
                                :proxy *proxy*)
-                 (dexador:post url
-                               :headers '(("Content-Type" . "application/json"))
-                               :content (jonathan:to-json processed-options)
-                               :read-timeout max-timeout
-                               :connect-timeout max-timeout)))
+                 (handler-bind ((dexador.error:http-request-too-many-requests
+                                  (lambda (err)
+                                    (let* ((response (dexador:response-body err))
+                                           (data (yason:parse response))
+                                           (sleep-time (or (serapeum:href data "parameters" "retry_after")
+                                                           (progn
+                                                             (log:warn "Unable to get parameters->retry_after from" response)
+                                                             10))))
+                                      (sleep sleep-time)
+                                      (dexador:retry-request err))))
+                                (dexador.error:http-request-bad-gateway #'dexador:retry-request))
+                   (dexador:post url
+                                 :headers '(("Content-Type" . "application/json"))
+                                 :content (jonathan:to-json processed-options)
+                                 :read-timeout max-timeout
+                                 :connect-timeout max-timeout))))
            (data (jonathan:parse response)))
       (unless (getf data :|ok|)
         (log:error "Wrong data received from the server" data)

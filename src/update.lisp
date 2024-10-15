@@ -13,6 +13,20 @@
                 #:process)
   (:import-from #:cl-telegram-bot/callback
                 #:make-callback)
+  (:import-from #:anaphora
+                #:it
+                #:acond)
+  (:import-from #:cl-telegram-bot/envelope
+                #:edited-message
+                #:channel-post
+                #:edited-channel-post)
+  (:import-from #:cl-telegram-bot/chat
+                #:get-chat)
+  (:import-from #:cl-telegram-bot/payments
+                #:make-successful-payment
+                #:make-pre-checkout-query)
+  (:import-from #:cl-telegram-bot/user
+                #:get-user-info)
   (:export #:make-update
            #:get-raw-data
            #:get-update-id
@@ -31,40 +45,41 @@
              :reader get-raw-data)))
 
 
-(defclass callback-query (update)
-  ())
-
-
 (defun make-update (data)
-  (cond
-    ((getf data :|message|)
-     (let ((message-data (getf data :|message|)))
-       (make-instance 'update
-                      :id (getf data :|update_id|)
-                      :payload (make-message message-data)
-                      :raw-data data)))
-    ((getf data :|callback_query|)
-     (let* ((callback-data (getf data :|callback_query|))
-            ;; (callback-id (getf query :|id|))
-            ;; (callback-data (getf query :|data|))
-            ;; (message-data (getf query :|message|))
-            )
-       (make-instance 'callback-query
-                      :id (getf data :|update_id|)
-                      :payload (make-callback *current-bot*
-                                              callback-data
-                                              ;; callback-id
-                                              ;; callback-data
-                                              ;; (make-message message-data)
-                                              )
-                      :raw-data data)))
-    (t
-     (log:warn "Received not supported update"
-               data)
-     (make-instance 'update
-                    :id (getf data :|update_id|)
-                    :payload nil
-                    :raw-data data))))
+  (let ((update-id (getf data :|update_id|))
+        (payload
+          (acond
+            ((getf data :|message|)
+             (cond
+               ((getf it :|successful_payment|))
+               (t
+                (make-message it))))
+            ((getf data :|edited_message|)
+             (make-instance 'edited-message
+                            :message (make-message it)))
+            ((getf data :|channel_post|)
+             (make-instance 'channel-post
+                            :message (make-message it)))
+            ((getf data :|edited_channel_post|)
+             (make-instance 'edited-channel-post
+                            :message (make-message it)))
+            ((getf data :|callback_query|)
+             (make-callback *current-bot*
+                            it))
+            ((getf data :|pre_checkout_query|)
+             (make-pre-checkout-query *current-bot*
+                                      it))
+            ((getf data :|successful_payment|)
+             (make-successful-payment *current-bot*
+                                      it))
+            (t
+             (log:warn "Received not supported update type"
+                       data)
+             nil))))
+    (make-instance 'update
+                   :id update-id
+                   :payload payload
+                   :raw-data data)))
 
 
 (defun get-updates (bot &key limit timeout)
@@ -123,3 +138,12 @@
   (log:debug "Processing update" update)
   (let ((payload (get-payload update)))
     (process bot payload)))
+
+
+
+(defmethod get-chat ((update update))
+  (get-chat (get-payload update)))
+
+
+(defmethod get-user-info ((update update))
+  (get-user-info (get-payload update)))

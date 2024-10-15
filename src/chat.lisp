@@ -47,7 +47,8 @@
            #:get-slow-mode-delay
            #:get-join-by-request
            #:get-join-to-send-messages
-           #:get-can-set-sticker-set))
+           #:get-can-set-sticker-set
+           #:get-chat))
 (in-package cl-telegram-bot/chat)
 
 
@@ -237,3 +238,13 @@
 
 (def-telegram-call send-chat-action (chat action)
   "https://core.telegram.org/bots/api#sendchataction")
+
+
+
+(defgeneric get-chat (obj)
+  (:documentation "Returns a chat associated with object.
+
+                   Object could be a message, update, callback, etc. Should return an object of CHAT class or NIL.
+                   Some types of updates aren't bound to a chat. In this case a method should return NIL.")
+  (:method ((obj t))
+    (values nil)))

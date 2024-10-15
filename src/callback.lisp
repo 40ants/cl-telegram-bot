@@ -2,7 +2,6 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot/message
                 #:message
-                #:get-chat
                 #:*current-message*
                 #:get-rest-args
                 #:get-text
@@ -11,6 +10,7 @@
   (:import-from #:cl-telegram-bot/pipeline
                 #:process)
   (:import-from #:cl-telegram-bot/chat
+                #:get-chat
                 #:get-chat-id)
   (:import-from #:cl-telegram-bot/response-processing
                 #:process-response)
@@ -19,8 +19,7 @@
            #:make-callback
            #:on-callback
            #:callback-id
-           #:callback-message
-           #:callback-chat))
+           #:callback-message))
 (in-package #:cl-telegram-bot/callback)
 
 
@@ -73,8 +72,5 @@
   (values))
 
 
-(defgeneric callback-chat (callback)
-  (:documentation "Returns a chat from where callback was sent.")
-  
-  (:method ((callback callback))
-    (cl-telegram-bot/message:get-chat (callback-message callback))))
+(defmethod get-chat ((callback callback))
+  (get-chat (callback-message callback)))

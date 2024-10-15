@@ -11,3 +11,6 @@
   :pathname "src"
   :depends-on ("cl-telegram-bot/core")
   :in-order-to ((test-op (test-op "cl-telegram-bot-tests"))))
+
+
+(asdf:register-system-packages "log4cl" '("LOG"))

@@ -28,6 +28,11 @@
   (:documentation "Represents an inline keyboard as specified in API https://core.telegram.org/bots/api#inlinekeyboardmarkup."))
 
 
+(defmethod print-object ((obj inline-keyboard) stream)
+  (print-unreadable-object (obj stream :type t)
+    (format stream "~S" (keyboard-rows obj))))
+
+
 (defclass inline-keyboard-button ()
   ((text :initarg :text
          :type string
@@ -35,6 +40,11 @@
   (:documentation "Base class for all inline keyboard buttons.
 
                    API: https://core.telegram.org/bots/api#inlinekeyboardbutton"))
+
+
+(defmethod print-object ((obj inline-keyboard-button) stream)
+  (print-unreadable-object (obj stream :type t)
+    (format stream "~S" (button-text obj))))
 
 
 (defclass callback-button (inline-keyboard-button)

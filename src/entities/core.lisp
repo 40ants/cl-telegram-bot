@@ -1,18 +1,24 @@
-(defpackage #:cl-telegram-bot/entities/core
+(uiop:define-package #:cl-telegram-bot/entities/core
   (:use #:cl)
   (:import-from #:cl-telegram-bot/utils
                 #:make-keyword)
   (:import-from #:arrows
                 #:->)
-  (:nicknames #:cl-telegram-bot/entities)
-  (:export
-   #:make-entity
-   #:make-entity-internal))
+  (:import-from #:cl-telegram-bot/message
+                #:message)
+  (:import-from #:cl-telegram-bot/chat
+                #:get-chat)
+  (:import-from #:cl-telegram-bot/entities/generic
+                #:make-entity-internal)
+  (:nicknames #:cl-telegram-bot/entities))
 (in-package cl-telegram-bot/entities/core)
 
 
 (defclass entity ()
-  ((raw-data :initarg :raw-data
+  ((payload :type message
+            :initarg :payload
+            :reader get-payload)
+   (raw-data :initarg :raw-data
              :reader get-raw-data)))
 
 
@@ -20,23 +26,12 @@
   ())
 
 
-(defgeneric make-entity-internal (entity-type payload data)
-  (:documentation "Extendable protocol to support entities of different kinds.
-                   First argument is a keyword, denoting a type of the entity.
-                   Payload is an object of type `message'.
-                   And data is a plist with data, describing the entity."))
-
-
 (defmethod make-entity-internal (entity-type payload data)
   (declare (ignorable payload entity-type))
   (make-instance 'unsupported-entity
-                 :raw-data data))
+                 :raw-data data
+                 :payload payload))
 
 
-(defun make-entity (payload data)
-  (let ((entity-type (-> data
-                         (getf :|type|)
-                         (make-keyword))))
-    (make-entity-internal entity-type
-                          payload
-                          data)))
+(defmethod get-chat ((command entity))
+  (get-chat (get-payload command)))

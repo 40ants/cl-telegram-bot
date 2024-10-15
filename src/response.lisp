@@ -16,6 +16,9 @@
                 #:answer-callback-query)
   (:import-from #:cl-telegram-bot/markup
                 #:to-markup)
+  (:import-from #:alexandria
+                #:removef
+                #:remove-from-plistf)
   (:export #:response-text
            #:reply
            #:notify
@@ -57,6 +60,9 @@
         :reader url-to-open)))
 
 
+(defvar *reply-immediately* t
+  "This variable will be set to NIL when REPLY function is called inside the async flow. Otherwise flow will hang because of non-local exit from the step.")
+
 
 (defun reply (text
               &rest args
@@ -68,7 +74,7 @@
               disable-notification
               reply-to-message-id
               reply-markup
-              (immediately t))
+              (immediately *reply-immediately*))
   (declare (ignorable parse-mode
                       disable-web-page-preview
                       disable-notification
@@ -83,6 +89,8 @@
   (when reply-markup
     (setf (getf args :reply-markup)
           (to-markup reply-markup)))
+
+  (remove-from-plistf args :immediately)
   
   (process-response *current-bot*
                     *current-message*
