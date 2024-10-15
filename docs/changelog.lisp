@@ -23,15 +23,15 @@ Changed
 Added
 =====
 
-* CL-TELEGRAM-BOT/BOT:BOT-INFO reader was added to CL-TELEGRAM-BOT/BOT:BOT class.
-* CL-TELEGRAM-BOT/BOT:DEFBOT macro now accepts optional slots and options like DEFCLASS macro does.
-* CL-TELEGRAM-BOT/ENTITIES/COMMAND:BOT-COMMAND class now has bot-username slot and CL-TELEGRAM-BOT/ENTITIES/COMMAND:ON-COMMAND
+* CL-TELEGRAM-BOT/BOT:BOT-INFO was added to CL-TELEGRAM-BOT/BOT:BOT class.
+* Macro CL-TELEGRAM-BOT/BOT:DEFBOT now accepts optional slots and options like DEFCLASS macro does.
+* Class CL-TELEGRAM-BOT/ENTITIES/COMMAND:BOT-COMMAND now has bot-username slot and CL-TELEGRAM-BOT/ENTITIES/COMMAND:ON-COMMAND
   generic-function is called in a group chat only if the command was addressed to a current bot. Previously, bot was not
   able to process commands in group chats.
-* Some kinds of messages are wrapped into an envelope class now to distinguish between edited message, channel posts, and edited channel post. These envelope classes are gathered in cl-telegram-bot/envelope package.
-* CL-TELEGRAM-BOT/MESSAGE:GET-SENDER-CHAT reader was added.
+* Some kinds of messages are wrapped into an envelope class now to distinguish between edited message, channel posts, and edited channel post. These envelope classes are gathered in package cl-telegram-bot/envelope.
+* CL-TELEGRAM-BOT/MESSAGE:GET-SENDER-CHAT was added.
 * CL-TELEGRAM-BOT/MESSAGE:GET-CURRENT-BOT function was added.
-* Function CL-TELEGRAM-BOT/PAYMENTS:SEND-INVOICE, CL-TELEGRAM-BOT/PAYMENTS:ANSWER-SHIPPING-QUERY and CL-TELEGRAM-BOT/PAYMENTS:ANSWER-PRE-CHECKOUT-QUERY were fixed.
+* Functions CL-TELEGRAM-BOT/PAYMENTS:SEND-INVOICE, CL-TELEGRAM-BOT/PAYMENTS:ANSWER-SHIPPING-QUERY and CL-TELEGRAM-BOT/PAYMENTS:ANSWER-PRE-CHECKOUT-QUERY were fixed.
 * Package cl-telegram-bot/user was added with a bunch of classes and functions.
 
 ")

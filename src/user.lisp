@@ -12,6 +12,8 @@
   (:export #:user
            #:user-id
            #:username
+           #:is-premium
+           #:language-code
            #:first-name
            #:bot-p
            #:can-connect-to-business-p

@@ -32,6 +32,7 @@
                 #:username)
   (:export #:get-command
            #:bot-command
+           #:bot-username
            #:get-rest-text
            #:on-command))
 (in-package #:cl-telegram-bot/entities/command)

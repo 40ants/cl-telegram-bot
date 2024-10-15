@@ -18,7 +18,9 @@
                 #:bot)
   (:export
    #:on-pre-checkout-query
-   #:answer-pre-checkout-query))
+   #:answer-pre-checkout-query
+   #:send-invoice
+   #:answer-shipping-query))
 (in-package cl-telegram-bot/payments)
 
 

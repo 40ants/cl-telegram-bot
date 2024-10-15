@@ -40,7 +40,7 @@
     :documentation "HTTPS file-endpoint"
     :initform nil)
    (bot-info :initform nil
-             :documentation "This slot will be filled with CL-TELEGRAM-BOT/USER:USER object on first access using a call to GET-ME generic-function."
+             :documentation "This slot will be filled with CL-TELEGRAM-BOT/USER:USER object on first access using a call to CL-TELEGRAM-BOT/USER:GET-ME function."
              :reader bot-info)
    (debug-mode
     :initform nil
@@ -56,6 +56,7 @@
 
 
 (defmacro defbot (name &optional slots options)
+  "Use this macro to define a class of your Telegram bot."
   `(progn
      (defclass ,name (bot)
        ,slots
