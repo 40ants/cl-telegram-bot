@@ -27,6 +27,14 @@
   (values))
 
 
+(defmethod process :around (bot-or-state object)
+  "By default, processing does nothing"
+  (log:error "Calling PROCESS method for processing objects of ~A type by ~A."
+            (type-of object)
+            (type-of bot-or-state))
+  (call-next-method))
+
+
 
 (defgeneric on-state-activation (state)
   (:documentation "This method is called when chat actor's state is changed to a given STATE.
@@ -35,7 +43,12 @@
                    ")
   (:method ((state t))
     "By default, nothing happens on activation."
-    (values)))
+    (values))
+  
+  (:method :around ((state t))
+    (log:error "Calling ON-STATE-ACTIVATION method for processing object of ~A type."
+               (type-of state))
+    (call-next-method)))
 
 
 (defgeneric on-state-deletion (state)
@@ -48,11 +61,23 @@
                    ")
   (:method ((state t))
     "By default, nothing happens on deactivation."
-    (values)))
+    (values))
+
+  (:method :around ((state t))
+    (log:error "Calling ON-STATE-DELETION method for processing object of ~A type."
+               (type-of state))
+    (call-next-method)))
 
 
 (defgeneric on-result (state result)
   (:documentation "This method is called when some state exits and returns a result using BACK function.")
+  
   (:method ((state t) (result t))
     "By default, nothing happens for state processing."
-    (values)))
+    (values))
+
+  (:method :around ((state t) result)
+    (log:error "Calling ON-RESULT method for processing object of ~A type and result ~A."
+               (type-of state)
+               result)
+    (call-next-method)))

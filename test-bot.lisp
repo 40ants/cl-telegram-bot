@@ -40,10 +40,22 @@
   (make-instance 'ask-for-number
                  :prompt "Введите первое число:"))
 
+(defmethod cl-telegram-bot2/generics:on-state-activation ((state calc))
+  (reply "Давай посчитаем!")
+
+  (make-instance 'ask-for-number
+                 :prompt "Введите первое число:"))
+
+
 (defmethod cl-telegram-bot2/generics:on-result ((state calc) (result t))
-  (when result
-    (make-instance 'has-one-number
-                   :first-num result)))
+  (cond
+    (result
+     (make-instance 'has-one-number
+                    :first-num result))
+    ;; Если вернулись без значения, значит уже посчитали и надо начать все сначала.
+    (t
+     (make-instance 'ask-for-number
+                    :prompt "Введите первое число:"))))
 
 
 (defclass has-one-number (chat-state)
@@ -52,7 +64,12 @@
               :accessor first-num)))
 
 
-(defmethod cl-telegram-bot2/generics:process ((state has-one-number) (update cl-telegram-bot2/api:update))
+;; (defmethod cl-telegram-bot2/generics:process ((state has-one-number) (update cl-telegram-bot2/api:update))
+;;   ;; (make-instance 'ask-for-number
+;;   ;;                :prompt "Введите второе число:")
+;;   )
+
+(defmethod cl-telegram-bot2/generics:on-state-activation ((state has-one-number))
   (make-instance 'ask-for-number
                  :prompt "Введите второе число:"))
 
@@ -73,7 +90,16 @@
                :accessor second-num)))
 
 
-(defmethod cl-telegram-bot2/generics:process ((state has-two-numbers) (update cl-telegram-bot2/api:update))
+;; (defmethod cl-telegram-bot2/generics:process ((state has-two-numbers) (update cl-telegram-bot2/api:update))
+;;   ;; (reply (fmt "~A + ~A = ~A"
+;;   ;;             (first-num state)
+;;   ;;             (second-num state)
+;;   ;;             (+ (first-num state)
+;;   ;;                (second-num state))))
+;;   ;; (back-to 'calc)
+;;   )
+
+(defmethod cl-telegram-bot2/generics:on-state-activation ((state has-two-numbers))
   (reply (fmt "~A + ~A = ~A"
               (first-num state)
               (second-num state)
@@ -143,13 +169,18 @@
 
 
 (defmethod cl-telegram-bot2/generics:process ((state ask-for-number) (update cl-telegram-bot2/api:update))
-  (reply "Спасибо за число.")
-  (back (or (ignore-errors
-             (parse-integer
-              (let* ((message (cl-telegram-bot2/api:update-message update))
-                     (text (cl-telegram-bot2/api:message-text message)))
-                text)))
-            1)))
+  (let* ((message (cl-telegram-bot2/api:update-message update))
+         (text (cl-telegram-bot2/api:message-text message))
+         (a-number (ignore-errors
+                    (parse-integer
+                     text))))
+    (cond
+      (a-number
+       (back a-number))
+      (t
+       (reply (fmt "\"~A\" не число. Введи число."
+                   text))
+       (values)))))
 
 
 (defclass ask-for-choice (chat-state)
@@ -180,13 +211,13 @@
   (values))
 
 
-(defmethod cl-telegram-bot2/generics:on-state-deletion ((state ask-for-choice))
-  ;; (when (message-id state)
-  ;;   (let ((chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)))
-  ;;     (ignore-errors
-  ;;      (cl-telegram-bot2/api:delete-message chat-id
-  ;;                                           (message-id state)))))
-  (values))
+;; (defmethod cl-telegram-bot2/generics:on-state-deletion ((state ask-for-choice))
+;;   ;; (when (message-id state)
+;;   ;;   (let ((chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)))
+;;   ;;     (ignore-errors
+;;   ;;      (cl-telegram-bot2/api:delete-message chat-id
+;;   ;;                                           (message-id state)))))
+;;   (values))
 
 
 (defmethod cl-telegram-bot2/generics:process ((state ask-for-choice) (update cl-telegram-bot2/api:update))
@@ -201,7 +232,7 @@
     (cond
       ((and text
             (string-equal text "back"))
-       (reply "Возвращшаетмся к предыдущему состоянию.")
+       (reply "Возвращаемся к предыдущему состоянию.")
        (back))
       (text
        (reply (fmt "Нужно выбрать ответ (text = ~A)."

@@ -83,6 +83,26 @@
                  :state-class state-class
                  :result result))
 
+
+(defgeneric split-stack (back-command state-stack)
+  (:documentation "Should return two values: a list of states to be deleted because we rolled back and a list of states in a new state stack.")
+  
+  (:method ((back-command back) (state-stack list))
+    (let ((new-stack (cdr state-stack))
+          (states-to-delete (list (car state-stack))))
+      (values states-to-delete
+              new-stack)))
+  
+  (:method ((back-command back-to) (state-stack list))
+    (loop with needed-state-class = (state-class back-command)
+          for rest-states on state-stack
+          for current-state = (car rest-states)
+          until (typep current-state
+                       needed-state-class)
+          collect current-state into states-to-delete
+          finally (return (values states-to-delete
+                                  rest-states)))))
+
 ;; (defclass update ()
 ;;   ((id :initarg :id
 ;;        :reader get-update-id)
@@ -263,24 +283,38 @@
                      
                      (cond
                        ((typep new-state 'back)
-                        (let* ((result (result new-state))
-                               (new-stack (cdr *state*))
-                               (state-to-which-return (car new-stack)))
+                        (let* ((result (result new-state)))
+
+                          (multiple-value-bind (states-to-delete new-stack)
+                              (split-stack new-state *state*)
+                            
+                            (unless new-stack
+                              (error "Unexpected behaviour - no states left in the stack."))
+
+                            (let ((state-to-which-return (car new-stack)))
                           
-                          (setf *state*
-                                new-stack)
+                              (setf *state*
+                                    new-stack)
+
+                              (log:error "New state is " (car *state*))
                           
-                          (cl-telegram-bot2/generics:on-state-deletion current-state)
+                              (loop for state-to-delete in states-to-delete
+                                    do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
                           
-                          (let ((on-result-return-value
-                                  (cl-telegram-bot2/generics:on-result state-to-which-return
-                                                                       result)))
-                            (probably-switch-to-new-state on-result-return-value))))
+                              (let ((on-result-return-value
+                                      (cl-telegram-bot2/generics:on-result state-to-which-return
+                                                                           ;; Result might be empty
+                                                                           result)))
+                                (probably-switch-to-new-state on-result-return-value))))))
                        (t
                         (setf *state*
                               (list* new-state
-                                     *state*))))
-                     (on-state-activation new-state)))))
+                                     *state*))
+
+                        (log:error "New state is " (car *state*))
+                        
+                        (probably-switch-to-new-state
+                         (on-state-activation new-state))))))))
         (probably-switch-to-new-state new-state)))
     (values)))
 
