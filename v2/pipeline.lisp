@@ -231,13 +231,16 @@
   "By default, just calls `process' on the payload."
   (log:debug "Processing update" update)
 
+  ;; TODO: remove this debugging code
   (setf *last-update* update)
 
-  (let* ((chat (get-chat update)))
+  (let* ((*token* (cl-telegram-bot2/bot::token bot))
+         (*current-chat* (get-chat update)))
     (cond
-      (chat (let* ((chat-id (cl-telegram-bot2/api:chat-id chat))
-                   (chat-actor (get-or-create-chat-actor bot chat-id)))
-              (sento.actor:ask chat-actor update)))
+      (*current-chat*
+       (let* ((chat-id (cl-telegram-bot2/api:chat-id *current-chat*))
+              (chat-actor (get-or-create-chat-actor bot chat-id)))
+         (sento.actor:ask chat-actor update)))
       (t
        (error "Processing of ~S is not implemented yet"
               update)))))
@@ -257,14 +260,23 @@
                        (sento.actor-context:find-actors
                         system
                         actor-name))
-                      (progn (log:info "Creating new actor with" actor-name)
-                             (sento.actor-context:actor-of
-                              system
-                              :name actor-name
-                              :receive #'local-process-chat-update
-                              :state (list
-                                      (make-instance
-                                       (initial-state-class bot))))))))
+                      (let* ((initial-state (make-instance
+                                             (initial-state-class bot)))
+                             (probably-new-state
+                               (on-state-activation initial-state))
+                             (state-stack
+                               (if (and probably-new-state
+                                        (not (eql initial-state
+                                                  probably-new-state)))
+                                   (list probably-new-state
+                                         initial-state)
+                                   (list initial-state))))
+                        (log:info "Creating new actor with" actor-name)
+                        (sento.actor-context:actor-of
+                         system
+                         :name actor-name
+                         :receive #'local-process-chat-update
+                         :state state-stack)))))
       (values actor))))
 
 

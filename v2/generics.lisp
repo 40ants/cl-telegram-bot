@@ -81,3 +81,11 @@
                (type-of state)
                result)
     (call-next-method)))
+
+
+;; (defgeneric on-command (bot command rest-text)
+;;   (:documentation "This method will be called for each command.
+;;                    First argument is a keyword. If user input was /save_note, then
+;;                    first argument will be :save-note.
+
+;;                    By default, logs call and does nothing."))
