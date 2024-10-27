@@ -31,7 +31,8 @@
   ;; (:import-from #:cl-telegram-bot/user
   ;;               #:get-user-info)
   (:import-from #:cl-telegram-bot2/vars
-                #:*current-bot*)
+                #:*current-bot*
+                #:*current-user*)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-state-activation
                 #:process)
@@ -227,6 +228,43 @@
     ))
 
 
+(defgeneric get-user (object)
+  (:method ((object null))
+    nil)
+  
+  (:method ((object telegram-object))
+    (loop with slots = (closer-mop:class-slots (class-of object))
+          for slot in slots
+          for slot-name = (closer-mop:slot-definition-name slot)
+          thereis (or
+                   (and (string-equal slot-name
+                                      "from")
+                        (subtypep (slot-definition-type slot)
+                                  'cl-telegram-bot2/api:user)
+                        (slot-boundp object
+                                     slot-name)
+                        (slot-value object
+                                    slot-name))
+                   (and (subtypep (slot-definition-type slot)
+                                  'telegram-object)
+                        (slot-boundp object
+                                     slot-name)
+                        (get-user (slot-value object
+                                              slot-name)))))
+    
+    ;; (or (get-chat (cl-telegram-bot2/api:update-message update))
+    ;;     (get-chat (cl-telegram-bot2/api:update-message update))
+    ;;     (get-chat (cl-telegram-bot2/api:update-edited-message update))
+    ;;     (get-chat (cl-telegram-bot2/api:update-callback-query update)))
+    )
+  
+  ;; (:method ((object cl-telegram-bot2/api:chat))
+  ;;   object
+  ;;   ;; (cl-telegram-bot2/api:message-chat object)
+  ;;   )
+  )
+
+
 (defmethod process ((bot bot) (update cl-telegram-bot2/api:update))
   "By default, just calls `process' on the payload."
   (log:debug "Processing update" update)
@@ -235,7 +273,8 @@
   (setf *last-update* update)
 
   (let* ((*token* (cl-telegram-bot2/bot::token bot))
-         (*current-chat* (get-chat update)))
+         (*current-chat* (get-chat update))
+         (*current-user* (get-user update)))
     (cond
       (*current-chat*
        (let* ((chat-id (cl-telegram-bot2/api:chat-id *current-chat*))
@@ -286,6 +325,7 @@
               update)
     (let* ((state-to-process (car *state*))
            (*current-chat* (get-chat update))
+           (*current-user* (get-user update))
            (new-state (process state-to-process update)))
       
       (labels ((probably-switch-to-new-state (new-state)

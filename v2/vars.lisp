@@ -8,8 +8,8 @@
 (defvar-unbound *current-bot*
   "An internal variable to hold current bot for replying.")
 
-;; (defvar-unbound *current-message*
-;;   "An internal variable to hold current message for replying.")
+(defvar-unbound *current-user*
+  "An internal variable to hold current user talking to the bot.")
 
 (defvar-unbound *current-chat*
   "This var will be bound when PROCESS method is called on chat state.")

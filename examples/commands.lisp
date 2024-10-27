@@ -35,10 +35,14 @@
   (cl-telegram-bot2/api:set-my-commands
    (list (make-instance 'cl-telegram-bot2/api:bot-command
                         :command "/next"
-                        :description "Switch to the next state"))
-   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat
+                        :description "Switch to the next state")
+         (make-instance 'cl-telegram-bot2/api:bot-command
+                        :command "/ver4"
+                        :description "Just a test"))
+   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat-member
                          :type "chat"
-                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)))
+                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)
+                         :user-id (cl-telegram-bot2/api:user-id cl-telegram-bot2/vars::*current-user*)))
   (values))
 
 
@@ -47,10 +51,14 @@
   (cl-telegram-bot2/api:set-my-commands
    (list (make-instance 'cl-telegram-bot2/api:bot-command
                         :command "/next"
-                        :description "Switch to the next state"))
-   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat
+                        :description "Switch to the next state")
+         (make-instance 'cl-telegram-bot2/api:bot-command
+                        :command "/ver4"
+                        :description "Just a test"))
+   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat-member
                          :type "chat"
-                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)))
+                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)
+                         :user-id (cl-telegram-bot2/api:user-id cl-telegram-bot2/vars::*current-user*)))
   (values))
 
 
@@ -73,10 +81,14 @@
   (cl-telegram-bot2/api:set-my-commands
    (list (make-instance 'cl-telegram-bot2/api:bot-command
                         :command "/back"
-                        :description "Switch back to the initial state"))
-   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat
+                        :description "Switch back to the initial state")
+         (make-instance 'cl-telegram-bot2/api:bot-command
+                        :command "/ver4"
+                        :description "Just a test"))
+   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat-member
                          :type "chat"
-                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)))
+                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)
+                         :user-id (cl-telegram-bot2/api:user-id cl-telegram-bot2/vars::*current-user*)))
   
   (values))
 
