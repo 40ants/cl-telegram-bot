@@ -4,13 +4,23 @@
 
 
 (defun queue-size (q)
-  (+ (length (sento.queue::queue-head q))
-     (length (sento.queue::queue-tail q))))
+  (etypecase q
+    (sento.queue:queue-bounded
+     (sento.queue:queued-count q))
+    
+    (sento.queue:queue-unbounded
+     (let ((inner-queue (slot-value q
+                                    'sento.queue::queue)))
+       (+ (length (sento.queue::queue-head inner-queue))
+          (length (sento.queue::queue-tail inner-queue)))))))
 
 
-(defun actors-tree (bot)
-  (let* ((system (cl-telegram-bot2/bot::actors-system bot))
-         (actors (append (sento.actor-system::%all-actors system :user)
+(defun bot-actors-info ()
+  (actors-info (cl-telegram-bot2/bot::actors-system bot)))
+
+
+(defun actors-info (system)
+  (let* ((actors (append (sento.actor-system::%all-actors system :user)
                          (sento.actor-system::%all-actors system :internal))))
     (loop for actor in (sort
                         ;; TODO: убедиться что sort ломает внутреннюю структуру
@@ -21,9 +31,8 @@
           for pinned = (typep msgbox 'sento.messageb:message-box/bt)
           for thread = (when pinned
                          (slot-value msgbox 'sento.messageb::queue-thread))
-          for queue = (slot-value (slot-value msgbox
-                                              'sento.messageb::queue)
-                                  'sento.queue::queue)
+          for queue = (slot-value msgbox
+                                  'sento.messageb::queue)
           do (if thread
                  (format t "~A: ~A (~A)~%"
                          (sento.actor-cell:name actor)
@@ -33,5 +42,5 @@
                              "thread died"))
                  (format t "~A: ~A~%"
                          (sento.actor-cell:name actor)
-                         (queue-size queue))))));; 
+                         (queue-size queue)))))) ;; 
 

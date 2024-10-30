@@ -14,95 +14,68 @@
                 #:back-to
                 #:back)
   (:import-from #:cl-telegram-bot2/api
-                #:message-message-id))
+                #:message-message-id)
+  (:import-from #:cl-telegram-bot2/state-with-commands
+                #:command
+                #:state-with-commands-mixin)
+  (:import-from #:cl-telegram-bot2/generics
+                #:on-result
+                #:on-state-activation
+                #:process))
 (in-package #:cl-telegram-bot2-examples/commands)
 
 
-(defclass initial-state ()
-  ())
+(defclass initial-state (state-with-commands-mixin)
+  ()
+  (:default-initargs
+   :commands (list
+              (command "/next" (make-instance 'second-state)
+                       :description "Switch to the next state")
+              (command "/ver7" 'on-ver-command))))
 
 
-(defclass second-state ()
-  ())
+(defclass second-state (state-with-commands-mixin)
+  ()
+  (:default-initargs
+   :commands (list
+              (command "/back" (back-to 'initial-state)
+                       :description "Switch to the prev state")
+              (command "/reverse" (lambda (arg update)
+                                    (declare (ignore update))
+                                    (reply
+                                     (if arg
+                                         (reverse arg)
+                                         "This command requires an argument."))
+                                    ;; It is important to return nothing here to
+                                    ;; stay on the same state.
+                                    (values))
+                       :description "Switch to the prev state")
+              (command "/ver7" 'on-ver-command))))
 
 
-;; CL-TELEGRAM-BOT2-EXAMPLES/COMMANDS> (cl-telegram-bot2/api:message-entities #v62)
-;; (#<CL-TELEGRAM-BOT2/API:MESSAGE-ENTITY  TYPE=bot_command OFFSET=0 LENGTH=5>)
-
-
-(defmethod cl-telegram-bot2/generics:on-state-activation ((state initial-state))
+(defmethod on-state-activation ((state initial-state))
   (reply "Initial state. Give /next command to go to the second state.")
-  (cl-telegram-bot2/api:set-my-commands
-   (list (make-instance 'cl-telegram-bot2/api:bot-command
-                        :command "/next"
-                        :description "Switch to the next state")
-         (make-instance 'cl-telegram-bot2/api:bot-command
-                        :command "/ver4"
-                        :description "Just a test"))
-   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat-member
-                         :type "chat"
-                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)
-                         :user-id (cl-telegram-bot2/api:user-id cl-telegram-bot2/vars::*current-user*)))
   (values))
 
 
-(defmethod cl-telegram-bot2/generics:on-result ((state initial-state) result)
-  (reply "Initial state. Give /next command to go to the second state.")
-  (cl-telegram-bot2/api:set-my-commands
-   (list (make-instance 'cl-telegram-bot2/api:bot-command
-                        :command "/next"
-                        :description "Switch to the next state")
-         (make-instance 'cl-telegram-bot2/api:bot-command
-                        :command "/ver4"
-                        :description "Just a test"))
-   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat-member
-                         :type "chat"
-                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)
-                         :user-id (cl-telegram-bot2/api:user-id cl-telegram-bot2/vars::*current-user*)))
+(defmethod on-result ((state initial-state) result)
+  (reply "Welcom back! Give /next command to go to the second state.")
   (values))
 
 
-(defmethod cl-telegram-bot2/generics:process ((state initial-state) update)
-
-  (let* ((message (cl-telegram-bot2/api:update-message update))
-         (text (when message
-                 (cl-telegram-bot2/api:message-text message))))
-    (cond
-      ((string-equal text "/next")
-       (make-instance 'second-state))
-      (t
-       (reply "Give /next command to go to the second state.")
-       (values)))))
+(defmethod process   ((state initial-state) update)
+  (reply "Give /next command to go to the second state.")
+  (values))
 
 
-(defmethod cl-telegram-bot2/generics:on-state-activation ((state second-state))
+(defmethod on-state-activation ((state second-state))
   (reply "Second state. Give /back command to go to the initial state.")
-  
-  (cl-telegram-bot2/api:set-my-commands
-   (list (make-instance 'cl-telegram-bot2/api:bot-command
-                        :command "/back"
-                        :description "Switch back to the initial state")
-         (make-instance 'cl-telegram-bot2/api:bot-command
-                        :command "/ver4"
-                        :description "Just a test"))
-   :scope (make-instance 'cl-telegram-bot2/api:bot-command-scope-chat-member
-                         :type "chat"
-                         :chat-id (cl-telegram-bot2/api:chat-id cl-telegram-bot2/vars::*current-chat*)
-                         :user-id (cl-telegram-bot2/api:user-id cl-telegram-bot2/vars::*current-user*)))
-  
   (values))
 
 
-(defmethod cl-telegram-bot2/generics:process ((state second-state) update)
-  (let* ((message (cl-telegram-bot2/api:update-message update))
-         (text (when message
-                 (cl-telegram-bot2/api:message-text message))))
-    (cond
-      ((string-equal text "/back")
-       (back-to 'initial-state))
-      (t
-       (reply "Give /back command to go to the initial state.")
-       (values)))))
+(defmethod process ((state second-state) update)
+  (reply "Give /back command to go to the initial state.")
+  (values))
 
 
 (defbot test-bot ()
