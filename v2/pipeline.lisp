@@ -287,7 +287,8 @@
 
 (defun get-or-create-chat-actor (bot chat-id)
   (flet ((local-process-chat-update (update)
-           (let ((*token* (cl-telegram-bot2/bot::token bot))
+           (let ((*current-bot* bot)
+                 (*token* (cl-telegram-bot2/bot::token bot))
                  (*print-readably*
                    ;; bordeaux-threads sets this var to T and this breaks logging
                    ;; our objects. So we have to turn this off.

@@ -56,6 +56,16 @@ Bot token and method name is appended to it")
     "The timeout for telegram requests and waiting on response. Bound per bot thread."))
 
 
+(defparameter *chat-member-status-to-class*
+  (dict
+   "kicked" "chat-member-banned"
+   "left" "chat-member-left"
+   "restricted" "chat-member-restricted"
+   "member" "chat-member-member"
+   "creator" "chat-member-owner"
+   "administrator" "chat-member-administrator"))
+
+
 (-> guess-generic-subclass (symbol hash-table)
     (values (or null symbol) &optional))
 
@@ -69,10 +79,18 @@ Bot token and method name is appended to it")
                        '("chat" "date" "message-id"))
                 "inaccessible-message")
                (t
-                "message"))))))
+                "message")))
+            ((string-equal generic-class "chat-member")
+             (let ((real-class
+                     (gethash (gethash "status" object)
+                              *chat-member-status-to-class*)))
+               (or real-class
+                   (error "Unable to parse generic CHAT-MEMBER with status \"~A\"."
+                          (gethash "status" object))))))))
     (when result
       (values (intern (string-upcase result)
                       (symbol-package generic-class))))))
+
 
 (-> parse-as (symbol t))
 
@@ -96,13 +114,21 @@ Bot token and method name is appended to it")
               (loop with slots = (class-slots (find-class real-class))
                     for (key . value) in (hash-table-alist  object)
                     for name = (string-upcase (substitute #\- #\_ key))
-                    for slot = (find name slots
-                                     :test #'string-equal :key #'slot-definition-name)
-                    collect (make-keyword name)
-                    if (subtypep (slot-definition-type slot) 'telegram-object)
-                      collect (parse-as (slot-definition-type slot) value)
-                    else
-                      collect value)))
+                    for slot = (or (find name slots
+                                         :test #'string-equal :key #'slot-definition-name)
+                                   ;; Telegram API can add new slots which are absent from our spec.json,
+                                   ;; but we should not fail in such case.
+                                   (log:warn "Unable to find slot \"~A\" in class ~S. Probably spec.json file should be updated."
+                                             name
+                                             real-class)
+                                   nil)
+                    when slot
+                      append (list (make-keyword name)
+                                   (if (subtypep (slot-definition-type slot)
+                                                 'telegram-object)
+                                       (parse-as (slot-definition-type slot)
+                                                 value)
+                                       value)))))
       (sequence (map 'list (curry #'parse-as real-class)
                      object))
       (t object))))

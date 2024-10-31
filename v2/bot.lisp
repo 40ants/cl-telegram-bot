@@ -5,6 +5,8 @@
                 #:required-argument
                 #:once-only)
   (:import-from #:sento.actor-system)
+  (:import-from #:cl-telegram-bot2/vars
+                #:*current-bot*)
   (:export
    #:defbot))
 (in-package #:cl-telegram-bot2/bot)
@@ -113,3 +115,17 @@
     (setf (actors-system bot)
           nil))
   (values))
+
+
+(defmethod bot-info :around ((bot bot))
+  (with-slots (bot-info)
+      bot
+    (unless bot-info
+      (setf bot-info
+            (cl-telegram-bot2/api::get-me)))
+    (values bot-info)))
+
+
+(defun bot-name ()
+  (cl-telegram-bot2/api:user-username
+   (bot-info *current-bot*)))
