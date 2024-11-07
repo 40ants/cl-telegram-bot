@@ -76,15 +76,18 @@
                                                        (command-name command))))
          :scope (cond
                   ((and chat
+                        (string-equal
+                         (chat-type chat)
+                         "private"))
+                   (make-instance 'bot-command-scope-chat
+                                  :type "chat"
+                                  :chat-id (chat-id chat)))
+                  ((and chat
                         user)
                    (make-instance 'bot-command-scope-chat-member
                                   :type "chat_member"
                                   :chat-id (chat-id chat)
-                                  :user-id (user-id user)))
-                  (chat
-                   (make-instance 'bot-command-scope-chats
-                                  :type "chat"
-                                  :chat-id (chat-id chat))))))))
+                                  :user-id (user-id user))))))))
 
 
 (defmethod on-state-activation :before ((state state-with-commands-mixin))

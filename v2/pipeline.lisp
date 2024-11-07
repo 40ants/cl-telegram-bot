@@ -41,6 +41,7 @@
                 #:*token*
                 #:*api-url*)
   (:import-from #:serapeum
+                #:->
                 #:fmt)
   (:import-from #:sento.actor
                 #:*state*)
@@ -50,6 +51,10 @@
                 #:slot-definition-type)
   (:import-from #:alexandria
                 #:required-argument)
+  (:import-from #:cl-telegram-bot2/block/base
+                #:base-block)
+  (:import-from #:cl-telegram-bot2/state
+                #:state)
   (:export
    ;; #:make-update
    ;; #:get-raw-data
@@ -58,7 +63,8 @@
    ;; #:update
    ;; #:get-payload
    #:back
-   #:back-to))
+   #:back-to
+   #:back-to-nth-parent))
 (in-package cl-telegram-bot2/pipeline)
 
 
@@ -75,13 +81,28 @@
 
 (defclass back-to (back)
   ((state-class :initarg :state-class
-                :initform (required-argument "State class is required argument")
+                :initform (required-argument "State class is required argument.")
                 :reader state-class)))
 
 
 (defun back-to (state-class &optional result)
   (make-instance 'back-to
                  :state-class state-class
+                 :result result))
+
+
+(defclass back-to-nth-parent (back)
+  ((n :initarg :n
+      :initform (required-argument "Parent number required argument.")
+      :type (integer 1)
+      :reader parent-number)))
+
+
+(-> back-to-nth-parent ((integer 1) &optional t))
+
+(defun back-to-nth-parent (n &optional result)
+  (make-instance 'back-to-nth-parent
+                 :n n
                  :result result))
 
 
@@ -100,6 +121,14 @@
           for current-state = (car rest-states)
           until (typep current-state
                        needed-state-class)
+          collect current-state into states-to-delete
+          finally (return (values states-to-delete
+                                  rest-states))))
+  
+  (:method ((back-command back-to-nth-parent) (state-stack list))
+    (loop for rest-states on state-stack
+          for current-state = (car rest-states)
+          for n upto (parent-number back-command)
           collect current-state into states-to-delete
           finally (return (values states-to-delete
                                   rest-states)))))
@@ -280,6 +309,10 @@
        (let* ((chat-id (cl-telegram-bot2/api:chat-id *current-chat*))
               (chat-actor (get-or-create-chat-actor bot chat-id)))
          (sento.actor:ask chat-actor update)))
+      ((cl-telegram-bot2/api:update-pre-checkout-query update)
+       (cl-telegram-bot2/generics:on-pre-checkout-query
+        bot
+        (cl-telegram-bot2/api:update-pre-checkout-query update)))
       (t
        (error "Processing of ~S is not implemented yet"
               update)))))
@@ -300,8 +333,14 @@
                        (sento.actor-context:find-actors
                         system
                         actor-name))
-                      (let* ((initial-state (make-instance
-                                             (initial-state-class bot)))
+                      (let* ((initial-state (etypecase (initial-state-class bot)
+                                              (symbol
+                                               (make-instance
+                                                (initial-state-class bot)))
+                                              (state
+                                               (initial-state-class bot))
+                                              (base-block
+                                               (initial-state-class bot))))
                              (probably-new-state
                                (on-state-activation initial-state))
                              (state-stack
@@ -335,6 +374,10 @@
                               (not (eql current-state new-state)))
                      
                      (cond
+                       ;; If next sttate is a symbol, we need to instantiate it:
+                       ((symbolp new-state)
+                        (probably-switch-to-new-state
+                         (make-instance new-state)))
                        ((typep new-state 'back)
                         (let* ((result (result new-state)))
 
@@ -349,7 +392,7 @@
                               (setf *state*
                                     new-stack)
 
-                              (log:error "New state is " (car *state*))
+                              (log:error "New state is ~A" (car *state*))
                           
                               (loop for state-to-delete in states-to-delete
                                     do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
@@ -364,7 +407,7 @@
                               (list* new-state
                                      *state*))
 
-                        (log:error "New state is " (car *state*))
+                        (log:error "New state is ~A" (car *state*))
                         
                         (probably-switch-to-new-state
                          (on-state-activation new-state))))))))
