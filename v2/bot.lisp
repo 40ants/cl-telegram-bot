@@ -7,8 +7,6 @@
   (:import-from #:sento.actor-system)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-bot*)
-  (:import-from #:cl-telegram-bot2/block/base
-                #:base-block)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:export
@@ -60,8 +58,6 @@
    (initial-state-class :initarg :initial-state-class
                         :initform (required-argument "Initial state is required argument.")
                         :type (or symbol
-                                  ;; TODO: remove base block
-                                  base-block
                                   state)
                         :reader initial-state-class)))
 

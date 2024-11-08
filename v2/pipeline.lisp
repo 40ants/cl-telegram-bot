@@ -51,59 +51,16 @@
                 #:slot-definition-type)
   (:import-from #:alexandria
                 #:required-argument)
-  (:import-from #:cl-telegram-bot2/block/base
-                #:base-block)
   (:import-from #:cl-telegram-bot2/state
-                #:state)
-  (:export
-   ;; #:make-update
-   ;; #:get-raw-data
-   ;; #:get-update-id
-   ;; #:process-updates
-   ;; #:update
-   ;; #:get-payload
-   #:back
-   #:back-to
-   #:back-to-nth-parent))
+                #:base-state)
+  (:import-from #:cl-telegram-bot2/term/back
+                #:back
+                #:back-to
+                #:back-to-nth-parent)
+  (:import-from #:cl-telegram-bot2/utils
+                #:deep-copy))
 (in-package cl-telegram-bot2/pipeline)
 
-
-(defclass back ()
-  ((result :initarg :result
-           :initform nil
-           :reader result)))
-
-
-(defun back (&optional result)
-  (make-instance 'back
-                 :result result))
-
-
-(defclass back-to (back)
-  ((state-class :initarg :state-class
-                :initform (required-argument "State class is required argument.")
-                :reader state-class)))
-
-
-(defun back-to (state-class &optional result)
-  (make-instance 'back-to
-                 :state-class state-class
-                 :result result))
-
-
-(defclass back-to-nth-parent (back)
-  ((n :initarg :n
-      :initform (required-argument "Parent number required argument.")
-      :type (integer 1)
-      :reader parent-number)))
-
-
-(-> back-to-nth-parent ((integer 1) &optional t))
-
-(defun back-to-nth-parent (n &optional result)
-  (make-instance 'back-to-nth-parent
-                 :n n
-                 :result result))
 
 
 (defgeneric split-stack (back-command state-stack)
@@ -116,7 +73,7 @@
               new-stack)))
   
   (:method ((back-command back-to) (state-stack list))
-    (loop with needed-state-class = (state-class back-command)
+    (loop with needed-state-class = (cl-telegram-bot2/term/back:state-class back-command)
           for rest-states on state-stack
           for current-state = (car rest-states)
           until (typep current-state
@@ -128,7 +85,7 @@
   (:method ((back-command back-to-nth-parent) (state-stack list))
     (loop for rest-states on state-stack
           for current-state = (car rest-states)
-          for n upto (parent-number back-command)
+          for n upto (cl-telegram-bot2/term/back:parent-number back-command)
           collect current-state into states-to-delete
           finally (return (values states-to-delete
                                   rest-states)))))
@@ -333,14 +290,16 @@
                        (sento.actor-context:find-actors
                         system
                         actor-name))
-                      (let* ((initial-state (etypecase (initial-state-class bot)
-                                              (symbol
-                                               (make-instance
-                                                (initial-state-class bot)))
-                                              (state
-                                               (initial-state-class bot))
-                                              (base-block
-                                               (initial-state-class bot))))
+                      (let* ((initial-state
+                               (etypecase (initial-state-class bot)
+                                 (symbol
+                                  (make-instance
+                                   (initial-state-class bot)))
+                                 (base-state
+                                  ;; Here we need to copy a state
+                                  ;; to prevent results sharing between different chats
+                                  (deep-copy
+                                   (initial-state-class bot)))))
                              (probably-new-state
                                (on-state-activation initial-state))
                              (state-stack
@@ -374,12 +333,12 @@
                               (not (eql current-state new-state)))
                      
                      (cond
-                       ;; If next sttate is a symbol, we need to instantiate it:
+                       ;; If next state is a symbol, we need to instantiate it:
                        ((symbolp new-state)
                         (probably-switch-to-new-state
                          (make-instance new-state)))
                        ((typep new-state 'back)
-                        (let* ((result (result new-state)))
+                        (let* ((result (cl-telegram-bot2/term/back:result new-state)))
 
                           (multiple-value-bind (states-to-delete new-stack)
                               (split-stack new-state *state*)
@@ -392,7 +351,7 @@
                               (setf *state*
                                     new-stack)
 
-                              (log:error "New state is ~A" (car *state*))
+                              (log:debug "New state is ~A" (car *state*))
                           
                               (loop for state-to-delete in states-to-delete
                                     do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
@@ -407,7 +366,7 @@
                               (list* new-state
                                      *state*))
 
-                        (log:error "New state is ~A" (car *state*))
+                        (log:debug "New state is ~A" (car *state*))
                         
                         (probably-switch-to-new-state
                          (on-state-activation new-state))))))))

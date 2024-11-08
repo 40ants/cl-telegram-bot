@@ -7,7 +7,7 @@
 (in-package #:cl-telegram-bot2/errors)
 
 
-(define-condition telegram-error ()
+(define-condition telegram-error (error)
   ((description :initarg :description
                 :initform (required-argument "DESCRIPTION is required argument for TELEGRAM-ERROR class.")
                 :type string

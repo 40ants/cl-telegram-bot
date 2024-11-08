@@ -1,7 +1,5 @@
 (uiop:define-package #:cl-telegram-bot2/generics
   (:use #:cl)
-  (:import-from #:cl-telegram-bot2/bot
-                #:bot)
   (:import-from #:cl-telegram-bot2/api
                 #:pre-checkout-query)
   (:export
@@ -21,8 +19,7 @@
                    For each update we call:
                      process(bot, update)
                      process(actor-state, update)
-                   ")
-  )
+                   "))
 
 
 (defmethod process (bot-or-state object)
@@ -35,7 +32,7 @@
 
 (defmethod process :around (bot-or-state object)
   "By default, processing does nothing"
-  (log:error "Calling PROCESS method for processing objects of ~A type by ~A: ~S"
+  (log:debug "Calling PROCESS method for processing objects of ~A type by ~A: ~S"
              (type-of object)
              (type-of bot-or-state)
              bot-or-state)
@@ -53,7 +50,7 @@
     (values))
   
   (:method :around ((state t))
-    (log:error "Calling ON-STATE-ACTIVATION method for processing object of ~A type: ~S"
+    (log:debug "Calling ON-STATE-ACTIVATION method for processing object of ~A type: ~S"
                (type-of state)
                state)
     (call-next-method)))
@@ -72,7 +69,7 @@
     (values))
 
   (:method :around ((state t))
-    (log:error "Calling ON-STATE-DELETION method for processing object of ~A type: ~S"
+    (log:debug "Calling ON-STATE-DELETION method for processing object of ~A type: ~S"
                (type-of state)
                state)
     (call-next-method)))
@@ -86,18 +83,19 @@
     (values))
 
   (:method :around ((state t) result)
-    (log:error "Calling ON-RESULT method for processing object of ~A type and result ~A."
+    (log:debug "Calling ON-RESULT method for processing object of ~A type and result ~A."
                (type-of state)
                result)
     (call-next-method)))
 
 
 (defgeneric on-pre-checkout-query (bot query)
-  (:method ((bot bot) (query pre-checkout-query))
-    (log:error "Method on-pre-checkout-query is not defined for ~S."
+  (:method ((bot t) (query pre-checkout-query))
+    (log:debug "Method on-pre-checkout-query is not defined for ~S."
                (class-name
                 (class-of bot)))
     (values)))
+
 
 ;; (defgeneric on-command (bot command rest-text)
 ;;   (:documentation "This method will be called for each command.

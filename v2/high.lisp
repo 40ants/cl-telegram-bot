@@ -12,14 +12,33 @@
                 #:process)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-chat*)
+  (:import-from #:lambda-fiddle
+                #:key-lambda-vars)
+  (:import-from #:trivial-arguments
+                #:arglist)
   (:documentation "High level API for implementing Telegram bots.")
   (:export #:reply
-           #:chat-state))
+           #:chat-state
+           #:collect-sent-messages))
 (in-package #:cl-telegram-bot2/high)
 
 
+;; TODO: Probably remove
 (defclass chat-state ()
   ())
+
+
+(defvar *collected-messages*)
+
+
+(defmacro collect-sent-messages (&body body)
+  "Returns as the first value a list of messages created by REPLY function called
+   during BODY execution. Values returned by the BODY code are returned as the second,
+   third and following arguments."
+  `(let* ((*collected-messages* nil)
+          (result-values (multiple-value-list ,@body)))
+     (values-list (list* *collected-messages*
+                         result-values))))
 
 
 (defmacro defun-with-same-keys ((func-name copy-kwargs-from-func) lambda-list &body body)
@@ -27,8 +46,8 @@
 
    This needed primary for a convenience, because this way these arguments will be suggested by autocompletion."
   (let* ((additional-keyword-args
-           (lambda-fiddle:key-lambda-vars
-            (trivial-arguments:arglist copy-kwargs-from-func)))
+           (key-lambda-vars
+            (arglist copy-kwargs-from-func)))
          (new-lambda-list (append lambda-list
                                   (list* '&key
                                          additional-keyword-args))))
@@ -39,11 +58,14 @@
 
 (defun-with-same-keys (reply cl-telegram-bot2/api::send-message)
                       (text &rest rest)
-  (let ((chat-id (chat-id *current-chat*)))
-    (apply #'send-message
-           chat-id
-           text
-           rest)))
+  (let* ((chat-id (chat-id *current-chat*))
+         (message (apply #'send-message
+                         chat-id
+                         text
+                         rest)))
+    (when (boundp '*collected-messages*)
+      (push message *collected-messages*))
+    (values message)))
 
 
 ;; (defun reply (text &rest rest &key #.*args*)

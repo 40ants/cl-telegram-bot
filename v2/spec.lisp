@@ -7,6 +7,7 @@
                 #:export-always
                 #:eval-always)
   (:import-from #:dex)
+  (:import-from #:log)
   (:import-from #:closer-mop
                 #:slot-definition-name
                 #:slot-definition-type
@@ -17,6 +18,7 @@
                 #:curry
                 #:make-keyword
                 #:hash-table-alist)
+  (:import-from #:njson/jzon)
   (:import-from #:njson
                 #:jget)
   (:import-from #:cl-json

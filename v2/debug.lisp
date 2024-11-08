@@ -5,17 +5,19 @@
 
 (defun queue-size (q)
   (etypecase q
+    (sento.queue::queue
+     (+ (length (sento.queue::queue-head q))
+        (length (sento.queue::queue-tail q))))
     (sento.queue:queue-bounded
      (sento.queue:queued-count q))
     
     (sento.queue:queue-unbounded
      (let ((inner-queue (slot-value q
                                     'sento.queue::queue)))
-       (+ (length (sento.queue::queue-head inner-queue))
-          (length (sento.queue::queue-tail inner-queue)))))))
+       (queue-size inner-queue)))))
 
 
-(defun bot-actors-info ()
+(defun bot-actors-info (bot)
   (actors-info (cl-telegram-bot2/bot::actors-system bot)))
 
 
