@@ -52,8 +52,10 @@
   (:import-from #:alexandria
                 #:required-argument)
   (:import-from #:cl-telegram-bot2/state
+                #:state-id
                 #:base-state)
   (:import-from #:cl-telegram-bot2/term/back
+                #:back-to-id
                 #:back
                 #:back-to
                 #:back-to-nth-parent)
@@ -86,6 +88,16 @@
     (loop for rest-states on state-stack
           for current-state = (car rest-states)
           for n upto (cl-telegram-bot2/term/back:parent-number back-command)
+          collect current-state into states-to-delete
+          finally (return (values states-to-delete
+                                  rest-states))))
+  
+  (:method ((back-command back-to-id) (state-stack list))
+    (loop with id-to-search = (cl-telegram-bot2/term/back:parent-id back-command)
+          for rest-states on state-stack
+          for current-state = (car rest-states)
+          until (string= (state-id current-state)
+                         id-to-search)
           collect current-state into states-to-delete
           finally (return (values states-to-delete
                                   rest-states)))))

@@ -9,7 +9,9 @@
            #:back-to-nth-parent
            #:result
            #:parent-number
-           #:state-class))
+           #:state-class
+           #:back-to-id
+           #:parent-id))
 (in-package #:cl-telegram-bot2/term/back)
 
 
@@ -22,6 +24,9 @@
            :reader result)))
 
 
+(-> back (&optional t)
+    (values back &optional))
+
 (defun back (&optional result)
   (make-instance 'back
                  :result result))
@@ -32,6 +37,9 @@
                 :initform (required-argument "State class is required argument.")
                 :reader state-class)))
 
+
+(-> back-to (symbol &optional t)
+    (values back-to &optional))
 
 (defun back-to (state-class &optional result)
   (make-instance 'back-to
@@ -46,9 +54,26 @@
       :reader parent-number)))
 
 
-(-> back-to-nth-parent ((integer 1) &optional t))
+(-> back-to-nth-parent ((integer 1) &optional t)
+    (values back-to-nth-parent &optional))
 
 (defun back-to-nth-parent (n &optional result)
   (make-instance 'back-to-nth-parent
                  :n n
+                 :result result))
+
+
+(defclass back-to-id (back)
+  ((id :initarg :id
+       :initform (required-argument "Parent id is required argument.")
+       :type string
+       :reader parent-id)))
+
+
+(-> back-to-id (string &optional t)
+    (values back-to-id &optional))
+
+(defun back-to-id (id &optional result)
+  (make-instance 'back-to-id
+                 :id id
                  :result result))

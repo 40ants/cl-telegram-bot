@@ -27,7 +27,9 @@
                 #:result-var)
   (:import-from #:cl-telegram-bot2/states/ask-for-choice
                 #:ask-for-choice)
-  (:import-from #:40ants-logging))
+  (:import-from #:40ants-logging)
+  (:import-from #:cl-telegram-bot2/term/back
+                #:back-to-id))
 (in-package #:cl-telegram-bot2/calc)
 
 
@@ -45,17 +47,16 @@
             (funcall op num1
                      num2))))
 
-
 (defun make-prompt-for-op-choice ()
   (fmt "Select an operation to apply to ~A and ~A:"
        (result-var "first-num")
        (result-var "second-num")))
 
-
 (defbot test-bot ()
   ()
   (:initial-state
    (state nil
+          :id "start"
           :on-update (state (list
                              (send-text "Let's calculate!")
                              (ask-for-number "Enter the first number:"
@@ -69,7 +70,7 @@
                                                                                       '("+" "-" "*" "/")
                                                                                       :to "operation-name"
                                                                                       :on-success (list (send-text 'calc-result)
-                                                                                                        (back-to-nth-parent 3))))))))))
+                                                                                                        (back-to-id "start"))))))))))
 
 
 (defvar *bot* nil)

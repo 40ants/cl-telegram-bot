@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/state
   (:use #:cl)
   (:import-from #:serapeum
+                #:->
                 #:pretty-print-hash-table
                 #:dict
                 #:soft-list-of)
@@ -20,12 +21,17 @@
            #:result-var
            #:state-result-var
            #:clear-state-result-vars
-           #:base-state))
+           #:base-state
+           #:state-id))
 (in-package #:cl-telegram-bot2/state)
 
 
 (defclass base-state (print-items-mixin)
-  ((result-vars :initform (dict)
+  ((id :initarg :id
+       :initform nil
+       :type (or null string)
+       :reader state-id)
+   (result-vars :initform (dict)
                 :reader state-result-vars)))
 
 
@@ -43,15 +49,20 @@
 
 
 (defmethod print-items append ((state base-state))
-  (unless (zerop (hash-table-count (state-result-vars state)))
-    (list (list :result-vars
-                "result-vars = {~A}"
-                (with-output-to-string (s)
+  (append
+   (when (state-id state)
+     (list (list :id
+                 "id = ~S"
+                 (state-id state))))
+   (unless (zerop (hash-table-count (state-result-vars state)))
+     (list (list :result-vars
+                 "result-vars = {~A}"
+                 (with-output-to-string (s)
 
-                  (loop for key being the hash-key of (state-result-vars state)
-                        using (hash-value value)
-                        do (format s "~S: ~S"
-                                   key value)))))))
+                   (loop for key being the hash-key of (state-result-vars state)
+                         using (hash-value value)
+                         do (format s "~S: ~S"
+                                    key value))))))))
 
 (defmethod print-items append ((state state))
   (append
@@ -65,8 +76,14 @@
                  (on-update state))))))
 
 
-(defun state (on-activation &key on-update)
+(-> state (t &key
+           (:on-update t)
+           (:id (or null string)))
+    (values state &optional))
+
+(defun state (on-activation &key on-update id)
   (make-instance 'state
+                 :id id
                  :on-activation (uiop:ensure-list on-activation)
                  :on-update (uiop:ensure-list on-update)))
 
