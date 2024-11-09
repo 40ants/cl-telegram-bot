@@ -21,66 +21,66 @@
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
                 #:on-state-activation
-                #:process))
+                #:process)
+  (:import-from #:cl-telegram-bot2/state
+                #:state)
+  (:import-from #:cl-telegram-bot2/term/back
+                #:back-to-id)
+  (:import-from #:cl-telegram-bot2/actions/send-text
+                #:send-text)
+  (:import-from #:str
+                #:trim))
 (in-package #:cl-telegram-bot2-examples/commands)
 
 
-(defclass initial-state (state-with-commands-mixin)
-  ()
-  (:default-initargs
-   :commands (list
-              (command "/next" (make-instance 'second-state)
-                       :description "Switch to the next state")
-              (command "/ver7" 'on-ver-command))))
+(defun on-help-command (arg update)
+  (declare (ignore arg update))
+  (reply "This bot has two states.
 
+At the initial state only two commands are available:
 
-(defclass second-state (state-with-commands-mixin)
-  ()
-  (:default-initargs
-   :commands (list
-              (command "/back" (back-to 'initial-state)
-                       :description "Switch to the prev state")
-              (command "/reverse" (lambda (arg update)
-                                    (declare (ignore update))
-                                    (reply
-                                     (if arg
-                                         (reverse arg)
-                                         "This command requires an argument."))
-                                    ;; It is important to return nothing here to
-                                    ;; stay on the same state.
-                                    (values))
-                       :description "Switch to the prev state")
-              (command "/ver7" 'on-ver-command))))
+/next - switches bot into the second state.
+/help - shows this text.
 
-
-(defmethod on-state-activation ((state initial-state))
-  (reply "Initial state. Give /next command to go to the second state.")
+The second state changes /next command to the /back and provides
+additional command /reverse, which will reverse any given text.")
+  ;; It is important to return nothing if we want switch
+  ;; bot to a new state from this handler
   (values))
 
 
-(defmethod on-result ((state initial-state) result)
-  (reply "Welcom back! Give /next command to go to the second state.")
-  (values))
-
-
-(defmethod process   ((state initial-state) update)
-  (reply "Give /next command to go to the second state.")
-  (values))
-
-
-(defmethod on-state-activation ((state second-state))
-  (reply "Second state. Give /back command to go to the initial state.")
-  (values))
-
-
-(defmethod process ((state second-state) update)
-  (reply "Give /back command to go to the initial state.")
+(defun on-reverse-command (arg update)
+  (declare (ignore update))
+  (let ((trimmed (trim arg)))
+    (cond
+      ((string= trimmed "")
+       (reply "This command requires an argument."))
+      (t
+       (reply (reverse arg)))))
+  ;; It is important to return nothing if we want switch
+  ;; bot to a new state from this handler
   (values))
 
 
 (defbot test-bot ()
   ()
-  (:initial-state 'initial-state))
+  (:initial-state
+   (state (send-text "Initial state. Give /next command to go to the second state.")
+          :id "initial"
+          :on-result (send-text "Welcome back! Give /next command to go to the second state.")
+          :on-update (send-text "Give /next command to go to the second state.")
+          :commands (list
+                     (command "/next"
+                              (state (send-text "Second state. Give /back command to go to the initial state.")
+                                     :on-update (send-text "Give /back command to go to the initial state.")
+                                     :commands (list
+                                                (command "/back" (back-to-id "initial")
+                                                         :description "Switch to the prev state")
+                                                (command "/reverse" 'on-reverse-command
+                                                         :description "Switch to the prev state")))
+                              :description "Switch to the next state")
+                     (command "/help" 'on-help-command
+                              :description "Show information about bot's commands.")))))
 
 
 (defvar *bot* nil)
@@ -108,5 +108,4 @@
         when (or (str:starts-with? "message-thread" (bt:thread-name tr))
                  (str:starts-with? "timer-wheel" (bt:thread-name tr))
                  (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr))
-  )
+        do (bt:destroy-thread tr)))

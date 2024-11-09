@@ -51,7 +51,7 @@
                 #:slot-definition-type)
   (:import-from #:alexandria
                 #:required-argument)
-  (:import-from #:cl-telegram-bot2/state
+  (:import-from #:cl-telegram-bot2/states/base
                 #:state-id
                 #:base-state)
   (:import-from #:cl-telegram-bot2/term/back
@@ -373,7 +373,7 @@
                                                                            ;; Result might be empty
                                                                            result)))
                                 (probably-switch-to-new-state on-result-return-value))))))
-                       (t
+                       ((typep new-state 'base-state)
                         (setf *state*
                               (list* new-state
                                      *state*))
@@ -381,7 +381,10 @@
                         (log:debug "New state is ~A" (car *state*))
                         
                         (probably-switch-to-new-state
-                         (on-state-activation new-state))))))))
+                         (on-state-activation new-state)))
+                       (t
+                        (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
+                                  new-state)))))))
         (probably-switch-to-new-state new-state)))
     (values)))
 

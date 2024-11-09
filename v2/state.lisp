@@ -17,52 +17,29 @@
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
-  (:export #:state
-           #:result-var
-           #:state-result-var
-           #:clear-state-result-vars
-           #:base-state
-           #:state-id))
+  (:import-from #:cl-telegram-bot2/state-with-commands
+                #:command
+                #:state-with-commands-mixin)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:base-state)
+  (:import-from #:cl-telegram-bot2/workflow
+                #:workflow-block
+                #:workflow-blocks)
+  (:export #:state))
 (in-package #:cl-telegram-bot2/state)
 
 
-(defclass base-state (print-items-mixin)
-  ((id :initarg :id
-       :initform nil
-       :type (or null string)
-       :reader state-id)
-   (result-vars :initform (dict)
-                :reader state-result-vars)))
-
-
-(defclass state (base-state)
+(defclass state (state-with-commands-mixin base-state)
   ((on-activation :initarg :on-activation
-                  :type (soft-list-of (or base-state
-                                          action
-                                          back))
+                  :type workflow-blocks
                   :reader on-activation)
    (on-update :initarg :on-update
-              :type (soft-list-of (or base-state
-                                      action
-                                      back))
-              :reader on-update)))
+              :type workflow-blocks
+              :reader on-update)
+   (on-result :initarg :on-result
+              :type workflow-blocks
+              :reader on-result)))
 
-
-(defmethod print-items append ((state base-state))
-  (append
-   (when (state-id state)
-     (list (list :id
-                 "id = ~S"
-                 (state-id state))))
-   (unless (zerop (hash-table-count (state-result-vars state)))
-     (list (list :result-vars
-                 "result-vars = {~A}"
-                 (with-output-to-string (s)
-
-                   (loop for key being the hash-key of (state-result-vars state)
-                         using (hash-value value)
-                         do (format s "~S: ~S"
-                                    key value))))))))
 
 (defmethod print-items append ((state state))
   (append
@@ -76,16 +53,28 @@
                  (on-update state))))))
 
 
-(-> state (t &key
-           (:on-update t)
-           (:id (or null string)))
+(-> state ((or workflow-block
+               workflow-blocks)
+           &key
+           (:id (or null string))
+           (:commands (or null
+                          command
+                          (soft-list-of command)))
+           (:on-update (or null
+                           workflow-block
+                           workflow-blocks))
+           (:on-result (or null
+                           workflow-block
+                           workflow-blocks)))
     (values state &optional))
 
-(defun state (on-activation &key on-update id)
+(defun state (on-activation &key id commands on-update on-result)
   (make-instance 'state
                  :id id
+                 :commands (uiop:ensure-list commands)
                  :on-activation (uiop:ensure-list on-activation)
-                 :on-update (uiop:ensure-list on-update)))
+                 :on-update (uiop:ensure-list on-update)
+                 :on-result (uiop:ensure-list on-result)))
 
 
 (defmethod on-state-activation ((state state))
@@ -113,23 +102,17 @@
                    obj))))
 
 
-(defgeneric state-result-var (state var-name)
-  (:method ((state base-state) var-name)
-    (gethash var-name (state-result-vars state))))
+(defmethod cl-telegram-bot2/generics:on-result ((state state) result)
+  (cl-telegram-bot2/generics:on-result (on-result state)
+                                       result))
 
 
-(defgeneric clear-state-result-vars (state)
-  (:method ((state base-state))
-    (clrhash (state-result-vars state))))
-
-
-(defgeneric (setf state-result-var) (new-value state var-name)
-  (:method (new-value (state base-state) var-name)
-    (setf (gethash var-name (state-result-vars state))
-          new-value)))
-
-
-(defun result-var (var-name)
-  (loop for state in *state*
-        thereis (and (typep state 'base-state)
-                     (state-result-var state var-name))))
+(defmethod cl-telegram-bot2/generics:on-result ((items list) result)
+  (loop for obj in items
+        thereis (etypecase obj
+                  (action
+                   (cl-telegram-bot2/generics:on-result obj result))
+                  (base-state
+                   obj)
+                  (back
+                   obj))))

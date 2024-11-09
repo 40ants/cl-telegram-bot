@@ -46,6 +46,7 @@
                 :documentation "A command description like \"/start\" or \"/help\"."
                 :reader command-description)))
 
+
 (defun command (name handler &key description)
   (make-instance 'command
                  :name name

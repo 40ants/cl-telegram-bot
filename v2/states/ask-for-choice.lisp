@@ -34,21 +34,15 @@
                 #:send-text)
   (:import-from #:log4cl-extras/error
                 #:with-log-unhandled)
+  (:import-from #:cl-telegram-bot2/workflow
+                #:workflow-block
+                #:workflow-blocks)
   (:export #:ask-for-choice))
 (in-package #:cl-telegram-bot2/states/ask-for-choice)
 
 
 (defparameter *default-var-name* "result")
 
-
-(deftype workflow-block ()
-    '(or base-state
-      action
-      back))
-
-
-(deftype workflow-blocks ()
-  '(soft-list-of workflow-block))
 
 
 (defclass ask-for-choice (base-state)
