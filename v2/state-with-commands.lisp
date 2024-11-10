@@ -5,9 +5,11 @@
                 #:process
                 #:on-state-activation)
   (:import-from #:alexandria
+                #:flatten
                 #:length=
                 #:required-argument)
   (:import-from #:serapeum
+                #:->
                 #:length<
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/api
@@ -24,13 +26,28 @@
                 #:*current-bot*
                 #:*current-chat*
                 #:*current-user*)
+  (:import-from #:cl-telegram-bot2/workflow
+                #:workflow-blocks
+                #:workflow-block)
+  (:import-from #:sento.actor
+                #:*state*)
+  (:import-from #:cl-telegram-bot2/bot
+                #:bot-name)
   (:export #:state-with-commands-mixin
            #:state-commands
-           #:command))
+           #:command
+           #:global-command))
 (in-package #:cl-telegram-bot2/state-with-commands)
 
 
-(defclass command ()
+(deftype command-handler ()
+  '(or
+    symbol
+    workflow-block
+    workflow-blocks))
+
+
+(defclass base-command ()
   ((name :initarg :name
          :initform (required-argument ":COMMAND is required argument.")
          :type string
@@ -38,7 +55,8 @@
          :reader command-name)
    (handler :initarg :handler
             :initform (required-argument ":HANDLER is required argument.")
-            :documentation "A callable object of one argument or an object to return from PROCESS generic-function."
+            :type command-handler
+            :documentation "An fbound symbol of two arguments (command-argument update-obj) or a workflow object to return from PROCESS generic-function."
             :reader command-handler)
    (description :initarg :description
                 :initform nil
@@ -47,8 +65,32 @@
                 :reader command-description)))
 
 
+(defclass command (base-command)
+  ()
+  (:documentation "This type of command is available only in the state where it is defined."))
+
+
+(defclass global-command (command)
+  ()
+  (:documentation "This command will be available during in all bot states."))
+
+
+(-> command (string command-handler
+             &key (:description (or null string)))
+    (values command &optional))
+
 (defun command (name handler &key description)
   (make-instance 'command
+                 :name name
+                 :handler handler
+                 :description description))
+
+(-> global-command (string command-handler
+             &key (:description (or null string)))
+    (values global-command &optional))
+
+(defun global-command (name handler &key description)
+  (make-instance 'global-command
                  :name name
                  :handler handler
                  :description description))
@@ -61,6 +103,12 @@
              :reader state-commands)))
 
 
+(defun state-global-commands (state)
+  (loop for command in (state-commands state)
+        when (typep command 'global-command)
+          collect command))
+
+
 (defun send-commands (state)
   (let ((chat *current-chat*)
         (user *current-user*))
@@ -69,26 +117,32 @@
                ;; It returns error: can't change commands in channel chats
                (not (string= (chat-type chat)
                              "channel")))
-        (set-my-commands
-         (loop for command in (state-commands state)
-               collect (make-instance 'bot-command
-                                      :command (command-name command)
-                                      :description (or (command-description command)
-                                                       (command-name command))))
-         :scope (cond
-                  ((and chat
-                        (string-equal
-                         (chat-type chat)
-                         "private"))
-                   (make-instance 'bot-command-scope-chat
-                                  :type "chat"
-                                  :chat-id (chat-id chat)))
-                  ((and chat
-                        user)
-                   (make-instance 'bot-command-scope-chat-member
-                                  :type "chat_member"
-                                  :chat-id (chat-id chat)
-                                  :user-id (user-id user))))))))
+      
+      (loop for command in (append (state-commands state)
+                                   (flatten (mapcar #'state-global-commands
+                                                    (rest *state*))))
+            for bot-command = (make-instance 'bot-command
+                                             :command (command-name command)
+                                             :description (or (command-description command)
+                                                              (command-name command)))
+            collect bot-command into bot-commands
+            finally
+               (when bot-commands
+                 (set-my-commands bot-commands
+                                  :scope (cond
+                                           ((and chat
+                                                 (string-equal
+                                                  (chat-type chat)
+                                                  "private"))
+                                            (make-instance 'bot-command-scope-chat
+                                                           :type "chat"
+                                                           :chat-id (chat-id chat)))
+                                           ((and chat
+                                                 user)
+                                            (make-instance 'bot-command-scope-chat-member
+                                                           :type "chat_member"
+                                                           :chat-id (chat-id chat)
+                                                           :user-id (user-id user))))))))))
 
 
 (defmethod on-state-activation :before ((state state-with-commands-mixin))
@@ -141,18 +195,23 @@
     (cond
       ((and command-name
             (or (null bot-name)
-                (string-equal (cl-telegram-bot2/bot::bot-name)
+                (string-equal (bot-name)
                               bot-name)))
-       (loop for command in (state-commands state)
+       (loop for command in (append (state-commands state)
+                                    ;; Here we need to search previos states
+                                    ;; on a stack to support their global
+                                    ;; commands in the current state:
+                                    (flatten (mapcar #'state-global-commands
+                                                     (rest *state*))))
              when (string-equal command-name
                                 (command-name command))
              do (return 
                   (let ((handler (command-handler command)))
                     (typecase handler
                       ((or symbol function)
-                       (funcall handler rest-text update))
+                         (funcall handler rest-text update))
                       (t
-                       handler))))
+                         handler))))
              finally (return
                        (call-next-method))))
       (t

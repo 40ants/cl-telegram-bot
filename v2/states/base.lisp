@@ -5,22 +5,12 @@
                 #:pretty-print-hash-table
                 #:dict
                 #:soft-list-of)
-  (:import-from #:cl-telegram-bot2/action
-                #:action)
-  (:import-from #:cl-telegram-bot2/generics
-                #:process
-                #:on-state-activation)
-  (:import-from #:cl-telegram-bot2/term/back
-                #:back)
   (:import-from #:sento.actor
                 #:*state*)
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
-  (:import-from #:cl-telegram-bot2/state-with-commands
-                #:state-with-commands-mixin)
-  (:export #:state
-           #:result-var
+  (:export #:result-var
            #:state-result-var
            #:clear-state-result-vars
            #:base-state

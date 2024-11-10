@@ -16,6 +16,7 @@
   (:import-from #:cl-telegram-bot2/api
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/state-with-commands
+                #:global-command
                 #:command
                 #:state-with-commands-mixin)
   (:import-from #:cl-telegram-bot2/generics
@@ -53,7 +54,8 @@ additional command /reverse, which will reverse any given text.")
   (declare (ignore update))
   (let ((trimmed (trim arg)))
     (cond
-      ((string= trimmed "")
+      ((or (null trimmed)
+           (string= trimmed ""))
        (reply "This command requires an argument."))
       (t
        (reply (reverse arg)))))
@@ -79,8 +81,8 @@ additional command /reverse, which will reverse any given text.")
                                                 (command "/reverse" 'on-reverse-command
                                                          :description "Switch to the prev state")))
                               :description "Switch to the next state")
-                     (command "/help" 'on-help-command
-                              :description "Show information about bot's commands.")))))
+                     (global-command "/help" 'on-help-command
+                                     :description "Show information about bot's commands.")))))
 
 
 (defvar *bot* nil)

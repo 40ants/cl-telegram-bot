@@ -15,6 +15,16 @@
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 
+(defsystem "cl-telegram-bot2/deps"
+  :description "Utility system to load non-package-inferred systems using package-inferred imports."
+  :author "Alexander Artemenko <svetlyak.40wt@gmail.com>"
+  :license "MIT"
+  :homepage "https://40ants.com/cl-telegram-bot/"
+  :source-control (:git "https://github.com/40ants/cl-telegram-bot")
+  :bug-tracker "https://github.com/40ants/cl-telegram-bot/issues"
+  :depends-on ("njson/jzon"))
+
+
 (asdf:register-system-packages "log4cl" '("LOG"))
 (asdf:register-system-packages "utilities.print-items" '("PRINT-ITEMS"))
 (asdf:register-system-packages "dexador" '("DEX"))

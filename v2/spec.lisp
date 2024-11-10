@@ -18,7 +18,7 @@
                 #:curry
                 #:make-keyword
                 #:hash-table-alist)
-  (:import-from #:njson/jzon)
+  (:import-from #:cl-telegram-bot2/deps)
   (:import-from #:njson
                 #:jget)
   (:import-from #:cl-json
@@ -26,7 +26,8 @@
   (:import-from #:str
                 #:param-case)
   (:import-from #:cl-telegram-bot2/errors
-                #:telegram-error))
+                #:telegram-error)
+  (:import-from #:quri))
 (in-package #:cl-telegram-bot2/spec)
 
 

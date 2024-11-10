@@ -2,6 +2,7 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/api
                 #:pre-checkout-query)
+  (:import-from #:log)
   (:export
    #:process
    #:on-state-activation
