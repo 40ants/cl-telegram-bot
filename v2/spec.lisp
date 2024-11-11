@@ -179,27 +179,38 @@ Bot token and method name is appended to it")
   (unless *token*
     (error 'telegram-error
            :description "Variable *TOKEN* is NIL."))
-  
+
   (let* ((url *api-url*)
-         (prepared-args
-           (loop with result = (dict)
-                 for (key value) on args by #'cddr
+         (content
+           (loop for (key value) on args by #'cddr
                  for prepared-key = (string-downcase (substitute #\_ #\- (symbol-name key)))
                  for prepared-value = (unparse value)
-                 do (setf (gethash prepared-key result)
-                          prepared-value)
-                 finally (return result)))
+                 collect (cons prepared-key
+                               (typecase prepared-value
+                                 ((or pathname
+                                      string)
+                                  prepared-value)
+                                 (t
+                                  (njson:encode prepared-value))))))
          (return (njson:decode
                   (handler-case
-                      (apply #'dex:post
+                      (dex:post
+                             ;; NOTE: probably it is better to pass token as a header?
+                             ;;       I didn't find information in the official docs
+                             ;;       how to do this :(
                              (quri:render-uri (quri:make-uri :path (uiop:strcat "bot" *token* "/" method-name)
                                                              :defaults url))
-                             :headers '(("Content-Type" . "application/json"))
+                             ;; NOTE: previously I've send data as JSON
+                             ;; but this makes us impossible to send local files by providing
+                             ;; their pathnames. Thus we let dexador to decide if to use
+                             ;; application/x-www-form-urlencoded
+                             ;; or
+                             ;; multipart/form-data
+                             ;; 
+                             ;; :headers '(("Content-Type" . "application/json"))
                              :read-timeout *timeout*
                              :connect-timeout *timeout*
-                             (when args
-                               (list :content
-                                     (njson:encode prepared-args))))
+                             :content content)
                     (dex:http-request-failed (e)
                       (dex:response-body e))))))
     
@@ -408,10 +419,16 @@ Bot token and method name is appended to it")
       `(progn
          ,@(define-generics (jget "generics" api))
          ,@(define-classes (jget "models" api))
-         ,@(define-methods (jget "methods" api))))))
+         ,@(define-methods (jget "methods" api))
+
+         ;; After the expansion we need to free memory,
+         ;; because this process generates abot 700Mb of ram.
+         #+sbcl
+         (sb-ext:gc :full t)))))
 
 
 ;; Difference from cl-telegram-bot-auto-api:
 ;; - all API symbols are interned into a separate package cl-telegram-bot2/api (in cl-telegram-bot-auto-api these symbols were mixed with symbols of the library itself.
 ;; - getter methods are constructed as <class-name>-<slot-name> instead of just <slot-name>.
+;; - improvements in invoke-method allow to upload files by providing pathname as an argument.
 

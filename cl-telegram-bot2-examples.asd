@@ -10,5 +10,6 @@
   :defsystem-depends-on ("40ants-asdf-system")
   :pathname "examples"
   :depends-on ("cl-telegram-bot2-examples/calc"
-               "cl-telegram-bot2-examples/commands")
+               "cl-telegram-bot2-examples/commands"
+               "cl-telegram-bot2-examples/gallery")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
