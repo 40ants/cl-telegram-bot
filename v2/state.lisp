@@ -138,6 +138,9 @@
 
 (defmethod process ((item symbol) update)
   (cond
+    ((null item)
+     ;; We don't need to do anything to process NIL items.
+     (values))
     ((fboundp item)
      ;; NOTE: Not sure if we need to pass update to the
      ;; funcall here. Probably we should make it accessible

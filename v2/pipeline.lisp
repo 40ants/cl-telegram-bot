@@ -1,35 +1,15 @@
 (uiop:define-package #:cl-telegram-bot2/pipeline
   (:use #:cl)
   (:import-from #:log4cl)
-  ;; (:import-from #:cl-telegram-bot/message
-  ;;               #:*current-bot*
-  ;;               #:make-message)
-  ;; (:import-from #:cl-telegram-bot/network
-  ;;               #:make-request)
   (:import-from #:cl-telegram-bot2/bot
                 #:initial-state-class
                 #:api-uri
                 #:token
                 #:get-last-update-id
                 #:bot)
-  ;; (:import-from #:cl-telegram-bot/pipeline
-  ;;               #:process)
-  ;; (:import-from #:cl-telegram-bot/callback
-  ;;               #:make-callback)
   (:import-from #:anaphora
                 #:it
                 #:acond)
-  ;; (:import-from #:cl-telegram-bot/envelope
-  ;;               #:edited-message
-  ;;               #:channel-post
-  ;;               #:edited-channel-post)
-  ;; (:import-from #:cl-telegram-bot/chat
-  ;;               #:get-chat)
-  ;; (:import-from #:cl-telegram-bot/payments
-  ;;               #:make-successful-payment
-  ;;               #:make-pre-checkout-query)
-  ;; (:import-from #:cl-telegram-bot/user
-  ;;               #:get-user-info)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-state*
                 #:*current-bot*
@@ -103,51 +83,6 @@
           finally (return (values states-to-delete
                                   rest-states)))))
 
-;; (defclass update ()
-;;   ((id :initarg :id
-;;        :reader get-update-id)
-;;    (payload :initarg :payload
-;;             :reader get-payload)
-;;    (raw-data :initarg :raw-data
-;;              :reader get-raw-data)))
-
-
-;; (defun make-update (data)
-;;   (let ((update-id (getf data :|update_id|))
-;;         (payload
-;;           (acond
-;;             ((getf data :|message|)
-;;              (cond
-;;                ((getf it :|successful_payment|))
-;;                (t
-;;                 (make-message it))))
-;;             ((getf data :|edited_message|)
-;;              (make-instance 'edited-message
-;;                             :message (make-message it)))
-;;             ((getf data :|channel_post|)
-;;              (make-instance 'channel-post
-;;                             :message (make-message it)))
-;;             ((getf data :|edited_channel_post|)
-;;              (make-instance 'edited-channel-post
-;;                             :message (make-message it)))
-;;             ((getf data :|callback_query|)
-;;              (make-callback *current-bot*
-;;                             it))
-;;             ((getf data :|pre_checkout_query|)
-;;              (make-pre-checkout-query *current-bot*
-;;                                       it))
-;;             ((getf data :|successful_payment|)
-;;              (make-successful-payment *current-bot*
-;;                                       it))
-;;             (t
-;;              (log:warn "Received not supported update type"
-;;                        data)
-;;              nil))))
-;;     (make-instance 'update
-;;                    :id update-id
-;;                    :payload payload
-;;                    :raw-data data)))
-
 
 (defun get-updates (bot &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
@@ -213,18 +148,10 @@
                        (slot-boundp object
                                     slot-name)
                        (get-chat (slot-value object
-                                             slot-name))))
-    
-    ;; (or (get-chat (cl-telegram-bot2/api:update-message update))
-    ;;     (get-chat (cl-telegram-bot2/api:update-message update))
-    ;;     (get-chat (cl-telegram-bot2/api:update-edited-message update))
-    ;;     (get-chat (cl-telegram-bot2/api:update-callback-query update)))
-    )
+                                             slot-name)))))
   
   (:method ((object cl-telegram-bot2/api:chat))
-    object
-    ;; (cl-telegram-bot2/api:message-chat object)
-    ))
+    object))
 
 
 (defgeneric get-user (object)
@@ -249,19 +176,7 @@
                         (slot-boundp object
                                      slot-name)
                         (get-user (slot-value object
-                                              slot-name)))))
-    
-    ;; (or (get-chat (cl-telegram-bot2/api:update-message update))
-    ;;     (get-chat (cl-telegram-bot2/api:update-message update))
-    ;;     (get-chat (cl-telegram-bot2/api:update-edited-message update))
-    ;;     (get-chat (cl-telegram-bot2/api:update-callback-query update)))
-    )
-  
-  ;; (:method ((object cl-telegram-bot2/api:chat))
-  ;;   object
-  ;;   ;; (cl-telegram-bot2/api:message-chat object)
-  ;;   )
-  )
+                                              slot-name)))))))
 
 
 (defmethod process ((bot bot) (update cl-telegram-bot2/api:update))
@@ -339,7 +254,7 @@
            (*current-chat* (get-chat update))
            (*current-user* (get-user update))
            (new-state (process *current-state* update)))
-      
+
       (labels ((probably-switch-to-new-state (new-state)
                  (let ((*current-state* (car *state*)))
                    (when (and new-state
@@ -384,15 +299,8 @@
                         (probably-switch-to-new-state
                          (on-state-activation new-state)))
                        (t
-                        (break)
                         (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
                                   new-state)))))))
         (probably-switch-to-new-state new-state)))
     (values)))
 
-;; (defmethod get-chat ((update update))
-;;   (get-chat (get-payload update)))
-
-
-;; (defmethod get-user-info ((update update))
-;;   (get-user-info (get-payload update)))

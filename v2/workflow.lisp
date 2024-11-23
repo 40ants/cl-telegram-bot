@@ -9,7 +9,8 @@
   (:import-from #:serapeum
                 #:soft-list-of)
   (:export #:workflow-blocks
-           #:workflow-block))
+           #:workflow-block
+           #:funcallable-symbol))
 (in-package #:cl-telegram-bot2/workflow)
 
 

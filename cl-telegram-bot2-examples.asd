@@ -11,5 +11,6 @@
   :pathname "examples"
   :depends-on ("cl-telegram-bot2-examples/calc"
                "cl-telegram-bot2-examples/commands"
-               "cl-telegram-bot2-examples/gallery")
+               "cl-telegram-bot2-examples/gallery"
+               "cl-telegram-bot2-examples/payments")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))

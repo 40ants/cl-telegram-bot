@@ -33,6 +33,8 @@
                 #:*state*)
   (:import-from #:cl-telegram-bot2/bot
                 #:bot-name)
+  (:import-from #:cl-telegram-bot2/action
+                #:call-if-action)
   (:export #:state-with-commands-mixin
            #:state-commands
            #:command
@@ -63,6 +65,12 @@
                 :type (or null string)
                 :documentation "A command description like \"/start\" or \"/help\"."
                 :reader command-description)))
+
+
+(defmethod print-object ((command base-command) stream)
+  (print-unreadable-object (command stream :type t)
+    (format stream "~A"
+            (command-name command))))
 
 
 (defclass command (base-command)
@@ -205,13 +213,18 @@
                                                      (rest *state*))))
              when (string-equal command-name
                                 (command-name command))
-             do (return 
-                  (let ((handler (command-handler command)))
-                    (typecase handler
-                      ((or symbol function)
-                         (funcall handler rest-text update))
-                      (t
-                         handler))))
+               do (return 
+                    (let ((handler (command-handler command)))
+                      ;; Handler might return an action or a state
+                      ;; in first case we have to apply PROCESS to an action
+                      (call-if-action
+                       (typecase handler
+                         ((or symbol function)
+                            (funcall handler rest-text update))
+                         (t
+                            handler))
+                       #'process
+                       update)))
              finally (return
                        (call-next-method))))
       (t

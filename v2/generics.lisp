@@ -91,16 +91,19 @@
 
 
 (defgeneric on-pre-checkout-query (bot query)
+  (:documentation  "Pre-checkout-query object will be passed as this single arguement and
+                    function should return a boolean. When the function return True, user
+                    may proceed to the payment.
+
+                    Pre-checkout queries are not bound the the chat, so
+                    current-chat and current-state are not available during processing.
+                    This is why methods of this generic function should be defined on bot class.
+
+                    You can use CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD function
+                    to extract payload from the query and find associated invoice.")
+  
   (:method ((bot t) (query pre-checkout-query))
     (log:debug "Method on-pre-checkout-query is not defined for ~S."
                (class-name
                 (class-of bot)))
     (values)))
-
-
-;; (defgeneric on-command (bot command rest-text)
-;;   (:documentation "This method will be called for each command.
-;;                    First argument is a keyword. If user input was /save_note, then
-;;                    first argument will be :save-note.
-
-;;                    By default, logs call and does nothing."))

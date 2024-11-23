@@ -5,12 +5,12 @@
 (in-package #:cl-telegram-bot2/utils)
 
 
-(defun call-if-needed (value)
+(defun call-if-needed (value &rest args)
   "If value is a fbound SYMBOL, then calls as a function and then returns a result."
   (typecase value
     (symbol
      (if (fboundp value)
-         (funcall value)
+         (apply value args)
          value))
     (t
      value)))
