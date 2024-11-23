@@ -29,6 +29,13 @@
 (in-package #:cl-telegram-bot2/state)
 
 
+(deftype callback-query-handlers ()
+  '(serapeum:soft-alist-of string
+    (or 
+     workflow-block
+     workflow-blocks)))
+
+
 (defclass state (state-with-commands-mixin base-state)
   ((on-activation :initarg :on-activation
                   :type workflow-blocks
@@ -38,7 +45,10 @@
               :reader on-update)
    (on-result :initarg :on-result
               :type workflow-blocks
-              :reader on-result)))
+              :reader on-result)
+   (on-callback-query :initarg :on-callback-query
+                      :type callback-query-handlers
+                      :reader on-callback-query)))
 
 
 (defmethod print-items append ((state state))
@@ -65,16 +75,18 @@
                            workflow-blocks))
            (:on-result (or null
                            workflow-block
-                           workflow-blocks)))
+                           workflow-blocks))
+           (:on-callback-query callback-query-handlers))
     (values state &optional))
 
-(defun state (on-activation &key id commands on-update on-result)
+(defun state (on-activation &key id commands on-update on-result on-callback-query)
   (make-instance 'state
                  :id id
                  :commands (uiop:ensure-list commands)
                  :on-activation (uiop:ensure-list on-activation)
                  :on-update (uiop:ensure-list on-update)
-                 :on-result (uiop:ensure-list on-result)))
+                 :on-result (uiop:ensure-list on-result)
+                 :on-callback-query on-callback-query))
 
 
 (defmethod on-state-activation ((state state))
@@ -87,8 +99,21 @@
 
 
 (defmethod process ((state state) update)
-  (process (on-update state)
-           update))
+  (let* ((callback (cl-telegram-bot2/api:update-callback-query update))
+         (callback-data
+           (when callback
+             (cl-telegram-bot2/api:callback-query-data callback))))
+    (cond
+      ;; If user pushed an inline keyboard button, then we'll try to
+      ;; find a handler for it:
+      (callback-data
+       (loop for (expected-value . workflow-blocks) in (on-callback-query state)
+             when (string= callback-data expected-value)
+               do (return (process workflow-blocks update))))
+      ;; Otherwise call an ON-UPDATE action.
+      (t
+       (process (on-update state)
+                update)))))
 
 
 (defmethod process ((items list) update)

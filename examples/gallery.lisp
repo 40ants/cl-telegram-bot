@@ -36,12 +36,27 @@
 (in-package #:cl-telegram-bot2-examples/gallery)
 
 
+(defparameter *photos*
+  (directory (uiop:wilden
+              (asdf:system-relative-pathname
+               :cl-telegram-bot2-examples
+               (make-pathname :directory '(:relative "examples" "images"))))))
+
+
 (defbot test-bot ()
   ()
   (:initial-state
    (state nil
-          ;; (send-photo "https://i.pinimg.com/originals/7e/1b/fd/7e1bfd1191112533fe9872ef47398823.jpg")
-          :on-update (send-photo #P"~/tmp/cat2.jpg"))))
+          :on-update (send-photo (first *photos*)
+                                 :caption "Cat 1"
+                                 :inline-keyboard (list "Prev" "Next"))
+          :on-callback-query
+          (list (cons "Next"
+                      (edit-photo (second *photos*)
+                                  :caption "Cat 2"
+                                  :inline-keyboard (list "Prev" "Next")))
+                (cons "Prev"
+                      (send-text "No prev photo"))))))
 
 
 (defvar *bot* nil)

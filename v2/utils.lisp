@@ -44,6 +44,11 @@ It merely returns its results."
                    (deep-copy (slot-value object slot-name))))
     (values copy)))
 
+(defmethod deep-copy ((object cons))
+  "A deep copy of a general sequence is merely (copy-seq sequence)."
+  (cons (deep-copy (car object))
+        (deep-copy (cdr object))))
+
 (defmethod deep-copy ((object sequence))
   "A deep copy of a general sequence is merely (copy-seq sequence)."
   (map (type-of object)
