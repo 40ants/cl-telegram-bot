@@ -13,11 +13,17 @@
 (in-package #:cl-telegram-bot2/workflow)
 
 
+(deftype funcallable-symbol ()
+  '(and symbol
+    (satisfies fboundp)))
+
+
 (deftype workflow-block ()
-    '(or
-      base-state
-      action
-      back))
+  '(or
+    funcallable-symbol
+    base-state
+    action
+    back))
 
 
 (deftype workflow-blocks ()

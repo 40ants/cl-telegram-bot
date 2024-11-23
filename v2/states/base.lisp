@@ -10,11 +10,18 @@
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
-  (:export #:result-var
-           #:state-result-var
-           #:clear-state-result-vars
+  (:import-from #:cl-telegram-bot2/generics
+                #:process)
+  (:import-from #:cl-telegram-bot2/api
+                #:message-message-id)
+  (:import-from #:cl-telegram-bot2/high
+                #:collect-sent-messages)
+  (:export #:var
+           #:state-var
+           #:clear-state-vars
            #:base-state
-           #:state-id))
+           #:state-id
+           #:sent-message-ids))
 (in-package #:cl-telegram-bot2/states/base)
 
 
@@ -23,8 +30,10 @@
        :initform nil
        :type (or null string)
        :reader state-id)
-   (result-vars :initform (dict)
-                :reader state-result-vars)))
+   (vars :initform (dict)
+         :reader state-vars)
+   (sent-message-ids :initform nil
+                     :accessor sent-message-ids)))
 
 
 (defmethod print-items append ((state base-state))
@@ -33,34 +42,63 @@
      (list (list :id
                  "id = ~S"
                  (state-id state))))
-   (unless (zerop (hash-table-count (state-result-vars state)))
-     (list (list :result-vars
-                 "result-vars = {~A}"
+   (unless (zerop (hash-table-count (state-vars state)))
+     (list (list :vars
+                 "vars = {~A}"
                  (with-output-to-string (s)
 
-                   (loop for key being the hash-key of (state-result-vars state)
+                   (loop for key being the hash-key of (state-vars state)
                          using (hash-value value)
                          do (format s "~S: ~S"
                                     key value))))))))
 
 
-(defgeneric state-result-var (state var-name)
+(defgeneric state-var (state var-name)
   (:method ((state base-state) var-name)
-    (gethash var-name (state-result-vars state))))
+    (gethash var-name (state-vars state))))
 
 
-(defgeneric clear-state-result-vars (state)
+(defgeneric clear-state-vars (state)
   (:method ((state base-state))
-    (clrhash (state-result-vars state))))
+    (clrhash (state-vars state))))
 
 
-(defgeneric (setf state-result-var) (new-value state var-name)
+(defgeneric (setf state-var) (new-value state var-name)
   (:method (new-value (state base-state) var-name)
-    (setf (gethash var-name (state-result-vars state))
+    (setf (gethash var-name (state-vars state))
           new-value)))
 
 
-(defun result-var (var-name)
+(defun var (var-name)
   (loop for state in *state*
         thereis (and (typep state 'base-state)
-                     (state-result-var state var-name))))
+                     (state-var state var-name))))
+
+
+(defun (setf var) (new-value var-name)
+  (setf (state-var (first *state*)
+                   var-name)
+        new-value))
+
+
+(defmethod process :around ((state base-state) (update t))
+  (multiple-value-bind (sent-messages result)
+      (collect-sent-messages
+        (call-next-method))
+
+    (loop for message in sent-messages
+          do (push (message-message-id message)
+                   (sent-message-ids state)))
+    (values result)))
+
+
+(defmethod cl-telegram-bot2/generics:on-state-activation :around ((state base-state))
+  (call-next-method)
+  ;; (multiple-value-bind (sent-messages result)
+  ;;     (collect-sent-messages
+  ;;       (call-next-method))
+  ;;   (loop for message in sent-messages
+  ;;         do (push (message-message-id message)
+  ;;                  (sent-message-ids state)))
+  ;;   (values result))
+  )

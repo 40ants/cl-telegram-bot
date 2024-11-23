@@ -31,6 +31,7 @@
   ;; (:import-from #:cl-telegram-bot/user
   ;;               #:get-user-info)
   (:import-from #:cl-telegram-bot2/vars
+                #:*current-state*
                 #:*current-bot*
                 #:*current-user*)
   (:import-from #:cl-telegram-bot2/generics
@@ -334,15 +335,15 @@
   (handler-bind ((serious-condition #'invoke-debugger))
     (log:info "Processing chat update"
               update)
-    (let* ((state-to-process (car *state*))
+    (let* ((*current-state* (car *state*))
            (*current-chat* (get-chat update))
            (*current-user* (get-user update))
-           (new-state (process state-to-process update)))
+           (new-state (process *current-state* update)))
       
       (labels ((probably-switch-to-new-state (new-state)
-                 (let ((current-state (car *state*)))
+                 (let ((*current-state* (car *state*)))
                    (when (and new-state
-                              (not (eql current-state new-state)))
+                              (not (eql *current-state* new-state)))
                      
                      (cond
                        ;; If next state is a symbol, we need to instantiate it:
@@ -383,6 +384,7 @@
                         (probably-switch-to-new-state
                          (on-state-activation new-state)))
                        (t
+                        (break)
                         (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
                                   new-state)))))))
         (probably-switch-to-new-state new-state)))

@@ -119,12 +119,36 @@
 (defmethod process ((items list) update)
   (loop for obj in items
         thereis (etypecase obj
+                  (symbol
+                     (cond
+                       ((fboundp obj)
+                        (process (funcall obj)
+                                 update))
+                       (t
+                        (error "Symbol ~S should be funcallble."
+                               obj))))
                   (action
-                   (process obj update))
+                     (process obj update))
                   (base-state
-                   obj)
+                     obj)
                   (back
-                   obj))))
+                     obj))))
+
+
+
+(defmethod process ((item symbol) update)
+  (cond
+    ((fboundp item)
+     ;; NOTE: Not sure if we need to pass update to the
+     ;; funcall here. Probably we should make it accessible
+     ;; using some dynamic variable, because
+     ;; some callbacks might be called when update is not available
+     ;; yet, for example, on state activation.
+     (process (funcall item)
+              update))
+    (t
+     (error "Symbol ~S should be funcallable to process update."
+            item))))
 
 
 (defmethod cl-telegram-bot2/generics:on-result ((state state) result)

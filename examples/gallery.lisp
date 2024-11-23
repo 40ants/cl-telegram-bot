@@ -32,7 +32,12 @@
   (:import-from #:str
                 #:trim)
   (:import-from #:cl-telegram-bot2/actions/send-photo
-                #:send-photo))
+                #:send-photo)
+  (:import-from #:cl-telegram-bot2/actions/edit-message-media
+                #:edit-message-media)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:var)
+  (:documentation "This example shows how to keep use state's vars to keep current photo's index and to edit message's media when user clicks on Prev/Next buttons."))
 (in-package #:cl-telegram-bot2-examples/gallery)
 
 
@@ -43,21 +48,65 @@
                (make-pathname :directory '(:relative "examples" "images"))))))
 
 
+(defun make-keyboard (photo-index)
+  (remove nil
+          (list
+           (unless (zerop photo-index)
+             "Prev")
+           (unless (= photo-index
+                      (1- (length *photos*)))
+             "Next"))))
+
+
+(defun show-photo ()
+  (let ((photo-index (var "photo-index")))
+
+    (unless photo-index
+      (setf photo-index 0)
+      (setf (var "photo-index")
+            photo-index))
+  
+    (send-photo (elt *photos* photo-index)
+                :caption (fmt "Cat ~A" (1+ photo-index))
+                :inline-keyboard (make-keyboard photo-index))))
+
+
+(defun show-next-photo ()
+  (let ((photo-index (min (1- (length *photos*))
+                          (1+ (var "photo-index")))))
+    
+    (setf (var "photo-index")
+          photo-index)
+
+    (edit-message-media (elt *photos* photo-index)
+                        :caption (fmt "Cat ~A" (1+ photo-index))
+                        :inline-keyboard (make-keyboard photo-index))))
+
+(defun show-prev-photo ()
+  (let ((photo-index (max 0
+                          (1- (var "photo-index")))))
+    
+    (setf (var "photo-index")
+          photo-index)
+
+    (edit-message-media (elt *photos* photo-index)
+                        :caption (fmt "Cat ~A" (1+ photo-index))
+                        :inline-keyboard (make-keyboard photo-index))))
+
+
 (defbot test-bot ()
   ()
   (:initial-state
    (state nil
-          :on-update (send-photo (first *photos*)
-                                 :caption "Cat 1"
-                                 :inline-keyboard (list "Prev" "Next"))
+          :on-update 'show-photo
           :on-callback-query
           (list (cons "Next"
-                      (edit-photo (second *photos*)
-                                  :caption "Cat 2"
-                                  :inline-keyboard (list "Prev" "Next")))
+                      'show-next-photo)
                 (cons "Prev"
-                      (send-text "No prev photo"))))))
+                      'show-prev-photo)))))
 
+
+;; Technical part
 
 (defvar *bot* nil)
 

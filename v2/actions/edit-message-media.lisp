@@ -1,8 +1,9 @@
-(uiop:define-package #:cl-telegram-bot2/actions/send-photo
+(uiop:define-package #:cl-telegram-bot2/actions/edit-message-media
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
   (:import-from #:cl-telegram-bot2/vars
+                #:*current-state*
                 #:*current-chat*)
   (:import-from #:cl-telegram-bot2/api
                 #:message-chat
@@ -21,16 +22,18 @@
                 #:->)
   (:import-from #:cl-telegram-bot2/utils
                 #:call-if-needed)
-  (:export #:send-photo))
-(in-package #:cl-telegram-bot2/actions/send-photo)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:sent-message-ids)
+  (:export #:edit-message-media))
+(in-package #:cl-telegram-bot2/actions/edit-message-media)
 
 
-(defclass send-photo (action)
+(defclass edit-message-media (action)
   ((path :initarg :path
          :type (or string
                    pathname
                    symbol)
-         :reader image-path)
+         :reader media-path)
    (caption :initarg :caption
             :type string
             :reader caption)
@@ -39,40 +42,53 @@
                     :reader inline-keyboard)))
 
 
-(-> send-photo ((or string pathname symbol)
-                &key
-                (:caption string)
-                (:inline-keyboard (soft-list-of string)))
-    (values send-photo &optional))
+(-> edit-message-media ((or string pathname symbol)
+                        &key
+                        (:caption string)
+                        (:inline-keyboard (soft-list-of string)))
+    (values edit-message-media &optional))
 
-(defun send-photo (path-or-func-name &key caption inline-keyboard)
+
+(defun edit-message-media (path-or-func-name &key caption inline-keyboard)
   (when (and (symbolp path-or-func-name)
              (not (fboundp path-or-func-name)))
-    (error "SEND-PHOTO waits a path or fbound symbol. ~S is not fbound."
+    (error "EDIT-MESSAGE-MEDIA waits a path or fbound symbol. ~S is not fbound."
            path-or-func-name))
   
-  (make-instance 'send-photo
+  (make-instance 'edit-message-media
                  :path path-or-func-name
                  :caption (or caption "")
                  :inline-keyboard inline-keyboard))
 
 
-(defmethod print-object ((obj send-photo) stream)
+(defmethod print-object ((obj edit-message-media) stream)
   (print-unreadable-object (obj stream :type t)
     (format stream "~S"
-            (image-path obj))))
+            (media-path obj))))
 
 
 (defun send-reply (action)
   (let ((path (call-if-needed
-               (image-path action)))
+               (media-path action)))
         (caption (call-if-needed
                   (caption action)))
         (buttons (call-if-needed
-                  (inline-keyboard action))))
-    (cl-telegram-bot2/high:reply-with-photo
-     path
-     :caption caption
+                  (inline-keyboard action)))
+        (message-id (first (sent-message-ids *current-state*)))
+        (chat-id (chat-id *current-chat*)))
+    
+    (cl-telegram-bot2/api:edit-message-media
+     (make-instance 'cl-telegram-bot2/api:input-media-photo
+                    :type "photo"
+                    :media path
+                    ;; These options aren't supported yet
+                    ;; has_spoiler
+                    ;; show_caption_above_media
+                    ;; parse_mode
+                    ;; caption_entities
+                    :caption caption)
+     :chat-id chat-id
+     :message-id message-id
      :reply-markup
      (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
                     :inline-keyboard
@@ -83,16 +99,16 @@
                                                   :callback-data button)))))))
 
 
-(defmethod on-state-activation ((action send-photo))
+(defmethod on-state-activation ((action edit-message-media))
   (send-reply action)
   (values))
 
 
-(defmethod process ((action send-photo) update)
+(defmethod process ((action edit-message-media) update)
   (send-reply action)
   (values))
 
 
-(defmethod on-result ((action send-photo) result)
+(defmethod on-result ((action edit-message-media) result)
   (send-reply action)
   (values))

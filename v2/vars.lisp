@@ -13,3 +13,6 @@
 
 (defvar-unbound *current-chat*
   "This var will be bound when PROCESS method is called on chat state.")
+
+(defvar-unbound *current-state*
+  "This var will be bound when PROCESS method is called on chat state.")

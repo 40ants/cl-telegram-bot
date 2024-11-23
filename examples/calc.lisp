@@ -23,8 +23,8 @@
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/states/ask-for-number
                 #:ask-for-number)
-  (:import-from #:cl-telegram-bot2/state
-                #:result-var)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:var)
   (:import-from #:cl-telegram-bot2/states/ask-for-choice
                 #:ask-for-choice)
   (:import-from #:40ants-logging)
@@ -35,9 +35,9 @@
 
 
 (defun calc-result ()
-  (let* ((num1 (result-var "first-num"))
-         (num2 (result-var "second-num"))
-         (op-name (result-var "operation-name"))
+  (let* ((num1 (var "first-num"))
+         (num2 (var "second-num"))
+         (op-name (var "operation-name"))
          (op (gethash op-name
                       (dict "+" #'+
                             "-" #'-
@@ -49,8 +49,8 @@
 
 (defun make-prompt-for-op-choice ()
   (fmt "Select an operation to apply to ~A and ~A:"
-       (result-var "first-num")
-       (result-var "second-num")))
+       (var "first-num")
+       (var "second-num")))
 
 (defbot test-bot ()
   ()

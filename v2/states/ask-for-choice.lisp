@@ -5,8 +5,9 @@
                 #:process
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/state
-                #:state-result-var
                 #:base-state)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:state-var)
   (:import-from #:cl-telegram-bot2/pipeline
                 #:back)
   (:import-from #:cl-telegram-bot2/high
@@ -145,8 +146,8 @@
 
     (cond
       (callback-data
-       (setf (state-result-var state
-                               (var-name state))
+       (setf (state-var state
+                        (var-name state))
              callback-data)
       
        (prog1 (process (on-success state)

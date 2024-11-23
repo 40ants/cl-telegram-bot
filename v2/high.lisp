@@ -3,6 +3,7 @@
   (:import-from #:serapeum
                 #:defvar-unbound)
   (:import-from #:cl-telegram-bot2/api
+                #:send-photo
                 #:message-chat
                 #:update-message
                 #:update
@@ -19,7 +20,8 @@
   (:documentation "High level API for implementing Telegram bots.")
   (:export #:reply
            #:chat-state
-           #:collect-sent-messages))
+           #:collect-sent-messages
+           #:reply-with-photo))
 (in-package #:cl-telegram-bot2/high)
 
 
@@ -34,7 +36,12 @@
 (defmacro collect-sent-messages (&body body)
   "Returns as the first value a list of messages created by REPLY function called
    during BODY execution. Values returned by the BODY code are returned as the second,
-   third and following arguments."
+   third and following arguments.
+
+   Also, messages are collected when these actions are called:
+
+   - CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT
+   - CL-TELEGRAM-BOT2/ACTIONS/SEND-PHOTO:SEND-PHOTO"
   `(let* ((*collected-messages* nil)
           (result-values (multiple-value-list ,@body)))
      (values-list (list* *collected-messages*
@@ -56,12 +63,24 @@
        ,@body)))
 
 
-(defun-with-same-keys (reply cl-telegram-bot2/api::send-message)
+(defun-with-same-keys (reply send-message)
                       (text &rest rest)
   (let* ((chat-id (chat-id *current-chat*))
          (message (apply #'send-message
                          chat-id
                          text
+                         rest)))
+    (when (boundp '*collected-messages*)
+      (push message *collected-messages*))
+    (values message)))
+
+
+(defun-with-same-keys (reply-with-photo send-photo)
+                      (photo &rest rest)
+  (let* ((chat-id (chat-id *current-chat*))
+         (message (apply #'send-photo
+                         chat-id
+                         photo
                          rest)))
     (when (boundp '*collected-messages*)
       (push message *collected-messages*))

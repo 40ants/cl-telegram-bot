@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/spec
   (:use #:cl)
   (:import-from #:serapeum
+                #:soft-list-of
                 #:->
                 #:dict
                 #:fmt
@@ -32,15 +33,18 @@
 
 
 (eval-always
-  (defvar *types* (serapeum:dict 'equal
-                                 "int" 'integer
-                                 "float" 'float
-                                 "str" 'string
-                                 "file" 'pathname
-                                 "bool" 't
-                                 "array" 'sequence)
+  (defvar *types* (dict "int" 'integer
+                        "float" 'float
+                        "str" 'string
+                        "file" 'pathname
+                        "bool" 't
+                        "array" 'sequence)
     "The table with all the types API has, from the Telegram name to Lisp type")
 
+  (defparameter *adjusted-types*
+    (dict "InputMediaPhoto"
+          (dict "media"
+                '(or string pathname))))
   
   (defvar *parents* nil
     "The list of all generic classes")
@@ -182,16 +186,55 @@ Bot token and method name is appended to it")
 
   (let* ((url *api-url*)
          (content
-           (loop for (key value) on args by #'cddr
-                 for prepared-key = (string-downcase (substitute #\_ #\- (symbol-name key)))
-                 for prepared-value = (unparse value)
-                 collect (cons prepared-key
-                               (typecase prepared-value
-                                 ((or pathname
-                                      string)
-                                  prepared-value)
-                                 (t
-                                  (njson:encode prepared-value))))))
+           ;; editMessageMedia documentation say that media file can be uploaded
+           ;; using multipart/form-data. But to make this work, we need to extract
+           ;; pathnames from the nested structures to the top level and to replace
+           ;; these nested pathnames with links like attach://<file_attach_name>
+           (let ((pathnames-to-upload nil))
+             (labels ((replace-pathnames (obj)
+                        "This function replaces pathname values in the dicts with a placeholder
+                         and pushes these placeholders and pathnames to PATHNAMES-TO-UPLOAD alist."
+                        (typecase obj
+                          (list (mapcar #'replace-pathnames
+                                        obj))
+                          (hash-table
+                             (loop with data-to-change = nil
+                                   with attach-number = 0
+                                   for key being the hash-key of obj
+                                     using (hash-value value)
+                                   when (typep value 'pathname)
+                                     do (let ((attach-name (fmt "attach-"
+                                                                (incf attach-number))))
+                                          (push (cons attach-name
+                                                      value)
+                                                pathnames-to-upload)
+                                          ;; Replace value with the placeholder.
+                                          ;; NOTE: I'm not sure if changing value of existing key
+                                          ;; should work correctly for every CL implementation,
+                                          ;; thus we'll store updates into the variable
+                                          ;; and apply them after the loop
+                                          (push (cons key (fmt "attach://~A"
+                                                               attach-name))
+                                                data-to-change))
+                                   finally (loop for (key . value) in data-to-change
+                                                 do (setf (gethash key obj)
+                                                          value)))
+                             (values obj))
+                          (t
+                             obj))))
+               (append
+                (loop for (key value) on args by #'cddr
+                      for prepared-key = (string-downcase (substitute #\_ #\- (symbol-name key)))
+                      for prepared-value = (replace-pathnames
+                                            (unparse value))
+                      collect (cons prepared-key
+                                    (typecase prepared-value
+                                      ((or pathname
+                                           string)
+                                         prepared-value)
+                                      (t
+                                         (njson:encode prepared-value)))))
+                pathnames-to-upload))))
          (return (njson:decode
                   (handler-case
                       (dex:post
@@ -235,7 +278,7 @@ Bot token and method name is appended to it")
   
   (defun type-name (type)
     "Return two values:
-- Primitive `parse-as'-friendly type, preferably atomic.  If the TYPE
+- Primitive `parse-as'-friendly type, preferably atomic. If the TYPE
   is a mere \"array\" without element type, then, well, returns the
   corresponding Lisp array type.
 - The outermost type. Same as the first value, unless array TYPE."
@@ -257,8 +300,8 @@ Bot token and method name is appended to it")
          (values
           inner-type
           (if (equal "array" (elt type 0))
-              'sequence
-              inner-type))))
+            'sequence
+            inner-type))))
       (t (let ((type (or (gethash type *types*)
                          (json->name type))))
            (values type type)))))
@@ -276,31 +319,58 @@ Bot token and method name is appended to it")
           collect `(export-always ',name)
           collect `(defclass ,name (telegram-object) ())))
 
+
+  (-> adjust-type (string string (or symbol
+                                     (soft-list-of symbol))))
+
+  (defun adjust-type (class-name slot-name original-type)
+    (or
+     (let ((slot-types
+             (gethash class-name *adjusted-types*)))
+       (when slot-types
+         (let ((type-or-func (gethash slot-name slot-types)))
+           (when type-or-func
+             (cond
+               ((or (typep type-or-func 'function)
+                    (and (typep type-or-func 'symbol)
+                         (fboundp type-or-func)))
+                (funcall type-or-func original-type))
+               (t
+                type-or-func))))))
+     original-type))
+  
   
   (defun define-classes (classes)
     (loop for class across classes
-          for class-name
-             = (json->name (jget "name" class))
+          for string-class-name = (jget "name" class)
+          for class-name = (json->name string-class-name)
           do (setf (gethash (jget "name" class) *types*)
                    class-name)
           collect `(export-always ',class-name)
           collect (let ((class-name class-name))
                     `(defclass ,class-name (,@(if (gethash class-name *child-to-parent*)
-                                                  (list (gethash class-name *child-to-parent*))
-                                                  (list 'telegram-object)))
+                                                (list (gethash class-name *child-to-parent*))
+                                                (list 'telegram-object)))
                        (,@(loop for param across (jget "params" class)
-                                for name = (json->name (jget "name" param))
+                                for string-slot-name = (jget "name" param)
+                                for slot-name = (json->name string-slot-name)
+                                for initarg = (alexandria:make-keyword slot-name)
+                                for documentation = (jget "description" param)
+                                for type = (cond
+                                             ((serapeum:single (jget "type" param))
+                                              (nth-value 1 (type-name (elt (jget "type" param) 0))))
+                                             (t
+                                              `(or ,@(map 'list (lambda (type)
+								  (nth-value 1 (type-name type)))
+							  (jget "type" param)))))
+                                for adjusted-type = (adjust-type string-class-name string-slot-name type)
                                 collect `(,(json->name (jget "name" param))
-                                          :initarg ,(alexandria:make-keyword (json->name (jget "name" param)))
-                                          :type ,(if (serapeum:single (jget "type" param))
-                                                     (nth-value 1 (type-name (elt (jget "type" param) 0)))
-                                                     `(or ,@(map 'list (lambda (type)
-									 (nth-value 1 (type-name type)))
-								 (jget "type" param))))
-                                          :documentation ,(jget "description" param))))
+                                          :initarg ,initarg
+                                          :type ,adjusted-type
+                                          :documentation ,documentation)))
                        (:documentation ,(jget "description" class))))
           append (loop for param across (jget "params" class)
-)
+                       )
           append (loop for param across (jget "params" class)
                        for slot-name = (json->name
                                         (jget "name" param))
@@ -332,20 +402,20 @@ Bot token and method name is appended to it")
     (loop for method across methods
           for params = (jget "params" method)
           for method-name
-             = (json->name (jget "name" method))
+            = (json->name (jget "name" method))
           for required-args
-             = (remove-if (curry #'jget "optional")
-                          params)
+            = (remove-if (curry #'jget "optional")
+                         params)
           for required-arg-names
-             = (loop for arg across required-args
-                     collect (json->name (jget "name" arg)))
+            = (loop for arg across required-args
+                    collect (json->name (jget "name" arg)))
           for optional-args
-             = (remove-if (lambda (p)
-                            (find p required-args))
-			  params)
+            = (remove-if (lambda (p)
+                           (find p required-args))
+			 params)
           for optional-arg-names
-             = (loop for arg across optional-args
-                     collect (json->name (jget "name" arg)))
+            = (loop for arg across optional-args
+                    collect (json->name (jget "name" arg)))
           collect `(export-always ',method-name)
           collect `(defgeneric ,method-name
                        (,@required-arg-names
@@ -384,31 +454,31 @@ Bot token and method name is appended to it")
                                                                   name)))
                                        ,(when rest-args? 'args)))))
                                ,(if (equalp #("true") (jget "return" method))
-                                    'result
-                                    `(parse-as ',(type-name (elt (jget "return" method) 0))
-                                               result)))))
+                                  'result
+                                  `(parse-as ',(type-name (elt (jget "return" method) 0))
+                                             result)))))
                    (let ((combinations (type-combinations
                                         (map 'list (lambda (arg)
 						     (map 'list (lambda (type) (nth-value 1 (type-name type)))
                                                           (jget "type" arg)))
 					     required-args))))
                      (if combinations
-                         (loop for combination in combinations
-                               collect `(defmethod ,method-name (,@(loop for name in required-arg-names
-                                                                         for type in combination
-                                                                         collect (list name type))
-                                                                 ,@(when (plusp (cl:length optional-args))
-                                                                     (append '(&rest args &key)
-                                                                             optional-arg-names
-                                                                             '(&allow-other-keys))))
-                                          (declare (ignorable ,@required-arg-names ,@optional-arg-names))
-                                          ,(method-body method required-arg-names (plusp (cl:length optional-args)))))
-                         `((defmethod ,method-name (,@(when (plusp (cl:length optional-args))
-                                                        (append '(&rest args &key)
-                                                                optional-arg-names
-                                                                '(&allow-other-keys))))
-                             (declare (ignorable ,@optional-arg-names))
-                             ,(method-body method required-arg-names (plusp (cl:length optional-args))))))))))
+                       (loop for combination in combinations
+                             collect `(defmethod ,method-name (,@(loop for name in required-arg-names
+                                                                       for type in combination
+                                                                       collect (list name type))
+                                                               ,@(when (plusp (cl:length optional-args))
+                                                                   (append '(&rest args &key)
+                                                                           optional-arg-names
+                                                                           '(&allow-other-keys))))
+                                        (declare (ignorable ,@required-arg-names ,@optional-arg-names))
+                                        ,(method-body method required-arg-names (plusp (cl:length optional-args)))))
+                       `((defmethod ,method-name (,@(when (plusp (cl:length optional-args))
+                                                      (append '(&rest args &key)
+                                                              optional-arg-names
+                                                              '(&allow-other-keys))))
+                           (declare (ignorable ,@optional-arg-names))
+                           ,(method-body method required-arg-names (plusp (cl:length optional-args))))))))))
 
   
   (defmacro define-tg-apis ()
