@@ -9,8 +9,10 @@
   :class :40ants-asdf-system
   :defsystem-depends-on ("40ants-asdf-system")
   :pathname "examples"
-  :depends-on ("cl-telegram-bot2-examples/calc"
+  :depends-on ("clack-handler-hunchentoot"
+               "cl-telegram-bot2-examples/calc"
                "cl-telegram-bot2-examples/commands"
                "cl-telegram-bot2-examples/gallery"
-               "cl-telegram-bot2-examples/payments")
+               "cl-telegram-bot2-examples/payments"
+               "cl-telegram-bot2-examples/mini-app")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))

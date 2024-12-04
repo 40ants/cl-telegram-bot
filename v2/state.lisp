@@ -25,6 +25,8 @@
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
+  (:import-from #:cl-telegram-bot2/utils
+                #:arity)
   (:export #:state))
 (in-package #:cl-telegram-bot2/state)
 
@@ -39,16 +41,24 @@
 (defclass state (state-with-commands-mixin base-state)
   ((on-activation :initarg :on-activation
                   :type workflow-blocks
+                  :initform nil
                   :reader on-activation)
    (on-update :initarg :on-update
               :type workflow-blocks
+              :initform nil
               :reader on-update)
    (on-result :initarg :on-result
               :type workflow-blocks
+              :initform nil
               :reader on-result)
    (on-callback-query :initarg :on-callback-query
                       :type callback-query-handlers
-                      :reader on-callback-query)))
+                      :initform nil
+                      :reader on-callback-query)
+   (on-web-app-data :initarg :on-web-app-data
+                    :type workflow-blocks
+                    :initform nil
+                    :reader on-web-app-data)))
 
 
 (defmethod print-items append ((state state))
@@ -76,17 +86,21 @@
            (:on-result (or null
                            workflow-block
                            workflow-blocks))
-           (:on-callback-query callback-query-handlers))
+           (:on-callback-query callback-query-handlers)
+           (:on-web-app-data (or null
+                                workflow-block
+                                workflow-blocks)))
     (values state &optional))
 
-(defun state (on-activation &key id commands on-update on-result on-callback-query)
+(defun state (on-activation &key id commands on-update on-result on-callback-query on-web-app-data)
   (make-instance 'state
                  :id id
                  :commands (uiop:ensure-list commands)
                  :on-activation (uiop:ensure-list on-activation)
                  :on-update (uiop:ensure-list on-update)
                  :on-result (uiop:ensure-list on-result)
-                 :on-callback-query on-callback-query))
+                 :on-callback-query on-callback-query
+                 :on-web-app-data (uiop:ensure-list on-web-app-data)))
 
 
 (defmethod on-state-activation ((state state))
@@ -112,8 +126,15 @@
                do (return (process workflow-blocks update))))
       ;; Otherwise call an ON-UPDATE action.
       (t
-       (process (on-update state)
-                update)))))
+       (let* ((message (cl-telegram-bot2/api:update-message update))
+              (web-app-data (cl-telegram-bot2/api:message-web-app-data message)))
+         (cond
+           (web-app-data
+            (process (on-web-app-data state)
+                     web-app-data))
+           (t
+            (process (on-update state)
+                     update))))))))
 
 
 (defmethod process ((items list) update)
@@ -122,8 +143,25 @@
                   (symbol
                      (cond
                        ((fboundp obj)
-                        (process (funcall obj)
-                                 update))
+                        (case (arity obj)
+                          (0
+                             (process (funcall obj)
+                                      update))
+                          (1
+                             ;; If function accepts a single argument,
+                             ;; then we call it with update object.
+                             ;; This way objects like web-app-data
+                             ;; could be processed.
+                             (let ((maybe-other-action
+                                     (funcall obj update)))
+                               (when maybe-other-action
+                                 (process maybe-other-action
+                                          update))))
+                          (otherwise
+                             (error "Unable to process ~A because function ~S requires ~A arguments."
+                                    update
+                                    obj
+                                    (arity obj)))))
                        (t
                         (error "Symbol ~S should be funcallble."
                                obj))))

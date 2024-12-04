@@ -1,7 +1,17 @@
 (uiop:define-package #:cl-telegram-bot2/utils
   (:use #:cl)
+  (:import-from #:trivial-arguments
+                #:arglist)
+  (:import-from #:lambda-fiddle
+                #:required-lambda-vars)
+  (:import-from #:serapeum
+                #:->)
+  (:import-from #:alexandria
+                #:non-negative-fixnum
+                #:positive-fixnum)
   (:export #:call-if-needed
-           #:deep-copy))
+           #:deep-copy
+           #:arity))
 (in-package #:cl-telegram-bot2/utils)
 
 
@@ -14,6 +24,15 @@
          value))
     (t
      value)))
+
+
+
+(-> arity ((or symbol function))
+    (values non-negative-fixnum &optional))
+
+(defun arity (funcallable)
+  (length (required-lambda-vars
+           (arglist funcallable))))
 
 
 ;; This deep copy code was taken from CL-MOP
