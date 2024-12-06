@@ -3,15 +3,12 @@
   (:import-from #:cl-telegram-bot2/api)
   (:import-from #:serapeum
                 #:soft-list-of)
-  (:export #:inline-keyboard-button
-           #:inline-keyboard-buttons))
+  (:export #:reply-markup-type))
 (in-package #:cl-telegram-bot2/types)
 
 
-(deftype inline-keyboard-button ()
-  `(or string
-       cl-telegram-bot2/api:keyboard-button))
-
-
-(deftype inline-keyboard-buttons ()
-  '(soft-list-of inline-keyboard-button))
+(deftype reply-markup-type ()
+  `(or cl-telegram-bot2/api:reply-keyboard-markup
+       cl-telegram-bot2/api:reply-keyboard-remove
+       cl-telegram-bot2/api:inline-keyboard-markup
+       cl-telegram-bot2/api:force-reply))

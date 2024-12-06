@@ -9,9 +9,13 @@
   (:import-from #:alexandria
                 #:non-negative-fixnum
                 #:positive-fixnum)
+  (:import-from #:yason
+                #:with-output-to-string*)
   (:export #:call-if-needed
            #:deep-copy
-           #:arity))
+           #:arity
+           #:from-json
+           #:to-json))
 (in-package #:cl-telegram-bot2/utils)
 
 
@@ -33,6 +37,23 @@
 (defun arity (funcallable)
   (length (required-lambda-vars
            (arglist funcallable))))
+
+
+(-> to-json (t)
+    (values string &optional))
+
+
+(defun to-json (obj)
+  (with-output-to-string* ()
+    (yason:encode obj)))
+
+
+(-> from-json (string)
+    (values t &optional))
+
+(defun from-json (string)
+  (yason:parse string))
+
 
 
 ;; This deep copy code was taken from CL-MOP
@@ -77,3 +98,4 @@ It merely returns its results."
 (defmethod deep-copy ((object structure-object))
   "A deep copy of a structure-object is (copy-structure object)."
   (copy-structure object))
+

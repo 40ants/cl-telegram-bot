@@ -41,7 +41,11 @@
   (:import-from #:alexandria
                 #:assoc-value)
   (:import-from #:yason
-                #:with-output-to-string*))
+                #:with-output-to-string*)
+  (:import-from #:cl-telegram-bot2/high/keyboard
+                #:remove-keyboard
+                #:open-web-app
+                #:keyboard))
 (in-package #:cl-telegram-bot2-examples/mini-app)
 
 
@@ -146,24 +150,21 @@ We will send the verification link to `~A`."
 
 
 (let ((keyboard
-        (list (make-instance 'cl-telegram-bot2/api:keyboard-button
-                             :text "Open Mini App"
-                             :web-app
-                             (make-instance 'cl-telegram-bot2/api:web-app-info
-                                            :url "https://cl-echo-bot.dev.40ants.com/")))))
+        (keyboard (open-web-app "Open Mini App2"
+                                "https://cl-echo-bot.dev.40ants.com/")
+                  :one-time-keyboard t)))
   (defbot test-bot ()
     ()
     (:initial-state
      (state (send-text "Initial state. Give /app command to open the mini-app or press this button:"
-                       :buttons keyboard
-                       :keyboard-type :main)
+                       :reply-markup keyboard)
             :on-web-app-data (list 'save-form-data
                                    (send-text 'format-response-text
-                                              :parse-mode "Markdown"))
+                                              :parse-mode "Markdown"
+                                              :reply-markup (remove-keyboard)))
             :on-result (send-text "Welcome back!")
             :on-update (send-text "Give /app command to open the mini-app or press this button:"
-                                  :buttons keyboard
-                                  :keyboard-type :main)
+                                  :reply-markup keyboard)
             :commands (list
                        (command "/app"
                                 (send-text "App opening is not implemented yet.")
