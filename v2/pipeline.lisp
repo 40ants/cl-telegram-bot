@@ -1,15 +1,13 @@
 (uiop:define-package #:cl-telegram-bot2/pipeline
   (:use #:cl)
-  (:import-from #:log4cl)
+  (:import-from #:log)
+  (:import-from #:cl-telegram-bot2/api)
   (:import-from #:cl-telegram-bot2/bot
                 #:initial-state-class
                 #:api-uri
                 #:token
                 #:get-last-update-id
                 #:bot)
-  (:import-from #:anaphora
-                #:it
-                #:acond)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-state*
                 #:*current-bot*
@@ -26,12 +24,11 @@
                 #:fmt)
   (:import-from #:sento.actor
                 #:*state*)
+  (:import-from #:sento.actor-context)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-chat*)
   (:import-from #:closer-mop
                 #:slot-definition-type)
-  (:import-from #:alexandria
-                #:required-argument)
   (:import-from #:cl-telegram-bot2/states/base
                 #:state-id
                 #:base-state)

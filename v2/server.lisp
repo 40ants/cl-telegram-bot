@@ -3,7 +3,7 @@
   (:import-from #:bordeaux-threads
                 #:make-thread
                 #:destroy-thread)
-  (:import-from #:log4cl)
+  (:import-from #:log)
   ;; (:import-from #:cl-telegram-bot/update
   ;;               #:process-updates)
   ;; (:import-from #:cl-telegram-bot/response

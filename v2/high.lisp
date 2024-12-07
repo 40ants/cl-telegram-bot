@@ -1,7 +1,5 @@
 (uiop:define-package #:cl-telegram-bot2/high
   (:use #:cl)
-  (:import-from #:serapeum
-                #:defvar-unbound)
   (:import-from #:cl-telegram-bot2/api
                 #:send-photo
                 #:message-chat
@@ -9,8 +7,6 @@
                 #:update
                 #:chat-id
                 #:send-message)
-  (:import-from #:cl-telegram-bot2/generics
-                #:process)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-chat*)
   (:import-from #:lambda-fiddle
@@ -86,17 +82,3 @@
       (push message *collected-messages*))
     (values message)))
 
-
-;; (defun reply (text &rest rest &key #.*args*)
-;;   (let ((chat-id (chat-id *current-chat*)))
-;;     (apply #'send-message
-;;            chat-id
-;;            text
-;;            rest))
-;;   ;; (values)
-;;   )
-
-
-;; (defmethod process :around ((state chat-state) (update update))
-;;   (let* 
-;;     (call-next-method)))

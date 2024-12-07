@@ -29,4 +29,5 @@
 (asdf:register-system-packages "utilities.print-items" '("PRINT-ITEMS"))
 (asdf:register-system-packages "dexador" '("DEX"))
 (asdf:register-system-packages "sento" '("SENTO.ACTOR-SYSTEM"
+                                         "SENTO.ACTOR-CONTEXT"
                                          "SENTO.ACTOR"))

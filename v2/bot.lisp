@@ -5,12 +5,13 @@
                 #:required-argument
                 #:once-only)
   (:import-from #:sento.actor-system)
+  (:import-from #:sento.actor-context)
+  (:import-from #:cl-telegram-bot2/api)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-bot*)
   (:import-from #:cl-telegram-bot2/states/base
                 #:base-state)
-  (:export
-   #:defbot))
+  (:export #:defbot))
 (in-package #:cl-telegram-bot2/bot)
 
 

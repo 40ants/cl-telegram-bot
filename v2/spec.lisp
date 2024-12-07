@@ -19,7 +19,6 @@
                 #:curry
                 #:make-keyword
                 #:hash-table-alist)
-  (:import-from #:cl-telegram-bot2/deps)
   (:import-from #:njson
                 #:jget)
   (:import-from #:cl-json
