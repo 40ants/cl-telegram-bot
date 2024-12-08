@@ -4,18 +4,6 @@
                 #:make-thread
                 #:destroy-thread)
   (:import-from #:log)
-  ;; (:import-from #:cl-telegram-bot/update
-  ;;               #:process-updates)
-  ;; (:import-from #:cl-telegram-bot/response
-  ;;               #:reply)
-  ;; (:import-from #:cl-telegram-bot/bot
-  ;;               #:debug-mode
-  ;;               #:defbot)
-  ;; (:import-from #:cl-telegram-bot/message
-  ;;               #:on-message)
-  ;; (:import-from #:cl-telegram-bot/entities/command
-  ;;               #:update-commands
-  ;;               #:on-command)
   (:import-from #:trivial-backtrace
                 #:print-backtrace)
   (:import-from #:cl-telegram-bot2/pipeline
@@ -23,15 +11,8 @@
                 #:continue-processing)
   (:import-from #:cl-telegram-bot2/bot
                 #:debug-mode)
-  ;; This package exports only essential symbols, needed
-  ;; in 80% cases.
-  (:export ;; #:defbot
-           ;; #:on-message
-           ;; #:reply
-           #:start-polling
-           #:stop-polling
-           ;; #:on-command
-           ))
+  (:export #:start-polling
+           #:stop-polling))
 (in-package #:cl-telegram-bot2/server)
 
 
@@ -39,9 +20,17 @@
 (defvar *threads* nil)
 
 
-(defun start-polling (bot &key debug
-                                  (delay-between-retries 10)
-                                  (thread-name "telegram-bot"))
+(defun start-polling (bot &key
+                          debug
+                          (delay-between-retries 10)
+                          (thread-name "telegram-bot"))
+  "Start processing new updates from the Telegram API.
+
+   Pass bot instance as the first argument and maybe some other optional arguments.
+
+   If DEBUG argument is T, then bot will ignore updates which it can't to process without errors.
+   Otherwise, an interactive debugger will popup."
+  
   (when (getf *threads* bot)
     (error "Processing already started."))
 
@@ -61,14 +50,12 @@
          (stop-bot ()
            (stop-polling bot)))
 
-    ;; (update-commands bot)
-
     (cl-telegram-bot2/bot::start-actors bot)
     
     (setf (getf *threads* bot)
           (make-thread
            (lambda ()
-             (handler-bind ((error #'continue-processing-if-not-debug))
+             (handler-bind ((serious-condition #'continue-processing-if-not-debug))
                (process-updates bot)))
            :name thread-name))
 

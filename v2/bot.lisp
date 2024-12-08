@@ -64,7 +64,21 @@
 
 
 (defmacro defbot (name base-classes &optional slots &rest options)
-  "Use this macro to define a class of your Telegram bot."
+  "Use this macro to define a class of your Telegram bot.
+
+   Each bot has a state machine inside. The simplest bot has only one state:
+
+   ```
+   (defbot test-bot ()
+     ()
+     (:initial-state
+      (state (send-text \"Hello world!\"))))
+   ```
+
+   This bot will green each who activates it.
+
+   To learn more about bot states and actions see CL-TELEGRAM-BOT-DOCS/STATES::@STATES-AND-ACTIONS section.
+"
   (unless (member 'bot base-classes)
     (setf base-classes
           (append base-classes

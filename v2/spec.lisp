@@ -25,6 +25,7 @@
                 #:simplified-camel-case-to-lisp)
   (:import-from #:str
                 #:param-case)
+  (:import-from #:cl-telegram-bot2/deps)
   (:import-from #:cl-telegram-bot2/errors
                 #:telegram-error)
   (:import-from #:quri))

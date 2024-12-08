@@ -1,4 +1,4 @@
-(uiop:define-package #:cl-telegram-bot2-examples/calc
+(uiop:define-package #:cl-telegram-bot2-examples/echo
   (:use #:cl)
     (:import-from #:cl-telegram-bot2/state
                 #:state)
@@ -20,6 +20,8 @@
                 #:back-to
                 #:back)
   (:import-from #:cl-telegram-bot2/api
+                #:update-message
+                #:message-text
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/states/ask-for-number
                 #:ask-for-number)
@@ -30,51 +32,20 @@
   (:import-from #:40ants-logging)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back-to-id))
-(in-package #:cl-telegram-bot2-examples/calc)
+(in-package #:cl-telegram-bot2-examples/echo)
 
 
-
-(defun calc-result ()
-  (let* ((num1 (var "first-num"))
-         (num2 (var "second-num"))
-         (op-name (var "operation-name"))
-         (op (gethash op-name
-                      (dict "+" #'+
-                            "-" #'-
-                            "*" #'*
-                            "/" #'/))))
-    (format nil "Result is: ~A"
-            (funcall op num1
-                     num2))))
-
-(defun make-prompt-for-op-choice ()
-  (fmt "Select an operation to apply to ~A and ~A:"
-       (var "first-num")
-       (var "second-num")))
+(defun reply-with-same-text (update)
+  (reply (message-text
+          (update-message update)))
+  (values))
 
 
 (defbot test-bot ()
   ()
   (:initial-state
-   (state nil
-          :id "start"
-          :on-update
-          (state (list
-                  (send-text "Let's calculate!")
-                  (ask-for-number
-                   "Enter the first number:"
-                   :to "first-num"
-                   :on-validation-error (send-text "Enter the number, please.")
-                   :on-success (ask-for-number
-                                "Enter the second number:"
-                                :to "second-num"
-                                :on-validation-error (send-text "Enter the number, please.")
-                                :on-success (ask-for-choice
-                                             'make-prompt-for-op-choice
-                                             '("+" "-" "*" "/")
-                                             :to "operation-name"
-                                             :on-success (list (send-text 'calc-result)
-                                                               (back-to-id "start"))))))))))
+   (state (send-text "Hello, I'm the echo bot.")
+          :on-update 'reply-with-same-text)))
 
 
 (defvar *bot* nil)

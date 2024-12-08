@@ -11,6 +11,8 @@
                 #:defsection-copy)
   (:import-from #:cl-telegram-bot-docs/changelog
                 #:@changelog)
+  (:import-from #:cl-telegram-bot-docs/states
+                #:@states-and-actions)
   (:import-from #:docs-config
                 #:docs-config)
   (:import-from #:40ants-doc/autodoc
@@ -57,8 +59,8 @@
 ![Quicklisp](http://quickdocs.org/badge/cl-telegram-bot.svg)
 "
   (@installation section)
-  (@quickstart section)
-  (@api section)
+  (@v2 section)
+  (@v1 section)
   (@credits section))
 
 
@@ -151,4 +153,17 @@ And start communicating with him:
 ")
 
 
+(defsection @v1 (:title "v1")
+  (@quickstart section)
+  (@api section))
+
+
+(defsection @v2 (:title "v2")
+  (@states-and-actions section)
+  (@api-v2 section))
+
+
 (defautodoc @api (:system :cl-telegram-bot))
+
+(defautodoc @api-v2 (:system :cl-telegram-bot2
+                     :ignore-packages ("cl-telegram-bot2/api")))
