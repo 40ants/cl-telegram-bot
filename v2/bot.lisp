@@ -56,11 +56,11 @@
    (actors-system :initform nil
                   :type (or null sento.actor-system::actor-system)
                   :accessor actors-system)
-   (initial-state-class :initarg :initial-state-class
-                        :initform (required-argument "Initial state is required argument.")
-                        :type (or symbol
-                                  base-state)
-                        :reader initial-state-class)))
+   (initial-state :initarg :initial-state
+                  :initform (required-argument ":INITIAL-STATE is required argument.")
+                  :type (or symbol
+                            base-state)
+                  :reader initial-state)))
 
 
 (defmacro defbot (name base-classes &optional slots &rest options)
@@ -83,13 +83,13 @@
     (setf base-classes
           (append base-classes
                   (list 'bot))))
-  (let* ((initial-state-class
+  (let* ((initial-state
            (first
             (assoc-value options :initial-state)))
          (default-initargs
-           (when initial-state-class
-             (list :initial-state-class
-                   initial-state-class))))
+           (when initial-state
+             (list :initial-state
+                   initial-state))))
     `(progn
        (defclass ,name ,base-classes
          ,slots

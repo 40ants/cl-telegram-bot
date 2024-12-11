@@ -17,6 +17,8 @@
                 #:docs-config)
   (:import-from #:40ants-doc/autodoc
                 #:defautodoc)
+  (:import-from #:cl-telegram-bot-docs/tutorial
+                #:@first-bot)
   (:export #:@index
            #:@readme
            #:@changelog))
@@ -160,6 +162,7 @@ And start communicating with him:
 
 (defsection @v2 (:title "v2")
   (@states-and-actions section)
+  (@first-bot section)
   (@api-v2 section))
 
 

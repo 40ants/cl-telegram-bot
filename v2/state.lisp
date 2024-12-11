@@ -141,30 +141,29 @@
   (loop for obj in items
         thereis (etypecase obj
                   (symbol
-                     (cond
-                       ((fboundp obj)
-                        (case (arity obj)
-                          (0
-                             (process (funcall obj)
-                                      update))
-                          (1
-                             ;; If function accepts a single argument,
-                             ;; then we call it with update object.
-                             ;; This way objects like web-app-data
-                             ;; could be processed.
-                             (let ((maybe-other-action
-                                     (funcall obj update)))
-                               (when maybe-other-action
-                                 (process maybe-other-action
-                                          update))))
-                          (otherwise
-                             (error "Unable to process ~A because function ~S requires ~A arguments."
-                                    update
-                                    obj
-                                    (arity obj)))))
-                       (t
-                        (error "Symbol ~S should be funcallble."
-                               obj))))
+                     (let ((maybe-other-action
+                             (cond
+                               ((fboundp obj)
+                                (case (arity obj)
+                                  (0
+                                     (funcall obj))
+                                  (1
+                                     ;; If function accepts a single argument,
+                                     ;; then we call it with update object.
+                                     ;; This way objects like web-app-data
+                                     ;; could be processed.
+                                     (funcall obj update))
+                                  (otherwise
+                                     (error "Unable to process ~A because function ~S requires ~A arguments."
+                                            update
+                                            obj
+                                            (arity obj)))))
+                               (t
+                                (error "Symbol ~S should be funcallble."
+                                       obj)))))
+                       (when maybe-other-action
+                         (process maybe-other-action
+                                  update))))
                   (action
                      (process obj update))
                   (base-state
@@ -200,9 +199,38 @@
 (defmethod cl-telegram-bot2/generics:on-result ((items list) result)
   (loop for obj in items
         thereis (etypecase obj
+                  (symbol
+                     ;; Here we apply on-result again to the
+                     ;; function result because it can return
+                     ;; another action which should be processed
+                     ;; in it's turn
+                     (let ((maybe-other-action
+                             (cond
+                               ((fboundp obj)
+                                (case (arity obj)
+                                  (0
+                                     (funcall obj))
+                                  (1
+                                     ;; If function accepts a single argument,
+                                     ;; then we call it with update object.
+                                     ;; This way objects like web-app-data
+                                     ;; could be processed.
+                                     (funcall obj result))
+                                  (otherwise
+                                     (error "Unable to process ~A because function ~S requires ~A arguments."
+                                            result
+                                            obj
+                                            (arity obj)))))
+                               (t
+                                (error "Symbol ~S should be funcallble."
+                                       obj)))))
+                       (when maybe-other-action
+                         (cl-telegram-bot2/generics:on-result
+                          maybe-other-action
+                          result))))
                   (action
-                   (cl-telegram-bot2/generics:on-result obj result))
+                     (cl-telegram-bot2/generics:on-result obj result))
                   (base-state
-                   obj)
+                     obj)
                   (back
-                   obj))))
+                     obj))))

@@ -73,6 +73,37 @@ See other support events in [`state`][03e8] function documentation.
 
 #### Actions
 
+Actions in cl-telegra-bot are small objects holding an information about what should be done on some event. Typically, you will want to reply with some text or send a photo.
+
+Usually, actions are created using a function having the same name as action's class. Here are which actions are available:
+
+* [`send-text`][5d6f]
+* [`send-photo`][7c91]
+* [`send-invoice`][d23c]
+* [`edit-message-media`][46f2]
+
+More actions will be added in future and you can create your own.
+
+Also, a function bound symbol can be used instead an action object. Why do we require a symbol but not a function object? Because symbol has a name and it can be useful when we want to save bot's state or to render states graph.
+
+<a id="x-28CL-TELEGRAM-BOT-DOCS-2FSTATES-3A-3A-40EVENT-PROCESSING-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
+
+#### Event processing
+
+When some event occur, a corresponding generic function is called first on state object then on an action specified for this kind.
+
+For example, if new update was received, then [`cl-telegram-bot2/generics:process`][9647] generic-function will be called with current state as the first argument
+and update object as the second argument. Then the method specified on state class will call the same [`cl-telegram-bot2/generics:process`][9647] generic-function
+on the object specified as `:ON-UPDATE` argument for the action. If action is a symbol, then it's function will be called with update object as a single argument in case if this function accepts one argument and without any arguments otherwise.
+
+Action's method should return should return a new state object if it wants to change the current bot's state or `NIL` otherwise. If new state was returned, then `on-activate` event will be processed afterwards.
+
+Instead of one action a list of actions can be specified as an event handler. In this case processing will stop on an action which returns a new state.
+
+<a id="x-28CL-TELEGRAM-BOT-DOCS-2FTUTORIAL-3A-3A-40FIRST-BOT-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
+
+### Our First Bot Tutorial
+
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40API-V2-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
 ### API
@@ -95,7 +126,7 @@ See other support events in [`state`][03e8] function documentation.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTION-3AACTION-20CLASS-29"></a>
 
-####### [class](e150) `action` ()
+####### [class](f8a1) `action` ()
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FACTION-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -103,7 +134,7 @@ See other support events in [`state`][03e8] function documentation.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTION-3ACALL-IF-ACTION-20FUNCTION-29"></a>
 
-###### [function](6dc4) `call-if-action` obj func &rest args
+###### [function](935e) `call-if-action` obj func &rest args
 
 Useful in [`cl-telegram-bot2/generics:process`][9647] handlers in case if
 state has additional handler stored in the slot and this
@@ -131,21 +162,21 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3AEDIT-MESSAGE-MEDIA-20CLASS-29"></a>
 
-####### [class](a17a) `edit-message-media` (action)
+####### [class](62c9) `edit-message-media` (action)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3A-3ACAPTION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3AEDIT-MESSAGE-MEDIA-29-29"></a>
 
-####### [reader](03f8) `caption` (edit-message-media) (:caption)
+####### [reader](51de) `caption` (edit-message-media) (:caption)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3A-3AINLINE-KEYBOARD-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3AEDIT-MESSAGE-MEDIA-29-29"></a>
 
-####### [reader](b44f) `inline-keyboard` (edit-message-media) (:inline-keyboard)
+####### [reader](8a73) `inline-keyboard` (edit-message-media) (:inline-keyboard)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3A-3AMEDIA-PATH-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3AEDIT-MESSAGE-MEDIA-29-29"></a>
 
-####### [reader](2f9b) `media-path` (edit-message-media) (:path)
+####### [reader](63dc) `media-path` (edit-message-media) (:path)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -153,7 +184,7 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3AEDIT-MESSAGE-MEDIA-20FUNCTION-29"></a>
 
-###### [function](e73e) `edit-message-media` path-or-func-name &key caption inline-keyboard
+###### [function](cb16) `edit-message-media` path-or-func-name &key caption inline-keyboard
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -173,41 +204,41 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-20CLASS-29"></a>
 
-####### [class](9c97) `send-invoice` (action)
+####### [class](b31b) `send-invoice` (action)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3ACOMMANDS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](679b) `commands` (send-invoice) (:commands = nil)
+####### [reader](5d6d) `commands` (send-invoice) (:commands = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3ACURRENCY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](ad46) `currency` (send-invoice) (:currency)
+####### [reader](f37b) `currency` (send-invoice) (:currency)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3ADESCRIPTION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](9391) `description` (send-invoice) (:description)
+####### [reader](841b) `description` (send-invoice) (:description)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3AON-SUCCESS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](71e9) `on-success` (send-invoice) (:on-success)
+####### [reader](e70b) `on-success` (send-invoice) (:on-success)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3APAYLOAD-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](7b7b) `payload` (send-invoice) (:payload)
+####### [reader](2bc5) `payload` (send-invoice) (:payload)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3APRICES-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](7914) `prices` (send-invoice) (:prices)
+####### [reader](ffe1) `prices` (send-invoice) (:prices)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3APROVIDER-TOKEN-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](46f4) `provider-token` (send-invoice) (:provider-token)
+####### [reader](6ffa) `provider-token` (send-invoice) (:provider-token)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3A-3ATITLE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-29-29"></a>
 
-####### [reader](0b5b) `title` (send-invoice) (:title)
+####### [reader](9343) `title` (send-invoice) (:title)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -215,7 +246,7 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-20FUNCTION-29"></a>
 
-###### [function](e136) `send-invoice` title description payload provider-token currency prices &key on-success commands
+###### [function](44fc) `send-invoice` title description payload provider-token currency prices &key on-success commands
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -235,21 +266,21 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-20CLASS-29"></a>
 
-####### [class](8cf0) `send-photo` (action)
+####### [class](db28) `send-photo` (action)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3A-3ACAPTION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-29-29"></a>
 
-####### [reader](f28b) `caption` (send-photo) (:caption)
+####### [reader](5a24) `caption` (send-photo) (:caption)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3A-3AIMAGE-PATH-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-29-29"></a>
 
-####### [reader](d96a) `image-path` (send-photo) (:path)
+####### [reader](23c1) `image-path` (send-photo) (:path)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3A-3AINLINE-KEYBOARD-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-29-29"></a>
 
-####### [reader](9592) `inline-keyboard` (send-photo) (:inline-keyboard)
+####### [reader](79e9) `inline-keyboard` (send-photo) (:inline-keyboard)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -257,7 +288,7 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-20FUNCTION-29"></a>
 
-###### [function](758a) `send-photo` path-or-func-name &key caption inline-keyboard
+###### [function](6b64) `send-photo` path-or-func-name &key caption inline-keyboard
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -277,23 +308,23 @@ a new state or `NIL` will be returned.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3ASEND-TEXT-20CLASS-29"></a>
 
-####### [class](7586) `send-text` (action)
+####### [class](e756) `send-text` (action)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3A-3APARSE-MODE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3ASEND-TEXT-29-29"></a>
 
-####### [reader](6b81) `parse-mode` (send-text) (:parse-mode = nil)
+####### [reader](aebc) `parse-mode` (send-text) (:parse-mode = nil)
 
-Supported values are: "Markdown", "Markdown`V2`" or "`HTML`". Read more about formatting options in the Telegram documentaion: https://core.telegram.org/bots/api#formatting-options
+Supported values are: `"Markdown"`, `"MarkdownV2"` or `"HTML"`. Read more about formatting options in the Telegram documentaion: https://core.telegram.org/bots/api#formatting-options
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3A-3AREPLY-MARKUP-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3ASEND-TEXT-29-29"></a>
 
-####### [reader](ca65) `reply-markup` (send-text) (:reply-markup = nil)
+####### [reader](ba2b) `reply-markup` (send-text) (:reply-markup = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3A-3ATEXT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3ASEND-TEXT-29-29"></a>
 
-####### [reader](3ab9) `text` (send-text) (:text)
+####### [reader](caff) `text` (send-text) (:text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -301,7 +332,7 @@ Supported values are: "Markdown", "Markdown`V2`" or "`HTML`". Read more about fo
 
 <a id="x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3ASEND-TEXT-20FUNCTION-29"></a>
 
-###### [function](74dc) `send-text` text-or-func-name &key reply-markup parse-mode
+###### [function](8d82) `send-text` text-or-func-name &key reply-markup parse-mode
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FBOT-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -317,7 +348,7 @@ Supported values are: "Markdown", "Markdown`V2`" or "`HTML`". Read more about fo
 
 <a id="x-28CL-TELEGRAM-BOT2-2FBOT-3ADEFBOT-20-2840ANTS-DOC-2FLOCATIVES-3AMACRO-29-29"></a>
 
-###### [macro](7d9c) `defbot` name base-classes &optional slots &rest options
+###### [macro](7b29) `defbot` name base-classes &optional slots &rest options
 
 Use this macro to define a class of your Telegram bot.
 
@@ -351,13 +382,13 @@ To learn more about bot states and actions see [`States and Actions`][8e99] sect
 
 <a id="x-28CL-TELEGRAM-BOT2-2FERRORS-3ATELEGRAM-ERROR-20CONDITION-29"></a>
 
-####### [condition](afac) `telegram-error` (error)
+####### [condition](f6f1) `telegram-error` (error)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FERRORS-3AERROR-DESCRIPTION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FERRORS-3ATELEGRAM-ERROR-29-29"></a>
 
-####### [reader](afac) `error-description` (telegram-error) (:DESCRIPTION = '(REQUIRED-ARGUMENT
+####### [reader](f6f1) `error-description` (telegram-error) (:DESCRIPTION = '(REQUIRED-ARGUMENT
   "DESCRIPTION is required argument for TELEGRAM-ERROR class."))
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FGENERICS-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
@@ -374,7 +405,7 @@ To learn more about bot states and actions see [`States and Actions`][8e99] sect
 
 <a id="x-28CL-TELEGRAM-BOT2-2FGENERICS-3AON-PRE-CHECKOUT-QUERY-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](d8e9) `on-pre-checkout-query` bot query
+###### [generic-function](5431) `on-pre-checkout-query` bot query
 
 Pre-checkout-query object will be passed as this single arguement and
 function should return a boolean. When the function return True, user
@@ -389,13 +420,13 @@ to extract payload from the query and find associated invoice.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FGENERICS-3AON-RESULT-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](cd58) `on-result` state result
+###### [generic-function](6b39) `on-result` state result
 
 This method is called when some state exits and returns a result using `BACK` function.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FGENERICS-3AON-STATE-ACTIVATION-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](dd7c) `on-state-activation` state
+###### [generic-function](a4ae) `on-state-activation` state
 
 This method is called when chat actor's state is changed to a given `STATE`.
 
@@ -403,7 +434,7 @@ Such hook can be used to send some prompt to the user.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FGENERICS-3AON-STATE-DELETION-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](b15b) `on-state-deletion` state
+###### [generic-function](214b) `on-state-deletion` state
 
 This method is called when chat actor's state is returned from a given `STATE` back to the previous state.
 
@@ -414,7 +445,7 @@ Such hook can be used to hide a keyboard or to delete temporary messages.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FGENERICS-3APROCESS-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](2115) `process` bot-or-state object
+###### [generic-function](4dd8) `process` bot-or-state object
 
 This method is called by when processing a single update.
 It is called multiple times on different parts of an update.
@@ -444,7 +475,7 @@ High level `API` for implementing Telegram bots.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FHIGH-3ACHAT-STATE-20CLASS-29"></a>
 
-####### [class](0c58) `chat-state` ()
+####### [class](ee98) `chat-state` ()
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FHIGH-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -452,11 +483,11 @@ High level `API` for implementing Telegram bots.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FHIGH-3AREPLY-20FUNCTION-29"></a>
 
-###### [function](ba8b) `reply` text &rest rest &key business-connection-id message-thread-id parse-mode entities link-preview-options disable-notification protect-content allow-paid-broadcast message-effect-id reply-parameters reply-markup
+###### [function](89a5) `reply` text &rest rest &key business-connection-id message-thread-id parse-mode entities link-preview-options disable-notification protect-content allow-paid-broadcast message-effect-id reply-parameters reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT2-2FHIGH-3AREPLY-WITH-PHOTO-20FUNCTION-29"></a>
 
-###### [function](dec9) `reply-with-photo` photo &rest rest &key business-connection-id message-thread-id caption parse-mode caption-entities show-caption-above-media has-spoiler disable-notification protect-content allow-paid-broadcast message-effect-id reply-parameters reply-markup
+###### [function](18d9) `reply-with-photo` photo &rest rest &key business-connection-id message-thread-id caption parse-mode caption-entities show-caption-above-media has-spoiler disable-notification protect-content allow-paid-broadcast message-effect-id reply-parameters reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FHIGH-3FMacros-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -464,7 +495,7 @@ High level `API` for implementing Telegram bots.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FHIGH-3ACOLLECT-SENT-MESSAGES-20-2840ANTS-DOC-2FLOCATIVES-3AMACRO-29-29"></a>
 
-###### [macro](03c9) `collect-sent-messages` &body body
+###### [macro](2905) `collect-sent-messages` &body body
 
 Returns as the first value a list of messages created by [`reply`][60a4] function called
 during `BODY` execution. Values returned by the `BODY` code are returned as the second,
@@ -474,423 +505,6 @@ Also, messages are collected when these actions are called:
 
 * `cl-telegram-bot2/actions/send-text:send-text` ([`1`][5d6f] [`2`][c8e7])
 * `cl-telegram-bot2/actions/send-photo:send-photo` ([`1`][7c91] [`2`][e0f8])
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-#### CL-TELEGRAM-BOT2/HIGH/KEYBOARD
-
-<a id="x-28-23A-28-2830-29-20BASE-CHAR-20-2E-20-22CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-22-29-20PACKAGE-29"></a>
-
-##### [package] `cl-telegram-bot2/high/keyboard`
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3FClasses-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Classes
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24CALL-CALLBACK-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### CALL-CALLBACK
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ACALL-CALLBACK-20CLASS-29"></a>
-
-####### [class](7302) `call-callback` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ACALLBACK-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ACALL-CALLBACK-29-29"></a>
-
-####### [reader](93e3) `callback-data` (call-callback) (:callback-data)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24COPY-TEXT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### COPY-TEXT
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ACOPY-TEXT-20CLASS-29"></a>
-
-####### [class](f1c3) `copy-text` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ATEXT-TO-COPY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ACOPY-TEXT-29-29"></a>
-
-####### [reader](8238) `text-to-copy` (copy-text) (:text-to-copy)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24OPEN-GAME-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### OPEN-GAME
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-GAME-20CLASS-29"></a>
-
-####### [class](a5a3) `open-game` (inline-keyboard-button-mixin button)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24OPEN-LOGIN-URL-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### OPEN-LOGIN-URL
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-LOGIN-URL-20CLASS-29"></a>
-
-####### [class](44ae) `open-login-url` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ABOT-USERNAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-LOGIN-URL-29-29"></a>
-
-####### [reader](79f6) `bot-username` (open-login-url) (:bot-username = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AFORWARD-TEXT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-LOGIN-URL-29-29"></a>
-
-####### [reader](9ac2) `forward-text` (open-login-url) (:forward-text = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ALOGIN-URL-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-LOGIN-URL-29-29"></a>
-
-####### [reader](b59f) `login-url` (open-login-url) (:login-url)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-WRITE-ACCESS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-LOGIN-URL-29-29"></a>
-
-####### [reader](c342) `request-write-access-p` (open-login-url) (:request-write-access = nil)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24OPEN-URL-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### OPEN-URL
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-URL-20CLASS-29"></a>
-
-####### [class](6660) `open-url` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AURL-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-URL-29-29"></a>
-
-####### [reader](3a2e) `url` (open-url) (:url)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24OPEN-WEB-APP-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### OPEN-WEB-APP
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-WEB-APP-20CLASS-29"></a>
-
-####### [class](609b) `open-web-app` (keyboard-button-mixin inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AWEB-APP-URL-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-WEB-APP-29-29"></a>
-
-####### [reader](4520) `web-app-url` (open-web-app) (:url)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24PAY-BUTTON-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### PAY-BUTTON
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3APAY-BUTTON-20CLASS-29"></a>
-
-####### [class](2bca) `pay-button` (inline-keyboard-button-mixin button)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24REQUEST-CHAT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### REQUEST-CHAT
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-20CLASS-29"></a>
-
-####### [class](0733) `request-chat` (keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ABOT-ADMINISTRATION-RIGHTS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](0057) `bot-administration-rights` (request-chat) (:bot-administration-rights = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ABOT-IS-MEMBER-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](f5f6) `bot-is-member-p` (request-chat) (:bot-is-member = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ACHAT-HAS-USERNAME-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](d0fd) `chat-has-username-p` (request-chat) (:chat-has-username = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ACHAT-IS-CHANNEL-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](3eb4) `chat-is-channel-p` (request-chat) (:chat-is-channel = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ACHAT-IS-CREATED-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](4974) `chat-is-created-p` (request-chat) (:chat-is-created = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3ACHAT-IS-FORUM-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](4fd4) `chat-is-forum-p` (request-chat) (:chat-is-forum = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-PHOTO-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](340d) `request-photo-p` (request-chat) (:request-photo = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-TITLE-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](b6be) `request-title-p` (request-chat) (:request-title = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-USERNAME-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](c35c) `request-username-p` (request-chat) (:request-username = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AUSER-ADMINISTRATION-RIGHTS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](0d8d) `user-administration-rights` (request-chat) (:user-administration-rights = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AUSERS-REQUEST-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-29-29"></a>
-
-####### [reader](fcd2) `users-request-id` (request-chat) (:REQUEST-ID = (REQUIRED-ARGUMENT "Argument :request-id is required."))
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24REQUEST-CONTACT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### REQUEST-CONTACT
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CONTACT-20CLASS-29"></a>
-
-####### [class](a565) `request-contact` (keyboard-button-mixin button)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24REQUEST-LOCATION-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### REQUEST-LOCATION
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-LOCATION-20CLASS-29"></a>
-
-####### [class](b61d) `request-location` (keyboard-button-mixin button)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24REQUEST-POLL-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### REQUEST-POLL
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-POLL-20CLASS-29"></a>
-
-####### [class](b83b) `request-poll` (keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUESTED-POLL-TYPE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-POLL-29-29"></a>
-
-####### [reader](942f) `requested-poll-type` (request-poll) (:poll-type = nil)
-
-If "quiz" is passed, the user will be allowed to create only polls in the quiz mode. If "regular" is passed, only regular polls will be allowed. Otherwise, the user will be allowed to create a poll of any type.
-
-`API`: https://core.telegram.org/bots/api#keyboardbuttonpolltype
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24REQUEST-USERS-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### REQUEST-USERS
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-20CLASS-29"></a>
-
-####### [class](0ba1) `request-users` (keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AMAX-QUANTITY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](cf39) `max-quantity` (request-users) (:max-quantity = 1)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-NAME-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](73f4) `request-name-p` (request-users) (:request-name = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-PHOTO-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](3400) `request-photo-p` (request-users) (:request-photo = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AREQUEST-USERNAME-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](6cca) `request-username-p` (request-users) (:request-username = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AUSER-IS-BOT-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](1469) `user-is-bot-p` (request-users) (:user-is-bot = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AUSER-IS-PREMIUM-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](4d07) `user-is-premium-p` (request-users) (:user-is-premium = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AUSERS-REQUEST-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-29-29"></a>
-
-####### [reader](2dcd) `users-request-id` (request-users) (:REQUEST-ID = (REQUIRED-ARGUMENT "Argument :request-id is required."))
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24SWITCH-INLINE-QUERY-CHOOSEN-CHAT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### SWITCH-INLINE-QUERY-CHOOSEN-CHAT
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-20CLASS-29"></a>
-
-####### [class](9f1e) `switch-inline-query-choosen-chat` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AALLOW-BOT-CHATS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-29-29"></a>
-
-####### [reader](6b00) `allow-bot-chats-p` (switch-inline-query-choosen-chat) (:allow-bot-chats)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AALLOW-CHANNEL-CHATS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-29-29"></a>
-
-####### [reader](f3c0) `allow-channel-chats-p` (switch-inline-query-choosen-chat) (:allow-channel-chats)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AALLOW-GROUP-CHATS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-29-29"></a>
-
-####### [reader](ae78) `allow-group-chats-p` (switch-inline-query-choosen-chat) (:allow-group-chats)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AALLOW-USER-CHATS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-29-29"></a>
-
-####### [reader](5602) `allow-user-chats-p` (switch-inline-query-choosen-chat) (:allow-user-chats)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AQUERY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-29-29"></a>
-
-####### [reader](ffc6) `query` (switch-inline-query-choosen-chat) (:query)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24SWITCH-INLINE-QUERY-CURRENT-CHAT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### SWITCH-INLINE-QUERY-CURRENT-CHAT
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CURRENT-CHAT-20CLASS-29"></a>
-
-####### [class](afad) `switch-inline-query-current-chat` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AINLINE-QUERY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CURRENT-CHAT-29-29"></a>
-
-####### [reader](44cf) `inline-query` (switch-inline-query-current-chat) (:inline-query)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24SWITCH-INLINE-QUERY-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### SWITCH-INLINE-QUERY
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-20CLASS-29"></a>
-
-####### [class](b57c) `switch-inline-query` (inline-keyboard-button-mixin button)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3A-3AINLINE-QUERY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-29-29"></a>
-
-####### [reader](90aa) `inline-query` (switch-inline-query) (:inline-query)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-24TEXT-BUTTON-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### TEXT-BUTTON
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ATEXT-BUTTON-20CLASS-29"></a>
-
-####### [class](1a98) `text-button` (keyboard-button-mixin inline-keyboard-button-mixin button)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Functions
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ACALL-CALLBACK-20FUNCTION-29"></a>
-
-###### [function](880a) `call-callback` title callback-data
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ACOPY-TEXT-20FUNCTION-29"></a>
-
-###### [function](72c7) `copy-text` button-title text-to-copy
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AINLINE-KEYBOARD-20FUNCTION-29"></a>
-
-###### [function](15be) `inline-keyboard` buttons
-
-Returns object of `CL-TELEGRAM-BOT2/API:INLOINE-KEYBOARD-MARKUP` class.
-
-`API` docs: https://core.telegram.org/bots/api#replykeyboardmarkup
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AKEYBOARD-20FUNCTION-29"></a>
-
-###### [function](d55b) `keyboard` buttons &rest rest &key is-persistent resize-keyboard one-time-keyboard input-field-placeholder selective
-
-Returns object of `CL-TELEGRAM-BOT2/API:REPLY-KEYBOARD-MARKUP` class.
-
-`API` docs: https://core.telegram.org/bots/api#replykeyboardmarkup
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-GAME-20FUNCTION-29"></a>
-
-###### [function](0193) `open-game` button-title
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-LOGIN-URL-20FUNCTION-29"></a>
-
-###### [function](d9b7) `open-login-url` button-title login-url &rest rest &key forward-text bot-username request-write-access
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-URL-20FUNCTION-29"></a>
-
-###### [function](17ea) `open-url` title url
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AOPEN-WEB-APP-20FUNCTION-29"></a>
-
-###### [function](73a1) `open-web-app` title web-app-url
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3APAY-BUTTON-20FUNCTION-29"></a>
-
-###### [function](d2b6) `pay-button` button-title
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREMOVE-KEYBOARD-20FUNCTION-29"></a>
-
-###### [function](ced3) `remove-keyboard` &key selective
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CHAT-20FUNCTION-29"></a>
-
-###### [function](1a15) `request-chat` title request-id &rest rest &key chat-is-channel chat-is-forum chat-has-username chat-is-created user-administration-rights bot-administration-rights bot-is-member request-title request-username request-photo
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-CONTACT-20FUNCTION-29"></a>
-
-###### [function](0149) `request-contact` title
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-LOCATION-20FUNCTION-29"></a>
-
-###### [function](5d5e) `request-location` title
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-POLL-20FUNCTION-29"></a>
-
-###### [function](a32a) `request-poll` title &rest rest &key poll-type
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3AREQUEST-USERS-20FUNCTION-29"></a>
-
-###### [function](7cf5) `request-users` title request-id &rest rest &key user-is-bot user-is-premium max-quantity request-name request-username request-photo
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-20FUNCTION-29"></a>
-
-###### [function](7887) `switch-inline-query` title inline-query
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CHOOSEN-CHAT-20FUNCTION-29"></a>
-
-###### [function](badc) `switch-inline-query-choosen-chat` title &rest rest &key query allow-user-chats allow-bot-chats allow-group-chats allow-channel-chats
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ASWITCH-INLINE-QUERY-CURRENT-CHAT-20FUNCTION-29"></a>
-
-###### [function](f2d1) `switch-inline-query-current-chat` title inline-query
-
-<a id="x-28CL-TELEGRAM-BOT2-2FHIGH-2FKEYBOARD-3ATEXT-BUTTON-20FUNCTION-29"></a>
-
-###### [function](8e2d) `text-button` title
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSERVER-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-#### CL-TELEGRAM-BOT2/SERVER
-
-<a id="x-28-23A-28-2823-29-20BASE-CHAR-20-2E-20-22CL-TELEGRAM-BOT2-2FSERVER-22-29-20PACKAGE-29"></a>
-
-##### [package] `cl-telegram-bot2/server`
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSERVER-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Functions
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSERVER-3ASTART-POLLING-20FUNCTION-29"></a>
-
-###### [function](c5ca) `start-polling` BOT &KEY DEBUG (DELAY-BETWEEN-RETRIES 10) (THREAD-NAME "telegram-bot")
-
-Start processing new updates from the Telegram `API`.
-
-Pass bot instance as the first argument and maybe some other optional arguments.
-
-If `DEBUG` argument is T, then bot will ignore updates which it can't to process without errors.
-Otherwise, an interactive debugger will popup.
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSERVER-3ASTOP-POLLING-20FUNCTION-29"></a>
-
-###### [function](1637) `stop-polling` bot
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSPEC-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -910,7 +524,7 @@ Otherwise, an interactive debugger will popup.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSPEC-3ATELEGRAM-OBJECT-20CLASS-29"></a>
 
-####### [class](54d4) `telegram-object` ()
+####### [class](e4e2) `telegram-object` ()
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATE-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -930,29 +544,29 @@ Otherwise, an interactive debugger will popup.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-20CLASS-29"></a>
 
-####### [class](f8a4) `state` (state-with-commands-mixin base-state)
+####### [class](ece1) `state` (state-with-commands-mixin base-state)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3A-3AON-ACTIVATION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-29-29"></a>
 
-####### [reader](7bc7) `on-activation` (state) (:on-activation = nil)
+####### [reader](cfb7) `on-activation` (state) (:on-activation = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3A-3AON-CALLBACK-QUERY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-29-29"></a>
 
-####### [reader](4644) `on-callback-query` (state) (:on-callback-query = nil)
+####### [reader](0aec) `on-callback-query` (state) (:on-callback-query = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3A-3AON-RESULT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-29-29"></a>
 
-####### [reader](35e7) `on-result` (state) (:on-result = nil)
+####### [reader](8c0d) `on-result` (state) (:on-result = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3A-3AON-UPDATE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-29-29"></a>
 
-####### [reader](b1ea) `on-update` (state) (:on-update = nil)
+####### [reader](115c) `on-update` (state) (:on-update = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3A-3AON-WEB-APP-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-29-29"></a>
 
-####### [reader](9536) `on-web-app-data` (state) (:on-web-app-data = nil)
+####### [reader](4978) `on-web-app-data` (state) (:on-web-app-data = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -960,7 +574,7 @@ Otherwise, an interactive debugger will popup.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-20FUNCTION-29"></a>
 
-###### [function](91df) `state` on-activation &key id commands on-update on-result on-callback-query on-web-app-data
+###### [function](de12) `state` on-activation &key id commands on-update on-result on-callback-query on-web-app-data
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -980,7 +594,7 @@ Otherwise, an interactive debugger will popup.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3ACOMMAND-20CLASS-29"></a>
 
-####### [class](e52d) `command` (base-command)
+####### [class](0685) `command` (base-command)
 
 This type of command is available only in the state where it is defined.
 
@@ -990,7 +604,7 @@ This type of command is available only in the state where it is defined.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3AGLOBAL-COMMAND-20CLASS-29"></a>
 
-####### [class](6783) `global-command` (command)
+####### [class](7d88) `global-command` (command)
 
 This command will be available during in all bot states.
 
@@ -1000,13 +614,13 @@ This command will be available during in all bot states.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3ASTATE-WITH-COMMANDS-MIXIN-20CLASS-29"></a>
 
-####### [class](73cf) `state-with-commands-mixin` ()
+####### [class](9fe8) `state-with-commands-mixin` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3ASTATE-COMMANDS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3ASTATE-WITH-COMMANDS-MIXIN-29-29"></a>
 
-####### [reader](2026) `state-commands` (state-with-commands-mixin) (:commands = nil)
+####### [reader](cfdf) `state-commands` (state-with-commands-mixin) (:commands = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1014,129 +628,11 @@ This command will be available during in all bot states.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3ACOMMAND-20FUNCTION-29"></a>
 
-###### [function](eca0) `command` name handler &key description
+###### [function](fea3) `command` name handler &key description
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATE-WITH-COMMANDS-3AGLOBAL-COMMAND-20FUNCTION-29"></a>
 
-###### [function](4891) `global-command` name handler &key description
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-#### CL-TELEGRAM-BOT2/STATES/ASK-FOR-CHOICE
-
-<a id="x-28-23A-28-2838-29-20BASE-CHAR-20-2E-20-22CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-22-29-20PACKAGE-29"></a>
-
-##### [package] `cl-telegram-bot2/states/ask-for-choice`
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3FClasses-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Classes
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-24ASK-FOR-CHOICE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### ASK-FOR-CHOICE
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-20CLASS-29"></a>
-
-####### [class](63b5) `ask-for-choice` (base-state)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3ABUTTONS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](f698) `buttons` (ask-for-choice) (:buttons = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3ADELETE-MESSAGES-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](58bf) `delete-messages-p` (ask-for-choice) (:delete-messages = t)
-
-Delete message with the keyboard and all warning messages when the choice was made or a new state was added to the stack.
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3ADELETE-WRONG-USER-MESSAGES-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](afae) `delete-wrong-user-messages-p` (ask-for-choice) (:delete-wrong-user-messages = t)
-
-Delete usual user messages which he might send by a mistake.
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3AMESSAGE-IDS-TO-DELETE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](9736) `message-ids-to-delete` (ask-for-choice) (= nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3AON-SUCCESS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](92b6) `on-success` (ask-for-choice) (:on-success = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3AON-WRONG-USER-MESSAGE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](5804) `on-wrong-user-message` (ask-for-choice) (:on-wrong-user-message = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3APROMPT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](d1da) `prompt` (ask-for-choice) (:prompt)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3AVAR-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [reader](bd09) `var-name` (ask-for-choice) (:to = \*default-var-name\*)
-
-**Accessors**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3A-3AMESSAGE-IDS-TO-DELETE-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-29-29"></a>
-
-####### [accessor](9736) `message-ids-to-delete` (ask-for-choice) (= nil)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Functions
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-CHOICE-3AASK-FOR-CHOICE-20FUNCTION-29"></a>
-
-###### [function](22c5) `ask-for-choice` PROMPT BUTTONS &KEY (TO \*DEFAULT-VAR-NAME\*) (DELETE-MESSAGES T) (DELETE-WRONG-USER-MESSAGES T) ON-SUCCESS (ON-WRONG-USER-MESSAGE (SEND-TEXT "Please push one of the buttons."))
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-#### CL-TELEGRAM-BOT2/STATES/ASK-FOR-NUMBER
-
-<a id="x-28-23A-28-2838-29-20BASE-CHAR-20-2E-20-22CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-22-29-20PACKAGE-29"></a>
-
-##### [package] `cl-telegram-bot2/states/ask-for-number`
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3FClasses-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Classes
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-24ASK-FOR-NUMBER-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-###### ASK-FOR-NUMBER
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3AASK-FOR-NUMBER-20CLASS-29"></a>
-
-####### [class](1dfe) `ask-for-number` (base-state)
-
-**Readers**
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3A-3AON-SUCCESS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3AASK-FOR-NUMBER-29-29"></a>
-
-####### [reader](8efb) `on-success` (ask-for-number) (:on-success = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3A-3AON-VALIDATION-ERROR-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3AASK-FOR-NUMBER-29-29"></a>
-
-####### [reader](444a) `on-validation-error` (ask-for-number) (:on-validation-error = nil)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3A-3APROMPT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3AASK-FOR-NUMBER-29-29"></a>
-
-####### [reader](6c48) `prompt` (ask-for-number) (:prompt)
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3A-3AVAR-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3AASK-FOR-NUMBER-29-29"></a>
-
-####### [reader](9b24) `var-name` (ask-for-number) (:to = \*default-var-name\*)
-
-<a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
-
-##### Functions
-
-<a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FASK-FOR-NUMBER-3AASK-FOR-NUMBER-20FUNCTION-29"></a>
-
-###### [function](253d) `ask-for-number` prompt &key (to \*default-var-name\*) on-success on-validation-error
+###### [function](0b6d) `global-command` name handler &key description
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1156,27 +652,27 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ABASE-STATE-20CLASS-29"></a>
 
-####### [class](473e) `base-state` (print-items-mixin)
+####### [class](6d13) `base-state` (print-items-mixin)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ASENT-MESSAGE-IDS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ABASE-STATE-29-29"></a>
 
-####### [reader](71fd) `sent-message-ids` (base-state) (= nil)
+####### [reader](029c) `sent-message-ids` (base-state) (= nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ASTATE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ABASE-STATE-29-29"></a>
 
-####### [reader](719f) `state-id` (base-state) (:id = nil)
+####### [reader](e4b3) `state-id` (base-state) (:id = nil)
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3A-3ASTATE-VARS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ABASE-STATE-29-29"></a>
 
-####### [reader](9a8b) `state-vars` (base-state) (= (dict))
+####### [reader](4482) `state-vars` (base-state) (= (dict))
 
 **Accessors**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ASENT-MESSAGE-IDS-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ABASE-STATE-29-29"></a>
 
-####### [accessor](71fd) `sent-message-ids` (base-state) (= nil)
+####### [accessor](029c) `sent-message-ids` (base-state) (= nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1184,11 +680,11 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ACLEAR-STATE-VARS-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](482f) `clear-state-vars` state
+###### [generic-function](15c2) `clear-state-vars` state
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3ASTATE-VAR-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](70b8) `state-var` state var-name
+###### [generic-function](4b91) `state-var` state var-name
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1196,7 +692,7 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FBASE-3AVAR-20FUNCTION-29"></a>
 
-###### [function](d749) `var` var-name
+###### [function](bcc3) `var` var-name
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FSTATES-2FWAIT-FOR-PAYMENT-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1216,13 +712,13 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FWAIT-FOR-PAYMENT-3AWAIT-FOR-PAYMENT-20CLASS-29"></a>
 
-####### [class](30d4) `wait-for-payment` (state-with-commands-mixin base-state)
+####### [class](72c2) `wait-for-payment` (state-with-commands-mixin base-state)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FWAIT-FOR-PAYMENT-3A-3AON-SUCCESS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FSTATES-2FWAIT-FOR-PAYMENT-3AWAIT-FOR-PAYMENT-29-29"></a>
 
-####### [reader](090b) `on-success` (wait-for-payment) (:on-success = nil)
+####### [reader](d979) `on-success` (wait-for-payment) (:on-success = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FSTATES-2FWAIT-FOR-PAYMENT-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1230,7 +726,7 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FSTATES-2FWAIT-FOR-PAYMENT-3AWAIT-FOR-PAYMENT-20FUNCTION-29"></a>
 
-###### [function](ccd3) `wait-for-payment` &key on-success commands
+###### [function](b8dc) `wait-for-payment` &key on-success commands
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FTERM-2FBACK-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1250,13 +746,13 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-ID-20CLASS-29"></a>
 
-####### [class](544d) `back-to-id` (back)
+####### [class](ea4e) `back-to-id` (back)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3APARENT-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-ID-29-29"></a>
 
-####### [reader](d3d0) `parent-id` (back-to-id) (:ID = (REQUIRED-ARGUMENT "Parent id is required argument."))
+####### [reader](2f47) `parent-id` (back-to-id) (:ID = (REQUIRED-ARGUMENT "Parent id is required argument."))
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FTERM-2FBACK-24BACK-TO-NTH-PARENT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1264,13 +760,13 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-NTH-PARENT-20CLASS-29"></a>
 
-####### [class](327f) `back-to-nth-parent` (back)
+####### [class](76a3) `back-to-nth-parent` (back)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3APARENT-NUMBER-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-NTH-PARENT-29-29"></a>
 
-####### [reader](10ad) `parent-number` (back-to-nth-parent) (:N = (REQUIRED-ARGUMENT "Parent number required argument."))
+####### [reader](ff05) `parent-number` (back-to-nth-parent) (:N = (REQUIRED-ARGUMENT "Parent number required argument."))
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FTERM-2FBACK-24BACK-TO-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1278,13 +774,13 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-20CLASS-29"></a>
 
-####### [class](7abd) `back-to` (back)
+####### [class](d94a) `back-to` (back)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ASTATE-CLASS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-29-29"></a>
 
-####### [reader](0b80) `state-class` (back-to) (:STATE-CLASS = (REQUIRED-ARGUMENT "State class is required argument."))
+####### [reader](4f6c) `state-class` (back-to) (:STATE-CLASS = (REQUIRED-ARGUMENT "State class is required argument."))
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FTERM-2FBACK-24BACK-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1292,13 +788,13 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-20CLASS-29"></a>
 
-####### [class](aa98) `back` ()
+####### [class](4744) `back` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ARESULT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-29-29"></a>
 
-####### [reader](5422) `result` (back) (:result = nil)
+####### [reader](3e45) `result` (back) (:result = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT2-2FTERM-2FBACK-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1306,19 +802,19 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-20FUNCTION-29"></a>
 
-###### [function](6fbc) `back` &optional result
+###### [function](a4fc) `back` &optional result
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-20FUNCTION-29"></a>
 
-###### [function](e937) `back-to` state-class &optional result
+###### [function](52e8) `back-to` state-class &optional result
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-ID-20FUNCTION-29"></a>
 
-###### [function](b0c1) `back-to-id` id &optional result
+###### [function](ad5d) `back-to-id` id &optional result
 
 <a id="x-28CL-TELEGRAM-BOT2-2FTERM-2FBACK-3ABACK-TO-NTH-PARENT-20FUNCTION-29"></a>
 
-###### [function](3823) `back-to-nth-parent` n &optional result
+###### [function](417b) `back-to-nth-parent` n &optional result
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT2-2FUTILS-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1334,7 +830,7 @@ Delete usual user messages which he might send by a mistake.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FUTILS-3ADEEP-COPY-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](3da5) `deep-copy` object
+###### [generic-function](677d) `deep-copy` object
 
 Does a general deep-copy on the given object and sub-pieces.
 Returns atoms, numbers and chars. 
@@ -1347,21 +843,21 @@ Runs copy-structure on pathnames, hash tables and other structure-objects
 
 <a id="x-28CL-TELEGRAM-BOT2-2FUTILS-3AARITY-20FUNCTION-29"></a>
 
-###### [function](f4f3) `arity` funcallable
+###### [function](c7dd) `arity` funcallable
 
 <a id="x-28CL-TELEGRAM-BOT2-2FUTILS-3ACALL-IF-NEEDED-20FUNCTION-29"></a>
 
-###### [function](4d69) `call-if-needed` value &rest args
+###### [function](3d05) `call-if-needed` value &rest args
 
 If value is a fbound `SYMBOL`, then calls as a function and then returns a result.
 
 <a id="x-28CL-TELEGRAM-BOT2-2FUTILS-3AFROM-JSON-20FUNCTION-29"></a>
 
-###### [function](6be8) `from-json` string
+###### [function](2353) `from-json` string
 
 <a id="x-28CL-TELEGRAM-BOT2-2FUTILS-3ATO-JSON-20FUNCTION-29"></a>
 
-###### [function](b4aa) `to-json` obj
+###### [function](83c1) `to-json` obj
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40V1-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1453,47 +949,47 @@ And start communicating with him:
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ABOT-20CLASS-29"></a>
 
-####### [class](d8db) `bot` ()
+####### [class](dc41) `bot` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AAPI-URI-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](e696) `api-uri` (bot) (:API-URI = "https://api.telegram.org/")
+####### [reader](3e78) `api-uri` (bot) (:API-URI = "https://api.telegram.org/")
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ABOT-INFO-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](120a) `bot-info` (bot) (= nil)
+####### [reader](97d9) `bot-info` (bot) (= nil)
 
 This slot will be filled with [`cl-telegram-bot/user:user`][81a4] object on first access using a call to [`cl-telegram-bot/user:get-me`][d037] function.
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ADEBUG-MODE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](eb4a) `debug-mode` (bot) (:debug-mode = nil)
+####### [reader](66e4) `debug-mode` (bot) (:debug-mode = nil)
 
 When debug mode is T, then interactive debugger will be called on each error.
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AFILE-ENDPOINT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](a294) `file-endpoint` (bot) (:file-endpoint = nil)
+####### [reader](3642) `file-endpoint` (bot) (:file-endpoint = nil)
 
 `HTTPS` file-endpoint
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AGET-ENDPOINT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](4a04) `get-endpoint` (bot) (:endpoint)
+####### [reader](f161) `get-endpoint` (bot) (:endpoint)
 
 `HTTPS` endpoint
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AGET-LAST-UPDATE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](1453) `get-last-update-id` (bot) (= 0)
+####### [reader](6bc1) `get-last-update-id` (bot) (= 0)
 
 Update id
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ASENT-COMMANDS-CACHE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](b157) `sent-commands-cache` (bot) (= nil)
+####### [reader](fb4e) `sent-commands-cache` (bot) (= nil)
 
 Command processing code will use this cache to update commands list on the server
 when a new method for [`cl-telegram-bot/entities/command:on-command`][56c0] generic-function is defined.
@@ -1502,7 +998,7 @@ This slot is for internal use.
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ATOKEN-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [reader](3f5d) `token` (bot) (:token = nil)
+####### [reader](a13e) `token` (bot) (:token = nil)
 
 Bot token given by BotFather
 
@@ -1510,29 +1006,29 @@ Bot token given by BotFather
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AAPI-URI-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [accessor](e696) `api-uri` (bot) (:API-URI = "https://api.telegram.org/")
+####### [accessor](3e78) `api-uri` (bot) (:API-URI = "https://api.telegram.org/")
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ADEBUG-MODE-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [accessor](eb4a) `debug-mode` (bot) (:debug-mode = nil)
+####### [accessor](66e4) `debug-mode` (bot) (:debug-mode = nil)
 
 When debug mode is T, then interactive debugger will be called on each error.
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AFILE-ENDPOINT-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [accessor](a294) `file-endpoint` (bot) (:file-endpoint = nil)
+####### [accessor](3642) `file-endpoint` (bot) (:file-endpoint = nil)
 
 `HTTPS` file-endpoint
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3AGET-LAST-UPDATE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [accessor](1453) `get-last-update-id` (bot) (= 0)
+####### [accessor](6bc1) `get-last-update-id` (bot) (= 0)
 
 Update id
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ASENT-COMMANDS-CACHE-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [accessor](b157) `sent-commands-cache` (bot) (= nil)
+####### [accessor](fb4e) `sent-commands-cache` (bot) (= nil)
 
 Command processing code will use this cache to update commands list on the server
 when a new method for [`cl-telegram-bot/entities/command:on-command`][56c0] generic-function is defined.
@@ -1541,7 +1037,7 @@ This slot is for internal use.
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ATOKEN-20-2840ANTS-DOC-2FLOCATIVES-3AACCESSOR-20CL-TELEGRAM-BOT-2FBOT-3ABOT-29-29"></a>
 
-####### [accessor](3f5d) `token` (bot) (:token = nil)
+####### [accessor](a13e) `token` (bot) (:token = nil)
 
 Bot token given by BotFather
 
@@ -1551,7 +1047,7 @@ Bot token given by BotFather
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ADEFBOT-20-2840ANTS-DOC-2FLOCATIVES-3AMACRO-29-29"></a>
 
-###### [macro](f7a6) `defbot` name &optional slots options
+###### [macro](574f) `defbot` name &optional slots options
 
 Use this macro to define a class of your Telegram bot.
 
@@ -1573,21 +1069,21 @@ Use this macro to define a class of your Telegram bot.
 
 <a id="x-28CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-20CLASS-29"></a>
 
-####### [class](3feb) `callback` ()
+####### [class](4cfa) `callback` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-29-29"></a>
 
-####### [reader](3294) `callback-data` (callback) (:data)
+####### [reader](4abb) `callback-data` (callback) (:data)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-29-29"></a>
 
-####### [reader](d4a1) `callback-id` (callback) (:id)
+####### [reader](4edc) `callback-id` (callback) (:id)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-MESSAGE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCALLBACK-3ACALLBACK-29-29"></a>
 
-####### [reader](eff8) `callback-message` (callback) (:message)
+####### [reader](7ba7) `callback-message` (callback) (:message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FCALLBACK-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1595,7 +1091,7 @@ Use this macro to define a class of your Telegram bot.
 
 <a id="x-28CL-TELEGRAM-BOT-2FCALLBACK-3AMAKE-CALLBACK-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](10bc) `make-callback` bot callback-data
+###### [generic-function](fd99) `make-callback` bot callback-data
 
 Called when user clicks callback button. Should return an instance of [`callback`][6611] class.
 
@@ -1605,7 +1101,7 @@ callback-data string. This way it mab be easier to define more specific methods 
 
 <a id="x-28CL-TELEGRAM-BOT-2FCALLBACK-3AON-CALLBACK-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](a77f) `on-callback` bot callback
+###### [generic-function](e751) `on-callback` bot callback
 
 Called when user clicks callback button. Second argument is an object of `CALLBACK` type.
 
@@ -1627,7 +1123,7 @@ Called when user clicks callback button. Second argument is an object of `CALLBA
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ACHANNEL-20CLASS-29"></a>
 
-####### [class](c422) `channel` (base-group)
+####### [class](a46f) `channel` (base-group)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FCHAT-24CHAT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1635,29 +1131,29 @@ Called when user clicks callback button. Second argument is an object of `CALLBA
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ACHAT-20CLASS-29"></a>
 
-####### [class](a96f) `chat` ()
+####### [class](1d5a) `chat` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ACHAT-29-29"></a>
 
-####### [reader](e2a6) `get-chat-id` (chat) (:id)
+####### [reader](5234) `get-chat-id` (chat) (:id)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-HAS-PROTECTED-CONTENT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ACHAT-29-29"></a>
 
-####### [reader](782e) `get-has-protected-content` (chat) (:has-protected-content)
+####### [reader](b16c) `get-has-protected-content` (chat) (:has-protected-content)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-MESSAGE-AUTO-DELETE-TIME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ACHAT-29-29"></a>
 
-####### [reader](b7fa) `get-message-auto-delete-time` (chat) (:message-auto-delete-time)
+####### [reader](ad07) `get-message-auto-delete-time` (chat) (:message-auto-delete-time)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-RAW-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ACHAT-29-29"></a>
 
-####### [reader](9e33) `get-raw-data` (chat) (:raw-data)
+####### [reader](efd4) `get-raw-data` (chat) (:raw-data)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-USERNAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ACHAT-29-29"></a>
 
-####### [reader](7751) `get-username` (chat) (:username)
+####### [reader](8267) `get-username` (chat) (:username)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FCHAT-24GROUP-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1665,7 +1161,7 @@ Called when user clicks callback button. Second argument is an object of `CALLBA
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGROUP-20CLASS-29"></a>
 
-####### [class](c4f6) `group` (base-group)
+####### [class](94db) `group` (base-group)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FCHAT-24PRIVATE-CHAT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1673,25 +1169,25 @@ Called when user clicks callback button. Second argument is an object of `CALLBA
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3APRIVATE-CHAT-20CLASS-29"></a>
 
-####### [class](8a0d) `private-chat` (chat)
+####### [class](84fe) `private-chat` (chat)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-BIO-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3APRIVATE-CHAT-29-29"></a>
 
-####### [reader](f80b) `get-bio` (private-chat) (:bio)
+####### [reader](84ed) `get-bio` (private-chat) (:bio)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-FIRST-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3APRIVATE-CHAT-29-29"></a>
 
-####### [reader](8f8b) `get-first-name` (private-chat) (:first-name)
+####### [reader](afe6) `get-first-name` (private-chat) (:first-name)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-HAS-PRIVATE-FORWARDS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3APRIVATE-CHAT-29-29"></a>
 
-####### [reader](df6f) `get-has-private-forwards` (private-chat) (:has-private-forwards)
+####### [reader](1f9b) `get-has-private-forwards` (private-chat) (:has-private-forwards)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-LAST-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3APRIVATE-CHAT-29-29"></a>
 
-####### [reader](2079) `get-last-name` (private-chat) (:last-name)
+####### [reader](5917) `get-last-name` (private-chat) (:last-name)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FCHAT-24SUPER-GROUP-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1699,29 +1195,29 @@ Called when user clicks callback button. Second argument is an object of `CALLBA
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ASUPER-GROUP-20CLASS-29"></a>
 
-####### [class](8673) `super-group` (base-group)
+####### [class](7cfc) `super-group` (base-group)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CAN-SET-STICKER-SET-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ASUPER-GROUP-29-29"></a>
 
-####### [reader](c36f) `get-can-set-sticker-set` (super-group) (:can-set-sticker-set)
+####### [reader](5b7c) `get-can-set-sticker-set` (super-group) (:can-set-sticker-set)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-JOIN-BY-REQUEST-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ASUPER-GROUP-29-29"></a>
 
-####### [reader](0712) `get-join-by-request` (super-group) (:join-by-request)
+####### [reader](7af4) `get-join-by-request` (super-group) (:join-by-request)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-JOIN-TO-SEND-MESSAGES-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ASUPER-GROUP-29-29"></a>
 
-####### [reader](0cc7) `get-join-to-send-messages` (super-group) (:join-to-send-messages)
+####### [reader](ba71) `get-join-to-send-messages` (super-group) (:join-to-send-messages)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-SLOW-MODE-DELAY-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ASUPER-GROUP-29-29"></a>
 
-####### [reader](f4b9) `get-slow-mode-delay` (super-group) (:slow-mode-delay)
+####### [reader](2c2d) `get-slow-mode-delay` (super-group) (:slow-mode-delay)
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-STICKER-SET-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FCHAT-3ASUPER-GROUP-29-29"></a>
 
-####### [reader](dfc3) `get-sticker-set-name` (super-group) (:sticker-set-name)
+####### [reader](9c98) `get-sticker-set-name` (super-group) (:sticker-set-name)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FCHAT-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1729,7 +1225,7 @@ Called when user clicks callback button. Second argument is an object of `CALLBA
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](ee20) `get-chat` obj
+###### [generic-function](4763) `get-chat` obj
 
 Returns a chat associated with object.
 
@@ -1742,103 +1238,103 @@ Some types of updates aren't bound to a chat. In this case a method should retur
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ADELETE-CHAT-PHOTO-20FUNCTION-29"></a>
 
-###### [function](86e9) `delete-chat-photo` bot-var1 chat
+###### [function](75b5) `delete-chat-photo` bot-var1 chat
 
 https://core.telegram.org/bots/api#deletechatphoto
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AEXPORT-CHAT-INVITE-LINK-20FUNCTION-29"></a>
 
-###### [function](3e25) `export-chat-invite-link` bot-var1 chat
+###### [function](0ce5) `export-chat-invite-link` bot-var1 chat
 
 https://core.telegram.org/bots/api#exportchatinvitelink
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-ADMINISTRATORS-20FUNCTION-29"></a>
 
-###### [function](4d22) `get-chat-administrators` bot-var1 chat
+###### [function](4366) `get-chat-administrators` bot-var1 chat
 
 https://core.telegram.org/bots/api#getchatadministrators
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-BY-ID-20FUNCTION-29"></a>
 
-###### [function](7ead) `get-chat-by-id` bot-var1 chat-id
+###### [function](0aeb) `get-chat-by-id` bot-var1 chat-id
 
 https://core.telegram.org/bots/api#getchat
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-MEMBER-20FUNCTION-29"></a>
 
-###### [function](f86f) `get-chat-member` bot-var1 chat user-id
+###### [function](607f) `get-chat-member` bot-var1 chat user-id
 
 https://core.telegram.org/bots/api#getchatmember
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-MEMBERS-COUNT-20FUNCTION-29"></a>
 
-###### [function](1765) `get-chat-members-count` bot-var1 chat
+###### [function](1d14) `get-chat-members-count` bot-var1 chat
 
 https://core.telegram.org/bots/api#getchatmemberscount
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AKICK-CHAT-MEMBER-20FUNCTION-29"></a>
 
-###### [function](0b76) `kick-chat-member` bot-var1 chat user-id until-date
+###### [function](f367) `kick-chat-member` bot-var1 chat user-id until-date
 
 https://core.telegram.org/bots/api#kickchatmember
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ALEAVE-CHAT-20FUNCTION-29"></a>
 
-###### [function](beaa) `leave-chat` bot-var1 chat
+###### [function](b703) `leave-chat` bot-var1 chat
 
 https://core.telegram.org/bots/api#leavechat
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3APIN-CHAT-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](389e) `pin-chat-message` bot-var1 chat message-id disable-notification
+###### [function](ce92) `pin-chat-message` bot-var1 chat message-id disable-notification
 
 https://core.telegram.org/bots/api#pinchatmessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3APROMOTE-CHAT-MEMBER-20FUNCTION-29"></a>
 
-###### [function](1090) `promote-chat-member` bot-var1 chat user-id can-change-info can-post-messages can-edit-messages can-delete-messages can-invite-users can-restrict-members can-pin-messages can-promote-members
+###### [function](5d10) `promote-chat-member` bot-var1 chat user-id can-change-info can-post-messages can-edit-messages can-delete-messages can-invite-users can-restrict-members can-pin-messages can-promote-members
 
 https://core.telegram.org/bots/api#promotechatmember
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ARESTRICT-CHAT-MEMBER-20FUNCTION-29"></a>
 
-###### [function](77b3) `restrict-chat-member` bot-var1 chat user-id until-date can-send-messages can-send-media-messages can-send-other-messages can-add-web-page-previews
+###### [function](064c) `restrict-chat-member` bot-var1 chat user-id until-date can-send-messages can-send-media-messages can-send-other-messages can-add-web-page-previews
 
 https://core.telegram.org/bots/api#restrictchatmember
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ASEND-CHAT-ACTION-20FUNCTION-29"></a>
 
-###### [function](a910) `send-chat-action` bot-var1 chat action
+###### [function](1152) `send-chat-action` bot-var1 chat action
 
 https://core.telegram.org/bots/api#sendchataction
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ASET-CHAT-DESCRIPTION-20FUNCTION-29"></a>
 
-###### [function](9ca5) `set-chat-description` bot-var1 chat description
+###### [function](85dd) `set-chat-description` bot-var1 chat description
 
 https://core.telegram.org/bots/api#setchatdescription
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ASET-CHAT-PHOTO-20FUNCTION-29"></a>
 
-###### [function](7c37) `set-chat-photo` bot-var1 chat photo
+###### [function](4131) `set-chat-photo` bot-var1 chat photo
 
 https://core.telegram.org/bots/api#setchatphoto
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3ASET-CHAT-TITLE-20FUNCTION-29"></a>
 
-###### [function](4694) `set-chat-title` bot-var1 chat title
+###### [function](a214) `set-chat-title` bot-var1 chat title
 
 https://core.telegram.org/bots/api#setchattitle
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AUNBAN-CHAT-MEMBER-20FUNCTION-29"></a>
 
-###### [function](cd88) `unban-chat-member` bot-var1 chat user-id
+###### [function](a34f) `unban-chat-member` bot-var1 chat user-id
 
 https://core.telegram.org/bots/api#unbanchatmember
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AUNPIN-CHAT-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](acf0) `unpin-chat-message` bot-var1 chat
+###### [function](b272) `unpin-chat-message` bot-var1 chat
 
 https://core.telegram.org/bots/api#unpinchatmessage
 
@@ -1860,7 +1356,7 @@ https://core.telegram.org/bots/api#unpinchatmessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AREPLY-20CLASS-29"></a>
 
-####### [class](dac4) `reply` (response-with-text)
+####### [class](40ce) `reply` (response-with-text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FCORE-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1868,7 +1364,7 @@ https://core.telegram.org/bots/api#unpinchatmessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3AON-COMMAND-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](a849) `on-command` bot command rest-text
+###### [generic-function](38ba) `on-command` bot command rest-text
 
 This method will be called for each command.
 First argument is a keyword. If user input was /save_note, then
@@ -1878,7 +1374,7 @@ By default, logs call and does nothing.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AON-MESSAGE-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](869c) `on-message` bot text
+###### [generic-function](5903) `on-message` bot text
 
 This method gets called with raw text from the message.
 By default it does nothing.
@@ -1889,18 +1385,18 @@ By default it does nothing.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AREPLY-20FUNCTION-29"></a>
 
-###### [function](23cc) `reply` text &rest args &key parse-mode disable-web-page-preview disable-notification reply-to-message-id reply-markup (immediately \*reply-immediately\*)
+###### [function](f2f6) `reply` text &rest args &key parse-mode disable-web-page-preview disable-notification reply-to-message-id reply-markup (immediately \*reply-immediately\*)
 
 Works like a [`send-message`][38a1], but only when an incoming message is processed.
 Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FCORE-3ASTART-PROCESSING-20FUNCTION-29"></a>
 
-###### [function](fafd) `start-processing` BOT &KEY DEBUG (DELAY-BETWEEN-RETRIES 10) (THREAD-NAME "telegram-bot")
+###### [function](9f56) `start-processing` BOT &KEY DEBUG (DELAY-BETWEEN-RETRIES 10) (THREAD-NAME "telegram-bot")
 
 <a id="x-28CL-TELEGRAM-BOT-2FCORE-3ASTOP-PROCESSING-20FUNCTION-29"></a>
 
-###### [function](efff) `stop-processing` bot
+###### [function](ebca) `stop-processing` bot
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FCORE-3FMacros-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1908,7 +1404,7 @@ Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FBOT-3ADEFBOT-20-2840ANTS-DOC-2FLOCATIVES-3AMACRO-29-29"></a>
 
-###### [macro](f7a6) `defbot` name &optional slots options
+###### [macro](574f) `defbot` name &optional slots options
 
 Use this macro to define a class of your Telegram bot.
 
@@ -1930,21 +1426,21 @@ Use this macro to define a class of your Telegram bot.
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3ABOT-COMMAND-20CLASS-29"></a>
 
-####### [class](22bb) `bot-command` (entity)
+####### [class](5eee) `bot-command` (entity)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3ABOT-USERNAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3ABOT-COMMAND-29-29"></a>
 
-####### [reader](2fee) `bot-username` (bot-command) (:bot-username)
+####### [reader](7989) `bot-username` (bot-command) (:bot-username)
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3AGET-COMMAND-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3ABOT-COMMAND-29-29"></a>
 
-####### [reader](bb18) `get-command` (bot-command) (:command)
+####### [reader](3634) `get-command` (bot-command) (:command)
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3AGET-REST-TEXT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3ABOT-COMMAND-29-29"></a>
 
-####### [reader](363e) `get-rest-text` (bot-command) (:rest-text)
+####### [reader](705c) `get-rest-text` (bot-command) (:rest-text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -1952,7 +1448,7 @@ Use this macro to define a class of your Telegram bot.
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FCOMMAND-3AON-COMMAND-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](a849) `on-command` bot command rest-text
+###### [generic-function](38ba) `on-command` bot command rest-text
 
 This method will be called for each command.
 First argument is a keyword. If user input was /save_note, then
@@ -1974,7 +1470,7 @@ By default, logs call and does nothing.
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FGENERIC-3AMAKE-ENTITY-INTERNAL-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](1775) `make-entity-internal` entity-type payload data
+###### [generic-function](3e08) `make-entity-internal` entity-type payload data
 
 Extendable protocol to support entities of different kinds.
 First argument is a keyword, denoting a type of the entity.
@@ -1987,7 +1483,7 @@ And data is a plist with data, describing the entity.
 
 <a id="x-28CL-TELEGRAM-BOT-2FENTITIES-2FGENERIC-3AMAKE-ENTITY-20FUNCTION-29"></a>
 
-###### [function](16ef) `make-entity` payload data
+###### [function](879b) `make-entity` payload data
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FENVELOPE-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2007,7 +1503,7 @@ And data is a plist with data, describing the entity.
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3ACHANNEL-POST-20CLASS-29"></a>
 
-####### [class](8e9a) `channel-post` (envelope)
+####### [class](2adb) `channel-post` (envelope)
 
 This container wraps [`cl-telegram-bot/message:message`][7239] when somebody sends a message to a channel.
 
@@ -2017,7 +1513,7 @@ This container wraps [`cl-telegram-bot/message:message`][7239] when somebody sen
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3AEDITED-CHANNEL-POST-20CLASS-29"></a>
 
-####### [class](adb5) `edited-channel-post` (envelope)
+####### [class](d6c6) `edited-channel-post` (envelope)
 
 This container wraps [`cl-telegram-bot/message:message`][7239] when somebody edits a message in a channel.
 
@@ -2027,7 +1523,7 @@ This container wraps [`cl-telegram-bot/message:message`][7239] when somebody edi
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3AEDITED-MESSAGE-20CLASS-29"></a>
 
-####### [class](c71a) `edited-message` (envelope)
+####### [class](815c) `edited-message` (envelope)
 
 This container wraps [`cl-telegram-bot/message:message`][7239] when user edits a message.
 
@@ -2037,7 +1533,7 @@ This container wraps [`cl-telegram-bot/message:message`][7239] when user edits a
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3AENVELOPE-20CLASS-29"></a>
 
-####### [class](1c40) `envelope` ()
+####### [class](3aca) `envelope` ()
 
 This is the container for a message. From the type of container we can understand if this message was sent to a channel or maybe edited, etc.
 
@@ -2045,7 +1541,7 @@ This is the container for a message. From the type of container we can understan
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3AWRAPPED-MESSAGE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FENVELOPE-3AENVELOPE-29-29"></a>
 
-####### [reader](f7b4) `wrapped-message` (envelope) (:message)
+####### [reader](ad2e) `wrapped-message` (envelope) (:message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FENVELOPE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2053,13 +1549,13 @@ This is the container for a message. From the type of container we can understan
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3ACHANNEL-POST-P-20FUNCTION-29"></a>
 
-###### [function](ae4b) `channel-post-p`
+###### [function](2bd8) `channel-post-p`
 
 Returns T if current message was posted to a channel.
 
 <a id="x-28CL-TELEGRAM-BOT-2FENVELOPE-3AEDITED-MESSAGE-P-20FUNCTION-29"></a>
 
-###### [function](f843) `edited-message-p`
+###### [function](72ec) `edited-message-p`
 
 Returns T if current message is an update for existing message in the channel of group chat.
 
@@ -2081,13 +1577,13 @@ Returns T if current message is an update for existing message in the channel of
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ACALLBACK-BUTTON-20CLASS-29"></a>
 
-####### [class](0077) `callback-button` (inline-keyboard-button)
+####### [class](0c11) `callback-button` (inline-keyboard-button)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ACALLBACK-BUTTON-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ACALLBACK-BUTTON-29-29"></a>
 
-####### [reader](3947) `callback-button-data` (callback-button) (:data)
+####### [reader](0eb7) `callback-button-data` (callback-button) (:data)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-24INLINE-KEYBOARD-BUTTON-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2095,7 +1591,7 @@ Returns T if current message is an update for existing message in the channel of
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AINLINE-KEYBOARD-BUTTON-20CLASS-29"></a>
 
-####### [class](594d) `inline-keyboard-button` ()
+####### [class](39d2) `inline-keyboard-button` ()
 
 Base class for all inline keyboard buttons.
 
@@ -2105,7 +1601,7 @@ Base class for all inline keyboard buttons.
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ABUTTON-TEXT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AINLINE-KEYBOARD-BUTTON-29-29"></a>
 
-####### [reader](2007) `button-text` (inline-keyboard-button) (:text)
+####### [reader](8ed2) `button-text` (inline-keyboard-button) (:text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-24INLINE-KEYBOARD-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2113,7 +1609,7 @@ Base class for all inline keyboard buttons.
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AINLINE-KEYBOARD-20CLASS-29"></a>
 
-####### [class](b150) `inline-keyboard` ()
+####### [class](5389) `inline-keyboard` ()
 
 Represents an inline keyboard as specified in `API` https://core.telegram.org/bots/api#inlinekeyboardmarkup.
 
@@ -2121,7 +1617,7 @@ Represents an inline keyboard as specified in `API` https://core.telegram.org/bo
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AKEYBOARD-ROWS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AINLINE-KEYBOARD-29-29"></a>
 
-####### [reader](4c37) `keyboard-rows` (inline-keyboard) (:rows = nil)
+####### [reader](1bd8) `keyboard-rows` (inline-keyboard) (:rows = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-24URL-BUTTON-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2129,13 +1625,13 @@ Represents an inline keyboard as specified in `API` https://core.telegram.org/bo
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AURL-BUTTON-20CLASS-29"></a>
 
-####### [class](bb4f) `url-button` (inline-keyboard-button)
+####### [class](bc27) `url-button` (inline-keyboard-button)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ABUTTON-URL-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AURL-BUTTON-29-29"></a>
 
-####### [reader](db00) `button-url` (url-button) (:data)
+####### [reader](bed6) `button-url` (url-button) (:data)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2143,19 +1639,19 @@ Represents an inline keyboard as specified in `API` https://core.telegram.org/bo
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AANSWER-CALLBACK-QUERY-20FUNCTION-29"></a>
 
-###### [function](5cca) `answer-callback-query` bot callback &key text show-alert url
+###### [function](e05a) `answer-callback-query` bot callback &key text show-alert url
 
 https://core.telegram.org/bots/api#answercallbackquery
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3ACALLBACK-BUTTON-20FUNCTION-29"></a>
 
-###### [function](e447) `callback-button` text data
+###### [function](67a7) `callback-button` text data
 
 Creates a button which will call a callback.
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AINLINE-KEYBOARD-20FUNCTION-29"></a>
 
-###### [function](3ff4) `inline-keyboard` rows
+###### [function](6eb6) `inline-keyboard` rows
 
 Returns an inline keyboard which can be passed
 to `cl-telegram-bot/response:reply` ([`1`][0d9a] [`2`][9ce6]) as `REPLY-MARKUP` argument.
@@ -2165,7 +1661,7 @@ object of this class. In latter case, such row will have only one button.
 
 <a id="x-28CL-TELEGRAM-BOT-2FINLINE-KEYBOARD-3AURL-BUTTON-20FUNCTION-29"></a>
 
-###### [function](99ed) `url-button` text url
+###### [function](9be5) `url-button` text url
 
 Creates a button which will open an url.
 
@@ -2183,7 +1679,7 @@ Creates a button which will open an url.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMARKUP-3ATO-MARKUP-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](28b9) `to-markup` obj
+###### [generic-function](5b59) `to-markup` obj
 
 Transforms object into markup of Telegram `API`.
 
@@ -2208,7 +1704,7 @@ in terms of Telegram `API`.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AANIMATION-MESSAGE-20CLASS-29"></a>
 
-####### [class](5e2c) `animation-message` (file-message)
+####### [class](edf4) `animation-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24ANIMATION-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2216,7 +1712,7 @@ in terms of Telegram `API`.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AANIMATION-20CLASS-29"></a>
 
-####### [class](3477) `animation` (file temporal spatial)
+####### [class](7d83) `animation` (file temporal spatial)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24AUDIO-MESSAGE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2224,7 +1720,7 @@ in terms of Telegram `API`.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AAUDIO-MESSAGE-20CLASS-29"></a>
 
-####### [class](2648) `audio-message` (file-message)
+####### [class](6466) `audio-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24AUDIO-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2232,19 +1728,19 @@ in terms of Telegram `API`.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AAUDIO-20CLASS-29"></a>
 
-####### [class](b083) `audio` (file temporal)
+####### [class](37d0) `audio` (file temporal)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-PERFORMER-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AAUDIO-29-29"></a>
 
-####### [reader](4374) `get-performer` (audio) (:performer)
+####### [reader](e185) `get-performer` (audio) (:performer)
 
 Performer of the audio as defined by sender or by audio tags.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-TITLE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AAUDIO-29-29"></a>
 
-####### [reader](cdae) `get-title` (audio) (:title)
+####### [reader](ce13) `get-title` (audio) (:title)
 
 Title of the audio as defined by sender or by audio tags.
 
@@ -2254,7 +1750,7 @@ Title of the audio as defined by sender or by audio tags.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ADOCUMENT-MESSAGE-20CLASS-29"></a>
 
-####### [class](8304) `document-message` (file-message)
+####### [class](7424) `document-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24DOCUMENT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2262,7 +1758,7 @@ Title of the audio as defined by sender or by audio tags.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ADOCUMENT-20CLASS-29"></a>
 
-####### [class](9dfc) `document` (file)
+####### [class](9c987) `document` (file)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24FILE-MESSAGE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2270,13 +1766,13 @@ Title of the audio as defined by sender or by audio tags.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-MESSAGE-20CLASS-29"></a>
 
-####### [class](ade9) `file-message` (message)
+####### [class](e0b8) `file-message` (message)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FILE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-MESSAGE-29-29"></a>
 
-####### [reader](47bb) `get-file` (file-message) (:file)
+####### [reader](53ee) `get-file` (file-message) (:file)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24FILE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2284,31 +1780,31 @@ Title of the audio as defined by sender or by audio tags.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-20CLASS-29"></a>
 
-####### [class](8bc6) `file` ()
+####### [class](9c65) `file` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FILE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-29-29"></a>
 
-####### [reader](bc4a) `get-file-id` (file) (:file-id)
+####### [reader](0e78) `get-file-id` (file) (:file-id)
 
 Identifier for this file, which can be used to download or reuse the file.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FILE-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-29-29"></a>
 
-####### [reader](5d14) `get-file-name` (file) (:file-name)
+####### [reader](b191) `get-file-name` (file) (:file-name)
 
 Original filename as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FILE-SIZE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-29-29"></a>
 
-####### [reader](921d) `get-file-size` (file) (:file-size)
+####### [reader](6c07) `get-file-size` (file) (:file-size)
 
 File size in bytes.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FILE-UNIQUE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-29-29"></a>
 
-####### [reader](ee76) `get-file-unique-id` (file) (:file-unique-id)
+####### [reader](1fb2) `get-file-unique-id` (file) (:file-unique-id)
 
 Unique identifier for this file, which is supposed to be the same
 over time and for different bots. Can't be used to download or reuse
@@ -2316,7 +1812,7 @@ the file.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-MIME-TYPE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AFILE-29-29"></a>
 
-####### [reader](a720) `get-mime-type` (file) (:mime-type)
+####### [reader](1114) `get-mime-type` (file) (:mime-type)
 
 `MIME` type of the file as defined by sender.
 
@@ -2326,60 +1822,60 @@ the file.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-20CLASS-29"></a>
 
-####### [class](6542) `message` ()
+####### [class](3e81) `message` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CAPTION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](7094) `get-caption` (message) (:caption)
+####### [reader](4b1f) `get-caption` (message) (:caption)
 
 Caption for the animation, audio, document, photo, video or voice.
 
 <a id="x-28CL-TELEGRAM-BOT-2FCHAT-3AGET-CHAT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](9abc) `get-chat` (message) (:chat)
+####### [reader](830e) `get-chat` (message) (:chat)
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-ENTITIES-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](d86c) `get-entities` (message) (:entities = nil)
+####### [reader](19b7) `get-entities` (message) (:entities = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FORWARD-FROM-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](c0b9) `get-forward-from` (message) (:forward-from)
+####### [reader](8413) `get-forward-from` (message) (:forward-from)
 
 For forwarded messages, sender of the original message.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FORWARD-FROM-CHAT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](2eb9) `get-forward-from-chat` (message) (:forward-from-chat)
+####### [reader](98d9) `get-forward-from-chat` (message) (:forward-from-chat)
 
 For messages forwarded from channels or from anonymous
 administrators, information about the original sender chat.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-FORWARD-SENDER-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](396f) `get-forward-sender-name` (message) (:forward-sender-name)
+####### [reader](c910) `get-forward-sender-name` (message) (:forward-sender-name)
 
 For forwarded messages, sender of the original message.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-MESSAGE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](7e80) `get-message-id` (message) (:id)
+####### [reader](eb11) `get-message-id` (message) (:id)
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-RAW-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](f5c6) `get-raw-data` (message) (:raw-data)
+####### [reader](006c) `get-raw-data` (message) (:raw-data)
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-SENDER-CHAT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](751e) `get-sender-chat` (message) (:sender-chat)
+####### [reader](5174) `get-sender-chat` (message) (:sender-chat)
 
 Sender of the message, sent on behalf of a chat. For example, the channel itself for channel posts, the supergroup itself for messages from anonymous group administrators, the linked channel for messages automatically forwarded to the discussion group.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-TEXT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AMESSAGE-29-29"></a>
 
-####### [reader](d309) `get-text` (message) (:text)
+####### [reader](0cfb) `get-text` (message) (:text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24PHOTO-MESSAGE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2387,13 +1883,13 @@ Sender of the message, sent on behalf of a chat. For example, the channel itself
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3APHOTO-MESSAGE-20CLASS-29"></a>
 
-####### [class](baf9) `photo-message` (file-message)
+####### [class](68c2) `photo-message` (file-message)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-PHOTO-OPTIONS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3APHOTO-MESSAGE-29-29"></a>
 
-####### [reader](ccba) `get-photo-options` (photo-message) (:photo-options)
+####### [reader](e84a) `get-photo-options` (photo-message) (:photo-options)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24PHOTO-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2401,7 +1897,7 @@ Sender of the message, sent on behalf of a chat. For example, the channel itself
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3APHOTO-20CLASS-29"></a>
 
-####### [class](dfac) `photo` (file spatial)
+####### [class](d726) `photo` (file spatial)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24REPLY-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2409,13 +1905,13 @@ Sender of the message, sent on behalf of a chat. For example, the channel itself
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AREPLY-20CLASS-29"></a>
 
-####### [class](4c15) `reply` (message)
+####### [class](b34c) `reply` (message)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-REPLY-TO-MESSAGE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AREPLY-29-29"></a>
 
-####### [reader](0d2d) `get-reply-to-message` (reply) (:reply-to-message)
+####### [reader](7385) `get-reply-to-message` (reply) (:reply-to-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24SPATIAL-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2423,19 +1919,19 @@ Sender of the message, sent on behalf of a chat. For example, the channel itself
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASPATIAL-20CLASS-29"></a>
 
-####### [class](86f3) `spatial` ()
+####### [class](2bee) `spatial` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-HEIGHT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ASPATIAL-29-29"></a>
 
-####### [reader](694f) `get-height` (spatial) (:height)
+####### [reader](7538) `get-height` (spatial) (:height)
 
 File height as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-WIDTH-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ASPATIAL-29-29"></a>
 
-####### [reader](8146) `get-width` (spatial) (:width)
+####### [reader](c790) `get-width` (spatial) (:width)
 
 File width as defined by sender.
 
@@ -2445,7 +1941,7 @@ File width as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASTICKER-MESSAGE-20CLASS-29"></a>
 
-####### [class](b2b0) `sticker-message` (file-message)
+####### [class](d33b) `sticker-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24STICKER-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2453,31 +1949,31 @@ File width as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASTICKER-20CLASS-29"></a>
 
-####### [class](f8e8) `sticker` (file spatial)
+####### [class](cbb6) `sticker` (file spatial)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-EMOJI-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ASTICKER-29-29"></a>
 
-####### [reader](07a9) `get-emoji` (sticker) (:emoji)
+####### [reader](d888) `get-emoji` (sticker) (:emoji)
 
 Emoji associated with the sticker
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-IS-ANIMATED-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ASTICKER-29-29"></a>
 
-####### [reader](7d8d) `get-is-animated` (sticker) (:is-animated)
+####### [reader](a1e8) `get-is-animated` (sticker) (:is-animated)
 
 True if the sticker is animated.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-IS-VIDEO-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ASTICKER-29-29"></a>
 
-####### [reader](03e87) `get-is-video` (sticker) (:is-video)
+####### [reader](9c28) `get-is-video` (sticker) (:is-video)
 
 True if the sticker is a video sticker.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-SET-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ASTICKER-29-29"></a>
 
-####### [reader](114b) `get-set-name` (sticker) (:set-name)
+####### [reader](53b6) `get-set-name` (sticker) (:set-name)
 
 Name of the sticker set to which the sticker belongs.
 
@@ -2487,13 +1983,13 @@ Name of the sticker set to which the sticker belongs.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ATEMPORAL-20CLASS-29"></a>
 
-####### [class](b612) `temporal` ()
+####### [class](d062) `temporal` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-DURATION-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3ATEMPORAL-29-29"></a>
 
-####### [reader](c12e) `get-duration` (temporal) (:duration)
+####### [reader](4343) `get-duration` (temporal) (:duration)
 
 Duration of the file in seconds as defined by sender.
 
@@ -2503,13 +1999,13 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AUNISPATIAL-20CLASS-29"></a>
 
-####### [class](2423) `unispatial` ()
+####### [class](01d3) `unispatial` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-LENGTH-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FMESSAGE-3AUNISPATIAL-29-29"></a>
 
-####### [reader](1e45) `get-length` (unispatial) (:length)
+####### [reader](b047) `get-length` (unispatial) (:length)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24VIDEO-MESSAGE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2517,7 +2013,7 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AVIDEO-MESSAGE-20CLASS-29"></a>
 
-####### [class](04a4) `video-message` (file-message)
+####### [class](f11e) `video-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24VIDEO-NOTE-MESSAGE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2525,7 +2021,7 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AVIDEO-NOTE-MESSAGE-20CLASS-29"></a>
 
-####### [class](474a) `video-note-message` (file-message)
+####### [class](46e3) `video-note-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24VIDEO-NOTE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2533,7 +2029,7 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AVIDEO-NOTE-20CLASS-29"></a>
 
-####### [class](698e) `video-note` (file temporal unispatial)
+####### [class](13d6) `video-note` (file temporal unispatial)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24VIDEO-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2541,7 +2037,7 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AVIDEO-20CLASS-29"></a>
 
-####### [class](71f3) `video` (file temporal spatial)
+####### [class](b9dd) `video` (file temporal spatial)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24VOICE-MESSAGE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2549,7 +2045,7 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AVOICE-MESSAGE-20CLASS-29"></a>
 
-####### [class](3a02) `voice-message` (file-message)
+####### [class](23cd) `voice-message` (file-message)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FMESSAGE-24VOICE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2557,7 +2053,7 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AVOICE-20CLASS-29"></a>
 
-####### [class](da6f) `voice` (file temporal)
+####### [class](e9da) `voice` (file temporal)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FMESSAGE-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2565,46 +2061,46 @@ Duration of the file in seconds as defined by sender.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AON-MESSAGE-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](869c) `on-message` bot text
+###### [generic-function](5903) `on-message` bot text
 
 This method gets called with raw text from the message.
 By default it does nothing.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-ANIMATION-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](f192) `send-animation` bot chat animation &rest options &key caption parse-mode caption-entities duration width height thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](e210) `send-animation` bot chat animation &rest options &key caption parse-mode caption-entities duration width height thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 Sends animation to a chat.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-AUDIO-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](0bb2) `send-audio` bot chat audio &rest options &key caption parse-mode caption-entities duration performer title thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](69cf) `send-audio` bot chat audio &rest options &key caption parse-mode caption-entities duration performer title thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-DOCUMENT-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](8855) `send-document` bot chat document &rest options &key caption parse-mode caption-entities disable-content-type-detection thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](128d) `send-document` bot chat document &rest options &key caption parse-mode caption-entities disable-content-type-detection thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-PHOTO-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](4025) `send-photo` bot chat photo &rest options &key caption parse-mode caption-entities disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](7220) `send-photo` bot chat photo &rest options &key caption parse-mode caption-entities disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-STICKER-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](2dee) `send-sticker` bot chat sticker &rest options &key disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](30cb) `send-sticker` bot chat sticker &rest options &key disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 A function to send sticker.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-VIDEO-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](6a06) `send-video` bot chat video &rest options &key caption parse-mode caption-entities duration width height thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](af2d) `send-video` bot chat video &rest options &key caption parse-mode caption-entities duration width height thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-VIDEO-NOTE-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](d6ea) `send-video-note` bot chat video-note &rest options &key caption parse-mode caption-entities duration length thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](faab) `send-video-note` bot chat video-note &rest options &key caption parse-mode caption-entities duration length thumb disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-VOICE-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](202f) `send-voice` bot chat voice &rest options &key caption parse-mode caption-entities duration disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
+###### [generic-function](db31) `send-voice` bot chat voice &rest options &key caption parse-mode caption-entities duration disable-notification protect-content reply-to-message-id allow-sending-without-reply reply-markup
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FMESSAGE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2612,41 +2108,41 @@ A function to send sticker.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ADELETE-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](feda) `delete-message` bot chat message
+###### [function](0567) `delete-message` bot chat message
 
 https://core.telegram.org/bots/api#deletemessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AFORWARD-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](c33f) `forward-message` bot chat from-chat message &key disable-notification
+###### [function](4982) `forward-message` bot chat from-chat message &key disable-notification
 
 https://core.telegram.org/bots/api#forwardmessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CURRENT-BOT-20FUNCTION-29"></a>
 
-###### [function](7e3d) `get-current-bot`
+###### [function](f4d1) `get-current-bot`
 
 Returns a bot to which message was addressed.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CURRENT-CHAT-20FUNCTION-29"></a>
 
-###### [function](ed93) `get-current-chat`
+###### [function](ae23) `get-current-chat`
 
 Returns a chat where currently processing message was received.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AGET-CURRENT-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](a6a2) `get-current-message`
+###### [function](7e28) `get-current-message`
 
 Returns currently processed message.
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3AMAKE-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](10cd) `make-message` data
+###### [function](57a5) `make-message` data
 
 <a id="x-28CL-TELEGRAM-BOT-2FMESSAGE-3ASEND-MESSAGE-20FUNCTION-29"></a>
 
-###### [function](46e5) `send-message` bot chat text &rest options &key parse-mode disable-web-page-preview disable-notification reply-to-message-id (autosplit nil) reply-markup
+###### [function](2dd8) `send-message` bot chat text &rest options &key parse-mode disable-web-page-preview disable-notification reply-to-message-id (autosplit nil) reply-markup
 
 https://core.telegram.org/bots/api#sendmessage
 
@@ -2656,7 +2152,7 @@ https://core.telegram.org/bots/api#sendmessage
 
 <a id="x-28-23A-28-2823-29-20BASE-CHAR-20-2E-20-22CL-TELEGRAM-BOT-2FNETWORK-22-29-20PACKAGE-29"></a>
 
-##### [package](16fe) `cl-telegram-bot/network`
+##### [package](d3bb) `cl-telegram-bot/network`
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FNETWORK-3FClasses-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2668,13 +2164,13 @@ https://core.telegram.org/bots/api#sendmessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FNETWORK-3AREQUEST-ERROR-20CONDITION-29"></a>
 
-####### [condition](7cf6) `request-error` (error)
+####### [condition](e72b) `request-error` (error)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FNETWORK-3AWHAT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FNETWORK-3AREQUEST-ERROR-29-29"></a>
 
-####### [reader](7cf6) `what` (request-error) (:what)
+####### [reader](e72b) `what` (request-error) (:what)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FNETWORK-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2682,13 +2178,13 @@ https://core.telegram.org/bots/api#sendmessage
 
 <a id="x-28CL-TELEGRAM-BOT-2FNETWORK-3AMAKE-REQUEST-20FUNCTION-29"></a>
 
-###### [function](2e02) `make-request` bot name &rest options &key (streamp nil) (timeout 3) &allow-other-keys
+###### [function](0348) `make-request` bot name &rest options &key (streamp nil) (timeout 3) &allow-other-keys
 
 Perform `HTTP` request to 'name `API` method with 'options `JSON`-encoded object.
 
 <a id="x-28CL-TELEGRAM-BOT-2FNETWORK-3ASET-PROXY-20FUNCTION-29"></a>
 
-###### [function](01a4) `set-proxy` proxy
+###### [function](9ee3) `set-proxy` proxy
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FPAYMENTS-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2704,7 +2200,7 @@ Perform `HTTP` request to 'name `API` method with 'options `JSON`-encoded object
 
 <a id="x-28CL-TELEGRAM-BOT-2FPAYMENTS-3AON-PRE-CHECKOUT-QUERY-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](65d3) `on-pre-checkout-query` bot query
+###### [generic-function](33f4) `on-pre-checkout-query` bot query
 
 Called when user enters payment method credentials and hit "Pay" button. Second argument is an object of `PRE-CHECKOUT-QUERY` type.
 
@@ -2716,7 +2212,7 @@ A method should respond with with a call to [`answer-pre-checkout-query`][2afa] 
 
 <a id="x-28CL-TELEGRAM-BOT-2FPAYMENTS-3AANSWER-PRE-CHECKOUT-QUERY-20FUNCTION-29"></a>
 
-###### [function](8f3d) `answer-pre-checkout-query` bot pre-checkout-query &key error-message
+###### [function](03cb) `answer-pre-checkout-query` bot pre-checkout-query &key error-message
 
 If `ERROR-MESSAGE` argument was given, then response considered is not `OK` and transaction will be cancelled.
 
@@ -2724,13 +2220,13 @@ https://core.telegram.org/bots/api#answerprecheckoutquery
 
 <a id="x-28CL-TELEGRAM-BOT-2FPAYMENTS-3AANSWER-SHIPPING-QUERY-20FUNCTION-29"></a>
 
-###### [function](84c8) `answer-shipping-query` b shipping-query-id ok &key shipping-options error-message
+###### [function](d223) `answer-shipping-query` b shipping-query-id ok &key shipping-options error-message
 
 https://core.telegram.org/bots/api#answershippingquery
 
 <a id="x-28CL-TELEGRAM-BOT-2FPAYMENTS-3ASEND-INVOICE-20FUNCTION-29"></a>
 
-###### [function](e88e) `send-invoice` b chat-id title description payload provider-token start-parameter currency prices &key photo-url photo-size photo-width photo-height need-name need-phone-number need-email need-shipping-address is-flexible disable-notification reply-to-message-id reply-markup
+###### [function](2d4e) `send-invoice` b chat-id title description payload provider-token start-parameter currency prices &key photo-url photo-size photo-width photo-height need-name need-phone-number need-email need-shipping-address is-flexible disable-notification reply-to-message-id reply-markup
 
 https://core.telegram.org/bots/api#sendinvoice
 
@@ -2740,7 +2236,7 @@ https://core.telegram.org/bots/api#sendinvoice
 
 <a id="x-28-23A-28-2824-29-20BASE-CHAR-20-2E-20-22CL-TELEGRAM-BOT-2FPIPELINE-22-29-20PACKAGE-29"></a>
 
-##### [package](474f) `cl-telegram-bot/pipeline`
+##### [package](e9d2) `cl-telegram-bot/pipeline`
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FPIPELINE-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2748,7 +2244,7 @@ https://core.telegram.org/bots/api#sendinvoice
 
 <a id="x-28CL-TELEGRAM-BOT-2FPIPELINE-3APROCESS-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](c797) `process` bot object
+###### [generic-function](e933) `process` bot object
 
 This method is called by when processing a single update.
 It is called multiple times on different parts of an update.
@@ -2778,7 +2274,7 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AALERT-20CLASS-29"></a>
 
-####### [class](860a) `alert` (response-with-text)
+####### [class](6b60) `alert` (response-with-text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FRESPONSE-24NOTIFY-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2786,7 +2282,7 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3ANOTIFY-20CLASS-29"></a>
 
-####### [class](720d) `notify` (response-with-text)
+####### [class](1ce5) `notify` (response-with-text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FRESPONSE-24OPEN-URL-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2794,13 +2290,13 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AOPEN-URL-20CLASS-29"></a>
 
-####### [class](aec9) `open-url` (response)
+####### [class](7783) `open-url` (response)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AURL-TO-OPEN-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FRESPONSE-3AOPEN-URL-29-29"></a>
 
-####### [reader](9cbd) `url-to-open` (open-url) (:text)
+####### [reader](3b87) `url-to-open` (open-url) (:text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FRESPONSE-24REPLY-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2808,7 +2304,7 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AREPLY-20CLASS-29"></a>
 
-####### [class](dac4) `reply` (response-with-text)
+####### [class](40ce) `reply` (response-with-text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FRESPONSE-24RESPONSE-WITH-TEXT-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2816,13 +2312,13 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3ARESPONSE-WITH-TEXT-20CLASS-29"></a>
 
-####### [class](4113) `response-with-text` (response)
+####### [class](bd6a) `response-with-text` (response)
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3ARESPONSE-TEXT-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FRESPONSE-3ARESPONSE-WITH-TEXT-29-29"></a>
 
-####### [reader](0bf1) `response-text` (response-with-text) (:text)
+####### [reader](2c38) `response-text` (response-with-text) (:text)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FRESPONSE-24RESPONSE-3FCLASS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2830,13 +2326,13 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3ARESPONSE-20CLASS-29"></a>
 
-####### [class](d800) `response` ()
+####### [class](026e) `response` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AREST-ARGS-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FRESPONSE-3ARESPONSE-29-29"></a>
 
-####### [reader](ec06) `rest-args` (response) (:args)
+####### [reader](4c2a) `rest-args` (response) (:args)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FRESPONSE-3FFunctions-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2844,28 +2340,28 @@ For each update we call:
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AALERT-20FUNCTION-29"></a>
 
-###### [function](b809) `alert` text
+###### [function](2449) `alert` text
 
 Works like a [`send-message`][38a1], but only when an incoming message is processed.
 Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3ANOTIFY-20FUNCTION-29"></a>
 
-###### [function](8ea2) `notify` text
+###### [function](0155) `notify` text
 
 Works like a [`send-message`][38a1], but only when an incoming message is processed.
 Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AOPEN-URL-20FUNCTION-29"></a>
 
-###### [function](31f5) `open-url` url
+###### [function](216f) `open-url` url
 
 Works like a [`send-message`][38a1], but only when an incoming message is processed.
 Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-3AREPLY-20FUNCTION-29"></a>
 
-###### [function](23cc) `reply` text &rest args &key parse-mode disable-web-page-preview disable-notification reply-to-message-id reply-markup (immediately \*reply-immediately\*)
+###### [function](f2f6) `reply` text &rest args &key parse-mode disable-web-page-preview disable-notification reply-to-message-id reply-markup (immediately \*reply-immediately\*)
 
 Works like a [`send-message`][38a1], but only when an incoming message is processed.
 Automatically sends reply to a chat from where current message came from.
@@ -2888,7 +2384,7 @@ Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-PROCESSING-3AINTERRUPT-PROCESSING-20CONDITION-29"></a>
 
-####### [condition](8fa7) `interrupt-processing` ()
+####### [condition](e321) `interrupt-processing` ()
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FRESPONSE-PROCESSING-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2896,7 +2392,7 @@ Automatically sends reply to a chat from where current message came from.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-PROCESSING-3APROCESS-RESPONSE-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](1113) `process-response` bot message response
+###### [generic-function](bba1) `process-response` bot message response
 
 Processes immediate responses of different types.
 
@@ -2906,7 +2402,7 @@ Processes immediate responses of different types.
 
 <a id="x-28CL-TELEGRAM-BOT-2FRESPONSE-PROCESSING-3AINTERRUPT-PROCESSING-20FUNCTION-29"></a>
 
-###### [function](635e) `interrupt-processing`
+###### [function](05f5) `interrupt-processing`
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FUPDATE-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2926,21 +2422,21 @@ Processes immediate responses of different types.
 
 <a id="x-28CL-TELEGRAM-BOT-2FUPDATE-3AUPDATE-20CLASS-29"></a>
 
-####### [class](2734) `update` ()
+####### [class](0b32) `update` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FUPDATE-3AGET-PAYLOAD-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUPDATE-3AUPDATE-29-29"></a>
 
-####### [reader](d034) `get-payload` (update) (:payload)
+####### [reader](0f30) `get-payload` (update) (:payload)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUPDATE-3AGET-RAW-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUPDATE-3AUPDATE-29-29"></a>
 
-####### [reader](b3f3) `get-raw-data` (update) (:raw-data)
+####### [reader](c293) `get-raw-data` (update) (:raw-data)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUPDATE-3AGET-UPDATE-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUPDATE-3AUPDATE-29-29"></a>
 
-####### [reader](5a62) `get-update-id` (update) (:id)
+####### [reader](fbcb) `get-update-id` (update) (:id)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FUPDATE-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2948,7 +2444,7 @@ Processes immediate responses of different types.
 
 <a id="x-28CL-TELEGRAM-BOT-2FUPDATE-3APROCESS-UPDATES-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](476d) `process-updates` bot
+###### [generic-function](86cd) `process-updates` bot
 
 By default, this method starts an infinite loop and fetching new updates using long polling.
 
@@ -2958,7 +2454,7 @@ By default, this method starts an infinite loop and fetching new updates using l
 
 <a id="x-28CL-TELEGRAM-BOT-2FUPDATE-3AMAKE-UPDATE-20FUNCTION-29"></a>
 
-###### [function](a3a5) `make-update` data
+###### [function](06f9) `make-update` data
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CL-TELEGRAM-BOT-2FUSER-3FPACKAGE-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -2978,57 +2474,57 @@ By default, this method starts an infinite loop and fetching new updates using l
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AUSER-20CLASS-29"></a>
 
-####### [class](0066) `user` ()
+####### [class](1ac6) `user` ()
 
 **Readers**
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ABOT-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](33f4) `bot-p` (user) (:is-bot)
+####### [reader](12d1) `bot-p` (user) (:is-bot)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ACAN-CONNECT-TO-BUSINESS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](69cf) `can-connect-to-business-p` (user) (:can-connect-to-business = nil)
+####### [reader](b6b1) `can-connect-to-business-p` (user) (:can-connect-to-business = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ACAN-JOIN-GROUPS-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](c31e) `can-join-groups-p` (user) (:can-join-groups = nil)
+####### [reader](504f) `can-join-groups-p` (user) (:can-join-groups = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ACAN-READ-ALL-GROUP-MESSAGES-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](8824) `can-read-all-group-messages-p` (user) (:can-read-all-group-messages = nil)
+####### [reader](dbfb) `can-read-all-group-messages-p` (user) (:can-read-all-group-messages = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AFIRST-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](e9fe) `first-name` (user) (:first-name)
+####### [reader](85b8) `first-name` (user) (:first-name)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AIS-PREMIUM-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](b1b6) `is-premium` (user) (:is-premium = nil)
+####### [reader](7875) `is-premium` (user) (:is-premium = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ALANGUAGE-CODE-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](443a) `language-code` (user) (:language-code = nil)
+####### [reader](ffd3) `language-code` (user) (:language-code = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ALAST-NAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](c6e5) `last-name` (user) (:last-name = nil)
+####### [reader](8c12) `last-name` (user) (:last-name = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ARAW-DATA-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](528f) `raw-data` (user) (:raw-data)
+####### [reader](53ce) `raw-data` (user) (:raw-data)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3ASUPPORTS-INLINE-QUERIES-P-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](12e5) `supports-inline-queries-p` (user) (:supports-inline-queries = nil)
+####### [reader](dcbb) `supports-inline-queries-p` (user) (:supports-inline-queries = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AUSER-ID-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](70bd) `user-id` (user) (:id)
+####### [reader](a788) `user-id` (user) (:id)
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AUSERNAME-20-2840ANTS-DOC-2FLOCATIVES-3AREADER-20CL-TELEGRAM-BOT-2FUSER-3AUSER-29-29"></a>
 
-####### [reader](8435) `username` (user) (:username = nil)
+####### [reader](5c66) `username` (user) (:username = nil)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-7C-40CL-TELEGRAM-BOT-2FUSER-3FGenerics-SECTION-7C-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -3036,7 +2532,7 @@ By default, this method starts an infinite loop and fetching new updates using l
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AGET-USER-INFO-20GENERIC-FUNCTION-29"></a>
 
-###### [generic-function](8d83) `get-user-info` obj
+###### [generic-function](5755) `get-user-info` obj
 
 Returns a [`user`][81a4] object related to the object.
 
@@ -3048,7 +2544,7 @@ If object is not bound to a user, then `NIL` should be returned.
 
 <a id="x-28CL-TELEGRAM-BOT-2FUSER-3AGET-ME-20FUNCTION-29"></a>
 
-###### [function](2a30) `get-me` bot
+###### [function](6202) `get-me` bot
 
 https://core.telegram.org/bots/api#getme
 
@@ -3066,7 +2562,7 @@ https://core.telegram.org/bots/api#getme
 
 <a id="x-28CL-TELEGRAM-BOT-2FUTILS-3AAPI-RESPONSE-TO-PLIST-20FUNCTION-29"></a>
 
-###### [function](fdcd) `api-response-to-plist` plist
+###### [function](1379) `api-response-to-plist` plist
 
 Transforms a plist with keys like :|foo_bar| into a plist with keys like :foo-bar.
 
@@ -3074,15 +2570,15 @@ This can be useful to pass data into `CL` object contructors.
 
 <a id="x-28CL-TELEGRAM-BOT-2FUTILS-3AMAKE-KEYWORD-20FUNCTION-29"></a>
 
-###### [function](e7b8) `make-keyword` text
+###### [function](dffd) `make-keyword` text
 
 <a id="x-28CL-TELEGRAM-BOT-2FUTILS-3AOBFUSCATE-20FUNCTION-29"></a>
 
-###### [function](8469) `obfuscate` url
+###### [function](693c) `obfuscate` url
 
 <a id="x-28CL-TELEGRAM-BOT-2FUTILS-3ASPLIT-BY-LINES-20FUNCTION-29"></a>
 
-###### [function](7d1f) `split-by-lines` text &key (max-size 4096) (trim-whitespaces-p t)
+###### [function](5ba6) `split-by-lines` text &key (max-size 4096) (trim-whitespaces-p t)
 
 <a id="x-28CL-TELEGRAM-BOT-DOCS-2FINDEX-3A-3A-40CREDITS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29"></a>
 
@@ -3106,6 +2602,8 @@ This can be useful to pass data into `CL` object contructors.
 [d037]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FUSER-3AGET-ME-20FUNCTION-29
 [81a4]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-2FUSER-3AUSER-20CLASS-29
 [8e99]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT-DOCS-2FSTATES-3A-3A-40STATES-AND-ACTIONS-2040ANTS-DOC-2FLOCATIVES-3ASECTION-29
+[46f2]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT2-2FACTIONS-2FEDIT-MESSAGE-MEDIA-3AEDIT-MESSAGE-MEDIA-20FUNCTION-29
+[d23c]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-INVOICE-3ASEND-INVOICE-20FUNCTION-29
 [e0f8]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-20CLASS-29
 [7c91]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-PHOTO-3ASEND-PHOTO-20FUNCTION-29
 [c8e7]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT2-2FACTIONS-2FSEND-TEXT-3ASEND-TEXT-20CLASS-29
@@ -3115,372 +2613,285 @@ This can be useful to pass data into `CL` object contructors.
 [03e8]: https://40ants.com/cl-telegram-bot/#x-28CL-TELEGRAM-BOT2-2FSTATE-3ASTATE-20FUNCTION-29
 [53d1]: https://github.com/40ants/cl-telegram-bot
 [7bb5]: https://github.com/40ants/cl-telegram-bot/actions
-[d8db]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L19
-[1453]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L20
-[3f5d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L24
-[e696]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L29
-[4a04]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L33
-[a294]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L37
-[120a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L42
-[eb4a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L45
-[b157]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L50
-[f7a6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/bot.lisp#L58
-[3feb]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/callback.lisp#L26
-[d4a1]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/callback.lisp#L27
-[3294]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/callback.lisp#L30
-[eff8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/callback.lisp#L33
-[a77f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/callback.lisp#L38
-[10bc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/callback.lisp#L45
-[c4f6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L112
-[8673]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L116
-[0cc7]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L117
-[0712]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L119
-[f4b9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L121
-[dfc3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L123
-[c36f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L125
-[c422]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L128
-[7ead]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L158
-[0b76]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L164
-[cd88]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L168
-[77b3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L172
-[1090]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L182
-[3e25]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L195
-[7c37]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L199
-[86e9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L203
-[4694]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L207
-[9ca5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L211
-[389e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L215
-[acf0]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L219
-[beaa]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L223
-[4d22]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L227
-[1765]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L231
-[f86f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L235
-[a910]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L239
-[ee20]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L244
-[a96f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L55
-[e2a6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L56
-[7751]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L58
-[782e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L60
-[b7fa]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L62
-[9e33]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L64
-[8a0d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L84
-[8f8b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L85
-[2079]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L87
-[f80b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L89
-[df6f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/chat.lisp#L91
-[fafd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/core.lisp#L37
-[efff]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/core.lisp#L72
-[22bb]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/command.lisp#L41
-[bb18]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/command.lisp#L42
-[2fee]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/command.lisp#L45
-[363e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/command.lisp#L48
-[a849]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/command.lisp#L78
-[1775]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/generic.lisp#L12
-[16ef]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/entities/generic.lisp#L19
-[1c40]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L19
-[f7b4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L20
-[c71a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L25
-[8e9a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L30
-[adb5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L35
-[ae4b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L51
-[f843]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/envelope.lisp#L61
-[b150]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L23
-[4c37]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L24
-[594d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L36
-[2007]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L37
-[0077]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L50
-[3947]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L51
-[bb4f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L56
-[db00]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L57
-[3ff4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L62
-[e447]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L72
-[99ed]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L77
-[5cca]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/inline-keyboard.lisp#L83
-[28b9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/markup.lisp#L7
-[6542]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L103
-[7e80]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L104
-[d309]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L106
-[7094]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L110
-[9abc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L114
-[d86c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L117
-[f5c6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L121
-[751e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L123
-[c0b9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L127
-[396f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L131
-[2eb9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L135
-[b612]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L159
-[c12e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L160
-[86f3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L166
-[694f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L167
-[8146]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L172
-[2423]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L178
-[1e45]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L179
-[8bc6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L184
-[bc4a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L185
-[ee76]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L190
-[5d14]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L197
-[921d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L202
-[a720]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L207
-[dfac]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L213
-[b083]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L215
-[4374]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L216
-[cdae]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L221
-[3477]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L227
-[9dfc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L229
-[71f3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L231
-[698e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L233
-[da6f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L235
-[f8e8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L238
-[7d8d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L239
-[03e87]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L243
-[07a9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L247
-[114b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L251
-[ade9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L268
-[47bb]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L269
-[2648]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L281
-[8304]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L283
-[5e2c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L285
-[baf9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L287
-[ccba]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L288
-[b2b0]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L298
-[04a4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L300
-[474a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L302
-[3a02]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L304
-[4c15]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L307
-[0d2d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L308
-[10cd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L318
-[46e5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L347
-[4025]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L379
-[0bb2]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L439
-[8855]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L482
-[6a06]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L525
-[f192]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L568
-[d6ea]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L591
-[202f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L634
-[2dee]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L677
-[c33f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L735
-[feda]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L779
-[869c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L786
-[7e3d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L822
-[a6a2]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L829
-[ed93]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/message.lisp#L836
-[16fe]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/network.lisp#L1
-[01a4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/network.lisp#L20
-[7cf6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/network.lisp#L23
-[2e02]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/network.lisp#L30
-[84c8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/payments.lisp#L113
-[8f3d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/payments.lisp#L129
-[65d3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/payments.lisp#L197
-[e88e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/payments.lisp#L73
-[474f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/pipeline.lisp#L1
-[c797]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/pipeline.lisp#L8
-[1113]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response-processing.lisp#L12
-[635e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response-processing.lisp#L16
-[8fa7]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response-processing.lisp#L8
-[8ea2]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L104
-[b809]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L118
-[31f5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L132
-[d800]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L34
-[ec06]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L35
-[4113]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L40
-[0bf1]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L41
-[dac4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L45
-[720d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L49
-[860a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L53
-[aec9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L57
-[9cbd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L58
-[23cc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/response.lisp#L67
-[476d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/update.lisp#L112
-[2734]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/update.lisp#L39
-[5a62]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/update.lisp#L40
-[d034]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/update.lisp#L42
-[b3f3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/update.lisp#L44
-[a3a5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/update.lisp#L48
-[8d83]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L108
-[0066]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L30
-[70bd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L31
-[8435]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L34
-[e9fe]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L38
-[c6e5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L41
-[443a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L45
-[b1b6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L49
-[33f4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L53
-[69cf]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L56
-[12e5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L60
-[8824]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L64
-[c31e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L68
-[528f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L72
-[2a30]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/user.lisp#L94
-[e7b8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/utils.lisp#L26
-[8469]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/utils.lisp#L33
-[fdcd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/utils.lisp#L50
-[7d1f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/src/utils.lisp#L65
-[6dc4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/action.lisp#L13
-[e150]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/action.lisp#L8
-[a17a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/edit-message-media.lisp#L31
-[2f9b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/edit-message-media.lisp#L32
-[03f8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/edit-message-media.lisp#L37
-[b44f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/edit-message-media.lisp#L40
-[e73e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/edit-message-media.lisp#L52
-[9c97]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L31
-[0b5b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L32
-[9391]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L36
-[7b7b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L40
-[46f4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L44
-[ad46]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L48
-[7914]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L52
-[71e9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L56
-[679b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L61
-[e136]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-invoice.lisp#L80
-[8cf0]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-photo.lisp#L28
-[d96a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-photo.lisp#L29
-[f28b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-photo.lisp#L34
-[9592]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-photo.lisp#L37
-[758a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-photo.lisp#L48
-[7586]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-text.lisp#L23
-[3ab9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-text.lisp#L24
-[ca65]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-text.lisp#L28
-[6b81]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-text.lisp#L34
-[74dc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/actions/send-text.lisp#L50
-[7d9c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/bot.lisp#L66
-[afac]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/errors.lisp#L10
-[2115]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/generics.lisp#L15
-[dd7c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/generics.lisp#L44
-[b15b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/generics.lisp#L60
-[cd58]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/generics.lisp#L79
-[d8e9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/generics.lisp#L93
-[0c58]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high.lisp#L25
-[03c9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high.lisp#L32
-[ba8b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high.lisp#L62
-[dec9]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high.lisp#L74
-[0ba1]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L118
-[2dcd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L119
-[1469]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L123
-[4d07]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L127
-[cf39]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L131
-[73f4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L135
-[6cca]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L139
-[3400]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L143
-[7cf5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L160
-[0733]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L194
-[fcd2]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L195
-[3eb4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L199
-[4fd4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L203
-[d0fd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L207
-[4974]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L211
-[0d8d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L215
-[0057]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L219
-[f5f6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L223
-[b6be]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L227
-[c35c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L231
-[340d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L235
-[1a15]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L256
-[a565]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L305
-[0149]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L313
-[b61d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L324
-[5d5e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L332
-[b83b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L343
-[942f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L344
-[a32a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L357
-[6660]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L375
-[3a2e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L376
-[17ea]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L385
-[7302]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L397
-[93e3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L398
-[880a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L407
-[44ae]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L419
-[b59f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L420
-[9ac2]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L423
-[79f6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L427
-[c342]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L431
-[d9b7]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L445
-[b57c]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L469
-[90aa]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L470
-[7887]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L479
-[afad]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L491
-[44cf]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L492
-[f2d1]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L501
-[9f1e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L513
-[ffc6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L514
-[5602]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L517
-[6b00]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L520
-[ae78]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L523
-[f3c0]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L526
-[badc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L541
-[f1c3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L572
-[8238]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L573
-[72c7]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L582
-[a5a3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L596
-[0193]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L604
-[2bca]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L616
-[d2b6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L624
-[1a98]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L64
-[d55b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L694
-[8e2d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L71
-[15be]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L744
-[ced3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L761
-[609b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L86
-[4520]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L87
-[73a1]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/high/keyboard.lisp#L96
-[c5ca]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/server.lisp#L23
-[1637]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/server.lisp#L66
-[54d4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/spec.lisp#L147
-[4891]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state-with-commands.lisp#L100
-[73cf]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state-with-commands.lisp#L107
-[2026]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state-with-commands.lisp#L108
-[e52d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state-with-commands.lisp#L76
-[6783]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state-with-commands.lisp#L81
-[eca0]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state-with-commands.lisp#L90
-[f8a4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L41
-[7bc7]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L42
-[b1ea]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L46
-[35e7]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L50
-[4644]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L54
-[9536]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L58
-[91df]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/state.lisp#L95
-[63b5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L49
-[d1da]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L50
-[bd09]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L53
-[f698]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L57
-[92b6]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L61
-[5804]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L65
-[58bf]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L69
-[afae]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L74
-[9736]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L79
-[22c5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-choice.lisp#L95
-[1dfe]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-number.lisp#L30
-[6c48]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-number.lisp#L31
-[9b24]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-number.lisp#L34
-[8efb]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-number.lisp#L38
-[444a]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-number.lisp#L45
-[253d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/ask-for-number.lisp#L54
-[473e]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L28
-[719f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L29
-[9a8b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L33
-[71fd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L35
-[70b8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L56
-[482f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L61
-[d749]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/base.lisp#L72
-[30d4]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/wait-for-payment.lisp#L40
-[090b]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/wait-for-payment.lisp#L41
-[ccd3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/states/wait-for-payment.lisp#L47
-[aa98]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L21
-[5422]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L22
-[6fbc]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L30
-[7abd]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L35
-[0b80]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L36
-[e937]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L44
-[327f]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L50
-[10ad]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L51
-[3823]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L60
-[544d]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L66
-[d3d0]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L67
-[b0c1]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/term/back.lisp#L76
-[4d69]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/utils.lisp#L22
-[f4f3]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/utils.lisp#L37
-[b4aa]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/utils.lisp#L46
-[6be8]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/utils.lisp#L54
-[3da5]: https://github.com/40ants/cl-telegram-bot/blob/73feeeb15fb1334bb7edfeb158381ff9256f9c37/v2/utils.lisp#L65
+[dc41]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L19
+[6bc1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L20
+[a13e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L24
+[3e78]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L29
+[f161]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L33
+[3642]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L37
+[97d9]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L42
+[66e4]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L45
+[fb4e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L50
+[574f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/bot.lisp#L58
+[4cfa]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/callback.lisp#L26
+[4edc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/callback.lisp#L27
+[4abb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/callback.lisp#L30
+[7ba7]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/callback.lisp#L33
+[e751]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/callback.lisp#L38
+[fd99]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/callback.lisp#L45
+[94db]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L112
+[7cfc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L116
+[ba71]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L117
+[7af4]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L119
+[2c2d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L121
+[9c98]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L123
+[5b7c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L125
+[a46f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L128
+[0aeb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L158
+[f367]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L164
+[a34f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L168
+[064c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L172
+[5d10]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L182
+[0ce5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L195
+[4131]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L199
+[75b5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L203
+[a214]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L207
+[85dd]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L211
+[ce92]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L215
+[b272]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L219
+[b703]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L223
+[4366]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L227
+[1d14]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L231
+[607f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L235
+[1152]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L239
+[4763]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L244
+[1d5a]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L55
+[5234]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L56
+[8267]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L58
+[b16c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L60
+[ad07]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L62
+[efd4]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L64
+[84fe]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L84
+[afe6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L85
+[5917]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L87
+[84ed]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L89
+[1f9b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/chat.lisp#L91
+[9f56]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/core.lisp#L37
+[ebca]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/core.lisp#L72
+[5eee]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/command.lisp#L41
+[3634]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/command.lisp#L42
+[7989]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/command.lisp#L45
+[705c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/command.lisp#L48
+[38ba]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/command.lisp#L78
+[3e08]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/generic.lisp#L12
+[879b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/entities/generic.lisp#L19
+[3aca]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L19
+[ad2e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L20
+[815c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L25
+[2adb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L30
+[d6c6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L35
+[2bd8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L51
+[72ec]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/envelope.lisp#L61
+[5389]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L23
+[1bd8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L24
+[39d2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L36
+[8ed2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L37
+[0c11]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L50
+[0eb7]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L51
+[bc27]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L56
+[bed6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L57
+[6eb6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L62
+[67a7]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L72
+[9be5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L77
+[e05a]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/inline-keyboard.lisp#L83
+[5b59]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/markup.lisp#L7
+[3e81]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L103
+[eb11]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L104
+[0cfb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L106
+[4b1f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L110
+[830e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L114
+[19b7]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L117
+[006c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L121
+[5174]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L123
+[8413]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L127
+[c910]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L131
+[98d9]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L135
+[d062]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L159
+[4343]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L160
+[2bee]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L166
+[7538]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L167
+[c790]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L172
+[01d3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L178
+[b047]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L179
+[9c65]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L184
+[0e78]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L185
+[1fb2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L190
+[b191]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L197
+[6c07]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L202
+[1114]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L207
+[d726]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L213
+[37d0]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L215
+[e185]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L216
+[ce13]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L221
+[7d83]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L227
+[9c987]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L229
+[b9dd]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L231
+[13d6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L233
+[e9da]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L235
+[cbb6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L238
+[a1e8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L239
+[9c28]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L243
+[d888]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L247
+[53b6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L251
+[e0b8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L268
+[53ee]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L269
+[6466]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L281
+[7424]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L283
+[edf4]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L285
+[68c2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L287
+[e84a]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L288
+[d33b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L298
+[f11e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L300
+[46e3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L302
+[23cd]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L304
+[b34c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L307
+[7385]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L308
+[57a5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L318
+[2dd8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L347
+[7220]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L379
+[69cf]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L439
+[128d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L482
+[af2d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L525
+[e210]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L568
+[faab]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L591
+[db31]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L634
+[30cb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L677
+[4982]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L735
+[0567]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L779
+[5903]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L786
+[f4d1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L822
+[7e28]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L829
+[ae23]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/message.lisp#L836
+[d3bb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/network.lisp#L1
+[9ee3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/network.lisp#L20
+[e72b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/network.lisp#L23
+[0348]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/network.lisp#L30
+[d223]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/payments.lisp#L113
+[03cb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/payments.lisp#L129
+[33f4]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/payments.lisp#L197
+[2d4e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/payments.lisp#L73
+[e9d2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/pipeline.lisp#L1
+[e933]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/pipeline.lisp#L8
+[bba1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response-processing.lisp#L12
+[05f5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response-processing.lisp#L16
+[e321]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response-processing.lisp#L8
+[0155]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L104
+[2449]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L118
+[216f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L132
+[026e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L34
+[4c2a]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L35
+[bd6a]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L40
+[2c38]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L41
+[40ce]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L45
+[1ce5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L49
+[6b60]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L53
+[7783]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L57
+[3b87]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L58
+[f2f6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/response.lisp#L67
+[86cd]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/update.lisp#L112
+[0b32]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/update.lisp#L39
+[fbcb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/update.lisp#L40
+[0f30]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/update.lisp#L42
+[c293]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/update.lisp#L44
+[06f9]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/update.lisp#L48
+[5755]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L108
+[1ac6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L30
+[a788]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L31
+[5c66]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L34
+[85b8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L38
+[8c12]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L41
+[ffd3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L45
+[7875]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L49
+[12d1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L53
+[b6b1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L56
+[dcbb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L60
+[dbfb]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L64
+[504f]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L68
+[53ce]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L72
+[6202]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/user.lisp#L94
+[dffd]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/utils.lisp#L26
+[693c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/utils.lisp#L33
+[1379]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/utils.lisp#L50
+[5ba6]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/src/utils.lisp#L65
+[935e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/action.lisp#L13
+[f8a1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/action.lisp#L8
+[62c9]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/edit-message-media.lisp#L31
+[63dc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/edit-message-media.lisp#L32
+[51de]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/edit-message-media.lisp#L37
+[8a73]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/edit-message-media.lisp#L40
+[cb16]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/edit-message-media.lisp#L52
+[b31b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L31
+[9343]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L32
+[841b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L36
+[2bc5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L40
+[6ffa]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L44
+[f37b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L48
+[ffe1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L52
+[e70b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L56
+[5d6d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L61
+[44fc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-invoice.lisp#L80
+[db28]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-photo.lisp#L28
+[23c1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-photo.lisp#L29
+[5a24]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-photo.lisp#L34
+[79e9]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-photo.lisp#L37
+[6b64]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-photo.lisp#L48
+[e756]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-text.lisp#L23
+[caff]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-text.lisp#L24
+[ba2b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-text.lisp#L28
+[aebc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-text.lisp#L34
+[8d82]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/actions/send-text.lisp#L50
+[7b29]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/bot.lisp#L66
+[f6f1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/errors.lisp#L10
+[4dd8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/generics.lisp#L15
+[a4ae]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/generics.lisp#L44
+[214b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/generics.lisp#L60
+[6b39]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/generics.lisp#L79
+[5431]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/generics.lisp#L93
+[ee98]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/high.lisp#L25
+[2905]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/high.lisp#L32
+[89a5]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/high.lisp#L62
+[18d9]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/high.lisp#L74
+[e4e2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/spec.lisp#L147
+[0b6d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state-with-commands.lisp#L100
+[9fe8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state-with-commands.lisp#L107
+[cfdf]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state-with-commands.lisp#L108
+[0685]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state-with-commands.lisp#L76
+[7d88]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state-with-commands.lisp#L81
+[fea3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state-with-commands.lisp#L90
+[ece1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L41
+[cfb7]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L42
+[115c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L46
+[8c0d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L50
+[0aec]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L54
+[4978]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L58
+[de12]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/state.lisp#L95
+[6d13]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L28
+[e4b3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L29
+[4482]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L33
+[029c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L35
+[4b91]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L56
+[15c2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L61
+[bcc3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/base.lisp#L72
+[72c2]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/wait-for-payment.lisp#L40
+[d979]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/wait-for-payment.lisp#L41
+[b8dc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/states/wait-for-payment.lisp#L47
+[4744]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L21
+[3e45]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L22
+[a4fc]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L30
+[d94a]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L35
+[4f6c]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L36
+[52e8]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L44
+[76a3]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L50
+[ff05]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L51
+[417b]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L60
+[ea4e]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L66
+[2f47]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L67
+[ad5d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/term/back.lisp#L76
+[3d05]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/utils.lisp#L22
+[c7dd]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/utils.lisp#L37
+[83c1]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/utils.lisp#L46
+[2353]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/utils.lisp#L54
+[677d]: https://github.com/40ants/cl-telegram-bot/blob/054cc96ccfcd280727e977e2bfabdeff41caab5b/v2/utils.lisp#L65
 [5798]: https://github.com/40ants/cl-telegram-bot/issues
 [b588]: https://github.com/sovietspaceship
 [891d]: https://github.com/svetlyak40wt

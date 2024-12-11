@@ -225,7 +225,9 @@
                             handler))
                        #'process
                        update)))
-             finally (return
-                       (call-next-method))))
+             finally (log:warn "Command ~A cant be processed by state ~S"
+                               command-name
+                               (class-name
+                                (class-of state)))))
       (t
        (call-next-method)))))

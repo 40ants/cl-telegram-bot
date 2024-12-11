@@ -11,6 +11,12 @@
                 #:continue-processing)
   (:import-from #:cl-telegram-bot2/bot
                 #:debug-mode)
+  (:import-from #:bordeaux-threads-2
+                #:destroy-thread
+                #:thread-name
+                #:all-threads)
+  (:import-from #:str
+                #:starts-with?)
   (:export #:start-polling
            #:stop-polling))
 (in-package #:cl-telegram-bot2/server)
@@ -63,6 +69,15 @@
     #'stop-bot))
 
 
+(defun clean-threads ()
+  "TODO: we need to figure out why the threads are not being cleaned up. Maybe this happens when errors happen?"
+  (loop for tr in (all-threads)
+        when (or (starts-with? "message-thread" (thread-name tr))
+                 (starts-with? "timer-wheel" (thread-name tr))
+                 (starts-with? "telegram-bot" (thread-name tr)))
+        do (destroy-thread tr)))
+
+
 (defun stop-polling (bot)
   (let ((thread (getf *threads* bot)))
     (when thread
@@ -71,4 +86,5 @@
         (destroy-thread thread))
       (setf (getf *threads* bot)
             nil))
-    (cl-telegram-bot2/bot::stop-actors bot)))
+    (cl-telegram-bot2/bot::stop-actors bot)
+    (clean-threads)))

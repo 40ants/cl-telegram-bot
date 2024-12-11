@@ -3,7 +3,7 @@
   (:import-from #:log)
   (:import-from #:cl-telegram-bot2/api)
   (:import-from #:cl-telegram-bot2/bot
-                #:initial-state-class
+                #:initial-state
                 #:api-uri
                 #:token
                 #:get-last-update-id
@@ -216,15 +216,15 @@
                         system
                         actor-name))
                       (let* ((initial-state
-                               (etypecase (initial-state-class bot)
+                               (etypecase (initial-state bot)
                                  (symbol
                                   (make-instance
-                                   (initial-state-class bot)))
+                                   (initial-state bot)))
                                  (base-state
                                   ;; Here we need to copy a state
                                   ;; to prevent results sharing between different chats
                                   (deep-copy
-                                   (initial-state-class bot)))))
+                                   (initial-state bot)))))
                              (probably-new-state
                                (on-state-activation initial-state))
                              (state-stack

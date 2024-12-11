@@ -5,7 +5,13 @@
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/actions/send-text
-                #:send-text))
+                #:send-text)
+  (:import-from #:cl-telegram-bot2/actions/send-photo
+                #:send-photo)
+  (:import-from #:cl-telegram-bot2/actions/send-invoice
+                #:send-invoice)
+  (:import-from #:cl-telegram-bot2/actions/edit-message-media
+                #:edit-message-media))
 (in-package #:cl-telegram-bot-docs/states)
 
 
@@ -16,7 +22,8 @@ This framework makes it possible to define bot with all allowed state.
 The state defines behaviour of the bot, the way it should respond to commands, updates and other events.
 "
   (@states section)
-  (@actions section))
+  (@actions section)
+  (@event-processing section))
 
 
 (defsection @states (:title "States")
@@ -50,4 +57,30 @@ See other support events in STATE function documentation.
 
 (defsection @actions (:title "Actions")
   "
+Actions in cl-telegra-bot are small objects holding an information about what should be done on some event. Typically, you will want to reply with some text or send a photo.
+
+Usually, actions are created using a function having the same name as action's class. Here are which actions are available:
+
+- [SEND-TEXT][function]
+- [SEND-PHOTO][function]
+- [SEND-INVOICE][function]
+- [EDIT-MESSAGE-MEDIA][function]
+
+More actions will be added in future and you can create your own.
+
+Also, a function bound symbol can be used instead an action object. Why do we require a symbol but not a function object? Because symbol has a name and it can be useful when we want to save bot's state or to render states graph.
+")
+
+
+(defsection @event-processing (:title "Event processing")
+  "
+When some event occur, a corresponding generic function is called first on state object then on an action specified for this kind.
+
+For example, if new update was received, then CL-TELEGRAM-BOT2/GENERICS:PROCESS generic-function will be called with current state as the first argument
+and update object as the second argument. Then the method specified on state class will call the same CL-TELEGRAM-BOT2/GENERICS:PROCESS generic-function
+on the object specified as :ON-UPDATE argument for the action. If action is a symbol, then it's function will be called with update object as a single argument in case if this function accepts one argument and without any arguments otherwise.
+
+Action's method should return should return a new state object if it wants to change the current bot's state or NIL otherwise. If new state was returned, then `on-activate` event will be processed afterwards.
+
+Instead of one action a list of actions can be specified as an event handler. In this case processing will stop on an action which returns a new state.
 ")

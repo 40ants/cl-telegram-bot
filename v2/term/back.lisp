@@ -4,6 +4,8 @@
                 #:required-argument)
   (:import-from #:serapeum
                 #:->)
+  (:import-from #:cl-telegram-bot2/generics
+                #:process)
   (:export #:back
            #:back-to
            #:back-to-nth-parent
@@ -77,3 +79,10 @@
   (make-instance 'back-to-id
                  :id id
                  :result result))
+
+
+(defmethod process ((item back) update)
+  ;; If a some action returns a BACK object when processing a list of actions,
+  ;; then PROCESS generic-function will be called on it again
+  ;; and in this case we should return the same BACK object to interrupt the list processing
+  (values item))

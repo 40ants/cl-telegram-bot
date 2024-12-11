@@ -36,7 +36,7 @@
                :type (or null
                          symbol
                          string)
-               :documentation "Supported values are: \"Markdown\", \"MarkdownV2\" or \"HTML\". Read more about formatting options in the Telegram documentaion: https://core.telegram.org/bots/api#formatting-options"
+               :documentation "Supported values are: `\"Markdown\"`, `\"MarkdownV2\"` or `\"HTML\"`. Read more about formatting options in the Telegram documentaion: https://core.telegram.org/bots/api#formatting-options"
                :reader parse-mode)))
 
 
