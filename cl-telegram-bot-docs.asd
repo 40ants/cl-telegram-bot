@@ -8,4 +8,5 @@
   :bug-tracker "https://github.com/40ants/cl-telegram-bot/issues"
   :pathname "docs"
   :depends-on ("cl-telegram-bot"
+               "cl-telegram-bot-media"
                "cl-telegram-bot-docs/index"))

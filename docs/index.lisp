@@ -39,10 +39,15 @@
   (list :theme
         (find-symbol "40ANTS-THEME"
                      (find-package "40ANTS-DOC-THEME-40ANTS"))
-        :full-package-names nil))
+        :full-package-names nil
+        :root-sections '(@index
+                         @first-bot
+                         @states-and-actions
+                         @api-v2
+                         @v1)))
 
 
-(defsection @index (:title "cl-telegram-bot - Telegram Bot API"
+(defsection @intro (:title "cl-telegram-bot - Telegram Bot API"
                     :ignore-words ("JSON"
                                    "HTTP"
                                    "HTTPS"
@@ -61,12 +66,12 @@
 ![Quicklisp](http://quickdocs.org/badge/cl-telegram-bot.svg)
 "
   (@installation section)
-  (@v2 section)
-  (@v1 section)
   (@credits section))
 
 
-(defsection-copy @readme @index)
+(defsection-copy @index @intro)
+
+(defsection-copy @readme @intro)
 
 
 (defsection @installation (:title "Installation")
@@ -123,7 +128,7 @@ THE-BOT> (defmethod on-command ((bot echo-bot)
 Now, stop for the minute, open your Telegram client, and create a new bot
 using the BotFather bot:
 
-![](images/create-a-bot.png)
+![](asdf:cl-telegram-bot-media:images/create-a-bot.png)
 
 When you've got token, return to the REPL and start our bot:
 
@@ -139,11 +144,11 @@ This will start a new thread for processing incoming messages.
 
 Now, find your bot in the Telegram client:
 
-![](images/choose-the-bot.png)
+![](asdf:cl-telegram-bot-media:images/choose-the-bot.png)
 
 And start communicating with him:
 
-![](images/write-to-the-bot.png)
+![](asdf:cl-telegram-bot-media:images/write-to-the-bot.png)
 
 ")
 
@@ -155,18 +160,14 @@ And start communicating with him:
 ")
 
 
-(defsection @v1 (:title "v1")
+(defsection @v1 (:title "v1 (old API)")
   (@quickstart section)
   (@api section))
 
 
-(defsection @v2 (:title "v2")
-  (@states-and-actions section)
-  (@first-bot section)
-  (@api-v2 section))
+(defautodoc @api (:title "API v1 (old version)"
+                  :system :cl-telegram-bot))
 
-
-(defautodoc @api (:system :cl-telegram-bot))
-
-(defautodoc @api-v2 (:system :cl-telegram-bot2
+(defautodoc @api-v2 (:title "API v2"
+                     :system :cl-telegram-bot2
                      :ignore-packages ("cl-telegram-bot2/api")))
