@@ -17,6 +17,7 @@
     "build-docs": {
       "runs-on": "ubuntu-latest",
       "env": {
+        "DYNAMIC_SPACE_SIZE": "4Gb",
         "OS": "ubuntu-latest",
         "QUICKLISP_DIST": "quicklisp",
         "LISP": "sbcl-bin"
