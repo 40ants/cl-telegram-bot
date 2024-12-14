@@ -1,8 +1,5 @@
 (uiop:define-package #:cl-telegram-bot2/server
   (:use #:cl)
-  (:import-from #:bordeaux-threads
-                #:make-thread
-                #:destroy-thread)
   (:import-from #:log)
   (:import-from #:trivial-backtrace
                 #:print-backtrace)
@@ -12,6 +9,7 @@
   (:import-from #:cl-telegram-bot2/bot
                 #:debug-mode)
   (:import-from #:bordeaux-threads-2
+                #:make-thread
                 #:destroy-thread
                 #:thread-name
                 #:all-threads)

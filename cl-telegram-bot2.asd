@@ -25,6 +25,7 @@
   :depends-on ("njson/jzon"))
 
 
+(asdf:register-system-packages "bordeaux-threads" '("BORDEAUX-THREADS-2"))
 (asdf:register-system-packages "log4cl" '("LOG"))
 (asdf:register-system-packages "utilities.print-items" '("PRINT-ITEMS"))
 (asdf:register-system-packages "dexador" '("DEX"))
