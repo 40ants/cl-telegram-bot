@@ -11,6 +11,22 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
+  (1.0.0 2024-12-14
+         "
+Huge Changes
+============
+
+A new ASDF system, cl-telegram-bot2, has been added with a completely rewritten codebase.
+
+This new approach separates the code into low-level and high-level components.
+The low-level code is generated from the Telegram API specification and encompasses all the objects and methods available in the API.
+
+In contrast, the high-level API allows you to define the bot's behavior in a declarative manner,
+ somewhat similar to how today's popular \"no-code\" bot builders operate.
+However, we do it better because we have Common Lisp at our fingertips.
+
+You can find more examples in the `examples` directory and in the CL-TELEGRAM-BOT-DOCS/TUTORIAL::@FIRST-BOT section.
+")
   (0.6.0 2024-10-15
          "
 Changed
