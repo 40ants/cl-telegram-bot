@@ -1,0 +1,42 @@
+#|-*- mode:lisp -*-|#
+
+(push "~/projects/40ants-lake/" asdf:*central-registry*)
+(push "~/projects/cl-mustache/" asdf:*central-registry*)
+
+(ql:quickload :40ants-lake
+              :silent t)
+
+(defpackage :lake.user
+  (:use :cl :lake)
+  (:import-from #:40ants-lake/utils
+                #:alias)
+  (:import-from #:40ants-lake/environment
+                #:load-env-file)
+  (:import-from #:40ants-lake/app
+                #:defapps
+                #:app)
+  (:import-from #:40ants-lake/component/webservice
+                #:webservice
+                #:proxy)
+  (:import-from #:40ants-lake/component/daemon
+                #:daemon)
+  (:import-from #:40ants-lake/env-val
+                #:env-val)
+  (:shadowing-import-from :lake
+   :directory))
+(in-package :lake.user)
+
+
+(when (probe-file ".local-config.lisp")
+  (load ".local-config.lisp"))
+
+
+(load-env-file)
+
+
+(let ((backend-port (env-val :dev 10120)))
+  (defapps
+      (app "cl-echo-bot"
+           :components (list (webservice (env-val :dev "cl-echo-bot.dev.40ants.com")
+                                         :routes (proxy "/"
+                                                        backend-port))))))
