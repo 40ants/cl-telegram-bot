@@ -17,7 +17,6 @@
     "build-docs": {
       "runs-on": "ubuntu-latest",
       "env": {
-        "CACHE_NAME": "dyn-space",
         "OS": "ubuntu-latest",
         "QUICKLISP_DIST": "quicklisp",
         "LISP": "sbcl-bin"
@@ -33,7 +32,8 @@
           "with": {
             "asdf-system": "cl-telegram-bot-docs",
             "dynamic-space-size": "4gb",
-            "cache": "true"
+            "cache": "true",
+            "cache-suffix": "dyn-space"
           }
         },
         {
