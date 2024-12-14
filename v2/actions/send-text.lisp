@@ -16,7 +16,10 @@
   (:import-from #:cl-telegram-bot2/types
                 #:reply-markup-type
                 #:inline-keyboard-buttons)
-  (:export #:send-text))
+  (:export #:send-text
+           #:text
+           #:reply-markup
+           #:parse-mode))
 (in-package #:cl-telegram-bot2/actions/send-text)
 
 

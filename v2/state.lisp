@@ -27,11 +27,18 @@
                 #:workflow-blocks)
   (:import-from #:cl-telegram-bot2/utils
                 #:arity)
-  (:export #:state))
+  (:export #:state
+           #:on-activation
+           #:on-update
+           #:on-result
+           #:on-callback-query
+           #:on-web-app-data
+           #:callback-query-handlers))
 (in-package #:cl-telegram-bot2/state)
 
 
 (deftype callback-query-handlers ()
+  "Type of ON-CALLBACK-QUERY argument of the STATE class."
   '(serapeum:soft-alist-of string
     (or 
      workflow-block

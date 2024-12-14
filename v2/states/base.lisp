@@ -21,7 +21,8 @@
            #:clear-state-vars
            #:base-state
            #:state-id
-           #:sent-message-ids))
+           #:sent-message-ids
+           #:state-vars))
 (in-package #:cl-telegram-bot2/states/base)
 
 

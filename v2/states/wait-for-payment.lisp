@@ -33,7 +33,8 @@
                 #:aif)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:state-with-commands-mixin)
-  (:export #:wait-for-payment))
+  (:export #:wait-for-payment
+           #:on-success))
 (in-package #:cl-telegram-bot2/states/wait-for-payment)
 
 

@@ -24,7 +24,10 @@
                 #:call-if-needed)
   (:import-from #:cl-telegram-bot2/states/base
                 #:sent-message-ids)
-  (:export #:edit-message-media))
+  (:export #:edit-message-media
+           #:caption
+           #:media-path
+           #:inline-keyboard))
 (in-package #:cl-telegram-bot2/actions/edit-message-media)
 
 

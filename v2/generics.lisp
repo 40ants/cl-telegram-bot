@@ -77,7 +77,7 @@
 
 
 (defgeneric on-result (state result)
-  (:documentation "This method is called when some state exits and returns a result using BACK function.")
+  (:documentation "This method is called when some state exits and returns a result using CL-TELEGRAM-BOT2/TERM/BACK:BACK function.")
   
   (:method ((state t) (result t))
     "By default, nothing happens for state processing."

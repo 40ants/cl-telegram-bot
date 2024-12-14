@@ -21,7 +21,10 @@
                 #:->)
   (:import-from #:cl-telegram-bot2/utils
                 #:call-if-needed)
-  (:export #:send-photo))
+  (:export #:send-photo
+           #:image-path
+           #:caption
+           #:inline-keyboard))
 (in-package #:cl-telegram-bot2/actions/send-photo)
 
 

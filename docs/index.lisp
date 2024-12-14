@@ -48,17 +48,9 @@
 
 
 (defsection @intro (:title "cl-telegram-bot - Telegram Bot API"
-                    :ignore-words ("JSON"
-                                   "HTTP"
-                                   "HTTPS"
-                                   "MIME"
-                                   "CL"
-                                   "TODO"
+                    :ignore-words ("API"
                                    "MIT"
-                                   "API"
-                                   "CLOS"
-                                   "REPL"
-                                   "GIT"))
+                                   "CLOS"))
   (cl-telegram-bot system)
   "
 [![](https://github-actions.40ants.com/40ants/cl-telegram-bot/matrix.svg?only=ci.run-tests)](https://github.com/40ants/cl-telegram-bot/actions)
@@ -160,7 +152,15 @@ And start communicating with him:
 ")
 
 
-(defsection @v1 (:title "v1 (old API)")
+(defsection @v1 (:title "v1 (old API)"
+                 :ignore-words ("CLOS"
+                                "REPL"
+                                "HTTPS"
+                                "HTTP"
+                                "JSON"
+                                "MIME"
+                                "CL"
+                                "API"))
   (@quickstart section)
   (@api section))
 
@@ -170,4 +170,6 @@ And start communicating with him:
 
 (defautodoc @api-v2 (:title "API v2"
                      :system :cl-telegram-bot2
+                     :ignore-words ("CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
+                                    "API")
                      :ignore-packages ("cl-telegram-bot2/api")))

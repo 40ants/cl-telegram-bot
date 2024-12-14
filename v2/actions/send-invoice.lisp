@@ -20,11 +20,21 @@
                 #:wait-for-payment)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:command)
-  (:export #:send-invoice))
+  (:export #:send-invoice
+           #:title
+           #:description
+           #:payload
+           #:provider-token
+           #:currency
+           #:prices
+           #:on-success
+           #:commands
+           #:prices-list))
 (in-package #:cl-telegram-bot2/actions/send-invoice)
 
 
 (deftype prices-list ()
+  "Type of PRICES arguments for SEND-INVOICE class."
   '(soft-list-of hash-table))
 
 

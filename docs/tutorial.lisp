@@ -7,7 +7,8 @@
 (in-package #:cl-telegram-bot-docs/tutorial)
 
 
-(defsection @first-bot (:title "Our First Telegram Bot (tutorial)")
+(defsection @first-bot (:title "Our First Telegram Bot (tutorial)"
+                        :ignore-words ("REPL"))
   "
 For the start, you need to create a bot and get it's token from the BotFather bot:
 
