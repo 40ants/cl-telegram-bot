@@ -11,7 +11,7 @@
 
 
 (defworkflow linter
-  :on-push-to "clos-everywhere"
+  :on-push-to "master"
   :by-cron "0 10 * * 1"
   :on-pull-request t
   :cache t
@@ -21,7 +21,7 @@
                          "cl-telegram-bot-tests"))))
 
 (defworkflow docs
-  :on-push-to "clos-everywhere"
+  :on-push-to "master"
   :by-cron "0 10 * * 1"
   :on-pull-request t
   :cache t
@@ -29,7 +29,7 @@
 
 
 (defworkflow ci
-  :on-push-to "clos-everywhere"
+  :on-push-to "master"
   :by-cron "0 10 * * 1"
   :on-pull-request t
   :cache t
