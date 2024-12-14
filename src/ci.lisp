@@ -28,7 +28,12 @@
   :cache t
   :jobs ((build-docs
           :asdf-system "cl-telegram-bot-docs"
-          :dynamic-space-size "4gb")))
+          :dynamic-space-size "4gb"
+          ;; Because roswell was cached when I've added
+          ;; ability to specify dynamic-space-size,
+          ;; we have to add this to reset it.
+          ;; Can be removed in January 2025.
+          :env '(("cache-name" . "dyn-space")))))
 
 
 (defworkflow ci
