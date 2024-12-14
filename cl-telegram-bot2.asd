@@ -1,6 +1,6 @@
 #-asdf3.1 (error "cl-telegram-bot requires ASDF 3.1 because for lower versions pathname does not work for package-inferred systems.")
 (defsystem "cl-telegram-bot2"
-  :description "Telegram Bot API, based on sovietspaceship's work but mostly rewritten."
+  :description "Telegram Bot API, completely rewritten. Autogenerates code from JSON spec and adds high-level declarative DSL on top."
   :author "Alexander Artemenko <svetlyak.40wt@gmail.com>"
   :license "MIT"
   :homepage "https://40ants.com/cl-telegram-bot/"

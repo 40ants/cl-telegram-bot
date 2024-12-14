@@ -50,13 +50,18 @@
 (defsection @intro (:title "cl-telegram-bot - Telegram Bot API"
                     :ignore-words ("API"
                                    "MIT"
+                                   "JSON"
+                                   "DSL"
                                    "CLOS"))
   (cl-telegram-bot system)
+  (cl-telegram-bot2 system)
   "
 [![](https://github-actions.40ants.com/40ants/cl-telegram-bot/matrix.svg?only=ci.run-tests)](https://github.com/40ants/cl-telegram-bot/actions)
 
 ![Quicklisp](http://quickdocs.org/badge/cl-telegram-bot.svg)
 "
+  
+  (@note section)
   (@installation section)
   (@credits section))
 
@@ -65,6 +70,21 @@
 
 (defsection-copy @readme @intro)
 
+
+(defsection @note (:title "Important Note"
+                   :ignore-words ("JSON"
+                                  "ASDF"
+                                  "DSL"
+                                  "API"))
+  "There are two different ASDF systems:
+
+   - cl-telegram-bot: the legacy system that is no longer supported.
+   - cl-telegram-bot2: the new version that generates classes and methods from the JSON specification and adds a declarative DSL on top.
+
+   The new version is still incomplete, and the high-level API may change in the future.
+   If you encounter any issues, please refer to ChangeLog.md.
+   Pull requests with features and fixes are welcome!
+")
 
 (defsection @installation (:title "Installation")
   """

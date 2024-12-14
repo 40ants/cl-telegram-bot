@@ -11,7 +11,7 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
-  (1.0.0 2024-12-14
+  (0.7.0 2024-12-14
          "
 Huge Changes
 ============
