@@ -28,7 +28,7 @@
   :cache t
   :jobs ((build-docs
           :asdf-system "cl-telegram-bot-docs"
-          :env (("DYNAMIC_SPACE_SIZE" . "4Gb")))))
+          :dynamic-space-size "4gb")))
 
 
 (defworkflow ci
