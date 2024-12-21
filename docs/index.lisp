@@ -11,10 +11,14 @@
                 #:defsection-copy)
   (:import-from #:cl-telegram-bot-docs/changelog
                 #:@changelog)
+  (:import-from #:cl-telegram-bot-docs/states
+                #:@states-and-actions)
   (:import-from #:docs-config
                 #:docs-config)
   (:import-from #:40ants-doc/autodoc
                 #:defautodoc)
+  (:import-from #:cl-telegram-bot-docs/tutorial
+                #:@first-bot)
   (:export #:@index
            #:@readme
            #:@changelog))
@@ -35,35 +39,52 @@
   (list :theme
         (find-symbol "40ANTS-THEME"
                      (find-package "40ANTS-DOC-THEME-40ANTS"))
-        :full-package-names nil))
+        :full-package-names nil
+        :root-sections '(@index
+                         @first-bot
+                         @states-and-actions
+                         @api-v2
+                         @v1)))
 
 
-(defsection @index (:title "cl-telegram-bot - Telegram Bot API"
-                    :ignore-words ("JSON"
-                                   "HTTP"
-                                   "HTTPS"
-                                   "MIME"
-                                   "CL"
-                                   "TODO"
+(defsection @intro (:title "cl-telegram-bot - Telegram Bot API"
+                    :ignore-words ("API"
                                    "MIT"
-                                   "API"
-                                   "CLOS"
-                                   "REPL"
-                                   "GIT"))
+                                   "JSON"
+                                   "DSL"
+                                   "CLOS"))
   (cl-telegram-bot system)
+  (cl-telegram-bot2 system)
   "
 [![](https://github-actions.40ants.com/40ants/cl-telegram-bot/matrix.svg?only=ci.run-tests)](https://github.com/40ants/cl-telegram-bot/actions)
 
 ![Quicklisp](http://quickdocs.org/badge/cl-telegram-bot.svg)
 "
+  
+  (@note section)
   (@installation section)
-  (@quickstart section)
-  (@api section)
   (@credits section))
 
 
-(defsection-copy @readme @index)
+(defsection-copy @index @intro)
 
+(defsection-copy @readme @intro)
+
+
+(defsection @note (:title "Important Note"
+                   :ignore-words ("JSON"
+                                  "ASDF"
+                                  "DSL"
+                                  "API"))
+  "There are two different ASDF systems:
+
+   - cl-telegram-bot: the legacy system that is no longer supported.
+   - cl-telegram-bot2: the new version that generates classes and methods from the JSON specification and adds a declarative DSL on top.
+
+   The new version is still incomplete, and the high-level API may change in the future.
+   If you encounter any issues, please refer to ChangeLog.md.
+   Pull requests with features and fixes are welcome!
+")
 
 (defsection @installation (:title "Installation")
   """
@@ -119,7 +140,7 @@ THE-BOT> (defmethod on-command ((bot echo-bot)
 Now, stop for the minute, open your Telegram client, and create a new bot
 using the BotFather bot:
 
-![](images/create-a-bot.png)
+![](asdf:cl-telegram-bot-media:images/create-a-bot.png)
 
 When you've got token, return to the REPL and start our bot:
 
@@ -135,11 +156,11 @@ This will start a new thread for processing incoming messages.
 
 Now, find your bot in the Telegram client:
 
-![](images/choose-the-bot.png)
+![](asdf:cl-telegram-bot-media:images/choose-the-bot.png)
 
 And start communicating with him:
 
-![](images/write-to-the-bot.png)
+![](asdf:cl-telegram-bot-media:images/write-to-the-bot.png)
 
 ")
 
@@ -151,4 +172,24 @@ And start communicating with him:
 ")
 
 
-(defautodoc @api (:system :cl-telegram-bot))
+(defsection @v1 (:title "v1 (old API)"
+                 :ignore-words ("CLOS"
+                                "REPL"
+                                "HTTPS"
+                                "HTTP"
+                                "JSON"
+                                "MIME"
+                                "CL"
+                                "API"))
+  (@quickstart section)
+  (@api section))
+
+
+(defautodoc @api (:title "API v1 (old version)"
+                  :system :cl-telegram-bot))
+
+(defautodoc @api-v2 (:title "API v2"
+                     :system :cl-telegram-bot2
+                     :ignore-words ("CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
+                                    "API")
+                     :ignore-packages ("cl-telegram-bot2/api")))

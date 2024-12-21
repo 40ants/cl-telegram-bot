@@ -1,0 +1,88 @@
+(uiop:define-package #:cl-telegram-bot2/server
+  (:use #:cl)
+  (:import-from #:log)
+  (:import-from #:trivial-backtrace
+                #:print-backtrace)
+  (:import-from #:cl-telegram-bot2/pipeline
+                #:process-updates
+                #:continue-processing)
+  (:import-from #:cl-telegram-bot2/bot
+                #:debug-mode)
+  (:import-from #:bordeaux-threads-2
+                #:make-thread
+                #:destroy-thread
+                #:thread-name
+                #:all-threads)
+  (:import-from #:str
+                #:starts-with?)
+  (:export #:start-polling
+           #:stop-polling))
+(in-package #:cl-telegram-bot2/server)
+
+
+
+(defvar *threads* nil)
+
+
+(defun start-polling (bot &key
+                          debug
+                          (delay-between-retries 10)
+                          (thread-name "telegram-bot"))
+  "Start processing new updates from the Telegram API.
+
+   Pass bot instance as the first argument and maybe some other optional arguments.
+
+   If DEBUG argument is T, then bot will ignore updates which it can't to process without errors.
+   Otherwise, an interactive debugger will popup."
+  
+  (when (getf *threads* bot)
+    (error "Processing already started."))
+
+  (setf (debug-mode bot) debug)
+
+  (log:info "Starting thread to process updates for" bot)
+  (flet ((continue-processing-if-not-debug (condition)
+           (let ((restart (find-restart 'continue-processing
+                                        condition)))
+             (when restart
+               (let ((traceback (print-backtrace
+                                 condition :output nil)))
+                 (log:error "Unable to process Telegram updates" traceback))
+               
+               (unless (debug-mode bot)
+                 (invoke-restart restart delay-between-retries)))))
+         (stop-bot ()
+           (stop-polling bot)))
+
+    (cl-telegram-bot2/bot::start-actors bot)
+    
+    (setf (getf *threads* bot)
+          (make-thread
+           (lambda ()
+             (handler-bind ((serious-condition #'continue-processing-if-not-debug))
+               (process-updates bot)))
+           :name thread-name))
+
+    ;; Here we return a closure to stop the bot:
+    #'stop-bot))
+
+
+(defun clean-threads ()
+  "TODO: we need to figure out why the threads are not being cleaned up. Maybe this happens when errors happen?"
+  (loop for tr in (all-threads)
+        when (or (starts-with? "message-thread" (thread-name tr))
+                 (starts-with? "timer-wheel" (thread-name tr))
+                 (starts-with? "telegram-bot" (thread-name tr)))
+        do (destroy-thread tr)))
+
+
+(defun stop-polling (bot)
+  (let ((thread (getf *threads* bot)))
+    (when thread
+      (when (bt:thread-alive-p thread)
+        (log:info "Stopping thread for" bot)
+        (destroy-thread thread))
+      (setf (getf *threads* bot)
+            nil))
+    (cl-telegram-bot2/bot::stop-actors bot)
+    (clean-threads)))

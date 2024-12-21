@@ -18,14 +18,17 @@
   :jobs ((40ants-ci/jobs/linter:linter
           :asdf-systems ("cl-telegram-bot"
                          "cl-telegram-bot-docs"
-                         "cl-telegram-bot-tests"))))
+                         "cl-telegram-bot-tests")
+          :env (("DYNAMIC_SPACE_SIZE" . "4Gb")))))
 
 (defworkflow docs
   :on-push-to "master"
   :by-cron "0 10 * * 1"
   :on-pull-request t
   :cache t
-  :jobs ((build-docs :asdf-system "cl-telegram-bot-docs")))
+  :jobs ((build-docs
+          :asdf-system "cl-telegram-bot-docs"
+          :dynamic-space-size "4gb")))
 
 
 (defworkflow ci
