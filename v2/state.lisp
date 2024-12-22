@@ -6,14 +6,13 @@
                 #:dict
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
+                #:call-if-action
                 #:action)
   (:import-from #:cl-telegram-bot2/generics
                 #:process
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back)
-  (:import-from #:sento.actor
-                #:*state*)
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
@@ -26,7 +25,10 @@
                 #:workflow-block
                 #:workflow-blocks)
   (:import-from #:cl-telegram-bot2/utils
-                #:arity)
+                #:call-if-needed
+                #:call-with-one-or-zero-args)
+  (:import-from #:cl-telegram-bot2/vars
+                #:*current-state*)
   (:export #:state
            #:on-activation
            #:on-update
@@ -113,10 +115,13 @@
 (defmethod on-state-activation ((state state))
   (loop for obj in (on-activation state)
         thereis (typecase obj
+                  (symbol
+                     (on-state-activation
+                      (call-if-needed obj)))
                   (action
-                   (on-state-activation obj))
+                     (on-state-activation obj))
                   (t
-                   obj))))
+                     obj))))
 
 
 (defmethod process ((state state) update)
@@ -130,7 +135,17 @@
       (callback-data
        (loop for (expected-value . workflow-blocks) in (on-callback-query state)
              when (string= callback-data expected-value)
-               do (return (process workflow-blocks update))))
+               do (return
+                    ;; PROCESS should be repeated for actions and states
+                    ;; from this list until we'll find a final action like BACK
+                    ;; or a state to switch to.
+
+                    ;; NOTE:
+                    ;; PROCESS works differently when it is processing
+                    ;; a list - it only executes actions and returns states as is.
+                    ;; So here we should ensure a list is passed:
+                    (process (uiop:ensure-list workflow-blocks)
+                             update))))
       ;; Otherwise call an ON-UPDATE action.
       (t
        (let* ((message (cl-telegram-bot2/api:update-message update))
@@ -149,30 +164,42 @@
         thereis (etypecase obj
                   (symbol
                      (let ((maybe-other-action
-                             (cond
-                               ((fboundp obj)
-                                (case (arity obj)
-                                  (0
-                                     (funcall obj))
-                                  (1
-                                     ;; If function accepts a single argument,
-                                     ;; then we call it with update object.
-                                     ;; This way objects like web-app-data
-                                     ;; could be processed.
-                                     (funcall obj update))
-                                  (otherwise
-                                     (error "Unable to process ~A because function ~S requires ~A arguments."
-                                            update
-                                            obj
-                                            (arity obj)))))
-                               (t
-                                (error "Symbol ~S should be funcallble."
-                                       obj)))))
+                             (call-with-one-or-zero-args obj update)
+                             ;; (cond
+                             ;;   ((fboundp obj)
+                             ;;    (case (arity obj)
+                             ;;      (0
+                             ;;         (funcall obj))
+                             ;;      (1
+                             ;;         ;; If function accepts a single argument,
+                             ;;         ;; then we call it with update object.
+                             ;;         ;; This way objects like web-app-data
+                             ;;         ;; could be processed.
+                             ;;         (funcall obj update))
+                             ;;      (otherwise
+                             ;;         (error "Unable to process ~A because function ~S requires ~A arguments."
+                             ;;                update
+                             ;;                obj
+                             ;;                (arity obj)))))
+                             ;;   (t
+                             ;;    (error "Symbol ~S should be funcallble."
+                             ;;           obj)))
+                             ))
                        (when maybe-other-action
                          (process maybe-other-action
                                   update))))
                   (action
                      (process obj update))
+                  ;; Here is a little kludge,
+                  ;; PROCESS is only called once on the current action
+                  ;; and if it returns a list, then we don't need
+                  ;; to call PROCESS on the state in the list again,
+                  ;; because this is the state to switch to, not to
+                  ;; process the UPDATE.
+                  ;;
+                  ;; QUESTION:
+                  ;; Probably these should be separate functions
+                  ;; like PROCESS-UPDATE and PROCESS-ACTIONS?
                   (base-state
                      obj)
                   (back
@@ -212,25 +239,27 @@
                      ;; another action which should be processed
                      ;; in it's turn
                      (let ((maybe-other-action
-                             (cond
-                               ((fboundp obj)
-                                (case (arity obj)
-                                  (0
-                                     (funcall obj))
-                                  (1
-                                     ;; If function accepts a single argument,
-                                     ;; then we call it with update object.
-                                     ;; This way objects like web-app-data
-                                     ;; could be processed.
-                                     (funcall obj result))
-                                  (otherwise
-                                     (error "Unable to process ~A because function ~S requires ~A arguments."
-                                            result
-                                            obj
-                                            (arity obj)))))
-                               (t
-                                (error "Symbol ~S should be funcallble."
-                                       obj)))))
+                             (call-with-one-or-zero-args obj result)
+                             ;; (cond
+                             ;;   ((fboundp obj)
+                             ;;    (case (arity obj)
+                             ;;      (0
+                             ;;         (funcall obj))
+                             ;;      (1
+                             ;;         ;; If function accepts a single argument,
+                             ;;         ;; then we call it with update object.
+                             ;;         ;; This way objects like web-app-data
+                             ;;         ;; could be processed.
+                             ;;         (funcall obj result))
+                             ;;      (otherwise
+                             ;;         (error "Unable to process ~A because function ~S requires ~A arguments."
+                             ;;                result
+                             ;;                obj
+                             ;;                (arity obj)))))
+                             ;;   (t
+                             ;;    (error "Symbol ~S should be funcallble."
+                             ;;           obj)))
+                             ))
                        (when maybe-other-action
                          (cl-telegram-bot2/generics:on-result
                           maybe-other-action

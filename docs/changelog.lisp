@@ -11,6 +11,27 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
+  (0.8.0 2024-12-23
+         "
+Changed
+=======
+
+* Combined all examples into one megabot.
+
+Added
+=====
+
+* New action CL-TELEGRAM-BOT2/ACTIONS/DELETE-MESSAGES:DELETE-MESSAGES was added.
+
+Fixed
+=====
+
+* Inline keyboard high level constructor was fixed.
+* Fixed race-conditions in threads stopping code.
+* Fixed issues in pipeline processing when sent messages were not saved to the current state.
+* Fixed issue with global command processing in case if there is a state which does not support command processing. But to make global commands work, you still need to ensure that current state has a correct mixin.
+
+")
   (0.7.0 2024-12-14
          "
 Huge Changes

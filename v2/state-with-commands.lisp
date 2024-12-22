@@ -29,7 +29,7 @@
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-blocks
                 #:workflow-block)
-  (:import-from #:sento.actor
+  (:import-from #:sento.actor-cell
                 #:*state*)
   (:import-from #:cl-telegram-bot2/bot
                 #:bot-name)
@@ -111,6 +111,10 @@
              :reader state-commands)))
 
 
+(defun supports-commands-p (state)
+  (typep state 'state-with-commands-mixin))
+
+
 (defun state-global-commands (state)
   (loop for command in (state-commands state)
         when (typep command 'global-command)
@@ -128,7 +132,8 @@
       
       (loop for command in (append (state-commands state)
                                    (flatten (mapcar #'state-global-commands
-                                                    (rest *state*))))
+                                                    (remove-if-not #'supports-commands-p
+                                                                   (rest *state*)))))
             for bot-command = (make-instance 'bot-command
                                              :command (command-name command)
                                              :description (or (command-description command)

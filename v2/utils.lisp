@@ -15,28 +15,53 @@
            #:deep-copy
            #:arity
            #:from-json
-           #:to-json))
+           #:to-json
+           #:call-with-one-or-zero-args))
 (in-package #:cl-telegram-bot2/utils)
+
+
+(-> arity ((or symbol function))
+    (values non-negative-fixnum &optional))
+
+
+
+(defun arity (funcallable)
+  (length (required-lambda-vars
+           (arglist funcallable))))
 
 
 (defun call-if-needed (value &rest args)
   "If value is a fbound SYMBOL, then calls as a function and then returns a result."
   (typecase value
     (symbol
-     (if (fboundp value)
+       (if (fboundp value)
          (apply value args)
          value))
     (t
-     value)))
+       value)))
 
 
-
-(-> arity ((or symbol function))
-    (values non-negative-fixnum &optional))
-
-(defun arity (funcallable)
-  (length (required-lambda-vars
-           (arglist funcallable))))
+(defun call-with-one-or-zero-args (symbol arg)
+  "If value is a fbound SYMBOL, then calls as a function with given ARG or without it depending on function arity."
+  (cond
+    ((fboundp symbol)
+     (case (arity symbol)
+       (0
+          (funcall symbol))
+       (1
+          ;; If function accepts a single argument,
+          ;; then we call it with arg.
+          ;; This way args like web-app-data
+          ;; could be processed.
+          (funcall symbol arg))
+       (otherwise
+          (error "Unable to process ~A because function ~S requires ~A arguments."
+                 arg
+                 symbol
+                 (arity symbol)))))
+    (t
+     (error "Symbol ~S should be funcallble."
+            symbol))))
 
 
 (-> to-json (t)

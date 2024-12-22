@@ -22,7 +22,7 @@
   (:import-from #:serapeum
                 #:->
                 #:fmt)
-  (:import-from #:sento.actor
+  (:import-from #:sento.actor-cell
                 #:*state*)
   (:import-from #:sento.actor-context)
   (:import-from #:cl-telegram-bot2/vars
@@ -218,22 +218,21 @@
                       (let* ((initial-state
                                (etypecase (initial-state bot)
                                  (symbol
-                                  (make-instance
-                                   (initial-state bot)))
+                                    (make-instance
+                                     (initial-state bot)))
                                  (base-state
-                                  ;; Here we need to copy a state
-                                  ;; to prevent results sharing between different chats
-                                  (deep-copy
-                                   (initial-state bot)))))
-                             (probably-new-state
-                               (on-state-activation initial-state))
+                                    ;; Here we need to copy a state
+                                    ;; to prevent results sharing between different chats
+                                    (deep-copy
+                                     (initial-state bot)))))
+                             ;; TODO: here we call on-state activation
+                             ;; only once, however we should do this
+                             ;; until  new state is returned from
+                             ;; the call:
                              (state-stack
-                               (if (and probably-new-state
-                                        (not (eql initial-state
-                                                  probably-new-state)))
-                                   (list probably-new-state
-                                         initial-state)
-                                   (list initial-state))))
+                               (probably-switch-to-new-state
+                                initial-state
+                                nil)))
                         (log:info "Creating new actor with" actor-name)
                         (sento.actor-context:actor-of
                          system
@@ -241,6 +240,72 @@
                          :receive #'local-process-chat-update
                          :state state-stack)))))
       (values actor))))
+
+
+(defun probably-switch-to-new-state (new-state state-stack)
+  "Returns two values, probably new stack as first value and a flag. If flag is NIL, then the state stack was not changed."
+  (let ((*current-state* (car state-stack)))
+    (cond
+      ((and new-state
+            (not (eql *current-state* new-state)))
+       (cond
+         ;; If next state is a symbol, we need to instantiate it
+         ;; using either as a function or as a class name:
+         ((symbolp new-state)
+          (probably-switch-to-new-state
+           (cond
+             ((fboundp new-state)
+              (funcall new-state))
+             (t
+              (make-instance new-state)))
+           state-stack))
+         ;; Processing BACK actions:
+         ((typep new-state 'back)
+          (let* ((result (cl-telegram-bot2/term/back:result new-state)))
+
+            (multiple-value-bind (states-to-delete new-stack)
+                (split-stack new-state state-stack)
+               
+              (unless new-stack
+                (error "Unexpected behaviour - no states left in the stack."))
+
+              (let ((state-to-which-return (car new-stack)))
+                (log:debug "New state is ~A" state-to-which-return)
+                 
+                (loop for state-to-delete in states-to-delete
+                      do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
+                 
+                (let* ((on-result-return-value
+                         ;; We need to call ON-RESULT handler
+                         ;; when the state to which we have returned
+                         ;; is bound to current-state, because
+                         ;; handler can send new messages and
+                         ;; we need them to be saved inside the message
+                         ;; to which we've returned:
+                         (let ((*current-state* state-to-which-return)
+                               (*state* new-stack))
+                           (cl-telegram-bot2/generics:on-result state-to-which-return
+                                                                ;; Result might be empty
+                                                                result))))
+                  (probably-switch-to-new-state on-result-return-value
+                                                new-stack))))))
+         ((typep new-state 'base-state)
+          (log:debug "New state is ~A" new-state)
+           
+          (let ((*state* (list* new-state
+                                state-stack))
+                (*current-state* new-state))
+            (probably-switch-to-new-state
+             (on-state-activation new-state)
+             *state*)))
+         (t
+          (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
+                    new-state)
+          (values state-stack
+                  nil))))
+      (t
+       (values state-stack
+               nil)))))
 
 
 (defun process-chat-update (update)
@@ -252,52 +317,7 @@
            (*current-user* (get-user update))
            (new-state (process *current-state* update)))
 
-      (labels ((probably-switch-to-new-state (new-state)
-                 (let ((*current-state* (car *state*)))
-                   (when (and new-state
-                              (not (eql *current-state* new-state)))
-                     
-                     (cond
-                       ;; If next state is a symbol, we need to instantiate it:
-                       ((symbolp new-state)
-                        (probably-switch-to-new-state
-                         (make-instance new-state)))
-                       ((typep new-state 'back)
-                        (let* ((result (cl-telegram-bot2/term/back:result new-state)))
-
-                          (multiple-value-bind (states-to-delete new-stack)
-                              (split-stack new-state *state*)
-                            
-                            (unless new-stack
-                              (error "Unexpected behaviour - no states left in the stack."))
-
-                            (let ((state-to-which-return (car new-stack)))
-                          
-                              (setf *state*
-                                    new-stack)
-
-                              (log:debug "New state is ~A" (car *state*))
-                          
-                              (loop for state-to-delete in states-to-delete
-                                    do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
-                          
-                              (let ((on-result-return-value
-                                      (cl-telegram-bot2/generics:on-result state-to-which-return
-                                                                           ;; Result might be empty
-                                                                           result)))
-                                (probably-switch-to-new-state on-result-return-value))))))
-                       ((typep new-state 'base-state)
-                        (setf *state*
-                              (list* new-state
-                                     *state*))
-
-                        (log:debug "New state is ~A" (car *state*))
-                        
-                        (probably-switch-to-new-state
-                         (on-state-activation new-state)))
-                       (t
-                        (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
-                                  new-state)))))))
-        (probably-switch-to-new-state new-state)))
+      (setf *state*
+            (probably-switch-to-new-state new-state *state*)))
     (values)))
 

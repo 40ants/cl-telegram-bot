@@ -97,7 +97,7 @@
 (defbot test-bot ()
   ()
   (:initial-state
-   (state nil
+   (state 'show-photo
           :on-update 'show-photo
           :on-callback-query
           (list (cons "Next"

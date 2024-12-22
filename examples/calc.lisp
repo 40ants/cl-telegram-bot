@@ -1,6 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2-examples/calc
   (:use #:cl)
-    (:import-from #:cl-telegram-bot2/state
+  (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
@@ -56,10 +56,7 @@
 (defbot test-bot ()
   ()
   (:initial-state
-   (state nil
-          :id "start"
-          :on-update
-          (state (list
+   (state (state (list
                   (send-text "Let's calculate!")
                   (ask-for-number
                    "Enter the first number:"
@@ -74,7 +71,8 @@
                                              '("+" "-" "*" "/")
                                              :to "operation-name"
                                              :on-success (list (send-text 'calc-result)
-                                                               (back-to-id "start"))))))))))
+                                                               (back-to-id "start"))))))) :id
+          "start")))
 
 
 (defvar *bot* nil)

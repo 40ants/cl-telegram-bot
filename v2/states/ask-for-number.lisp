@@ -20,6 +20,8 @@
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
+  (:import-from #:cl-telegram-bot2/state-with-commands
+                #:state-with-commands-mixin)
   (:export #:ask-for-number))
 (in-package #:cl-telegram-bot2/states/ask-for-number)
 
@@ -27,7 +29,9 @@
 (defparameter *default-var-name* "result")
 
 
-(defclass ask-for-number (base-state)
+;; To allow this state process global commands, we need
+;; to inherit it from state-with-commands-mixin.
+(defclass ask-for-number (state-with-commands-mixin base-state)
   ((prompt :initarg :prompt
            :type string
            :reader prompt)

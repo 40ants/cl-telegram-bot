@@ -5,12 +5,14 @@
                 #:pretty-print-hash-table
                 #:dict
                 #:soft-list-of)
-  (:import-from #:sento.actor
+  (:import-from #:sento.actor-cell
                 #:*state*)
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
   (:import-from #:cl-telegram-bot2/generics
+                #:on-result
+                #:on-state-activation
                 #:process)
   (:import-from #:cl-telegram-bot2/api
                 #:message-message-id)
@@ -82,24 +84,28 @@
         new-value))
 
 
-(defmethod process :around ((state base-state) (update t))
-  (multiple-value-bind (sent-messages result)
+(defmacro capture-sent-messages (&body body)
+  `(multiple-value-bind (sent-messages result)
       (collect-sent-messages
-        (call-next-method))
-
+        ,@body)
+    
     (loop for message in sent-messages
           do (push (message-message-id message)
                    (sent-message-ids state)))
     (values result)))
 
 
-(defmethod cl-telegram-bot2/generics:on-state-activation :around ((state base-state))
-  (call-next-method)
-  ;; (multiple-value-bind (sent-messages result)
-  ;;     (collect-sent-messages
-  ;;       (call-next-method))
-  ;;   (loop for message in sent-messages
-  ;;         do (push (message-message-id message)
-  ;;                  (sent-message-ids state)))
-  ;;   (values result))
-  )
+(defmethod process :around ((state base-state) (update t))
+  (capture-sent-messages
+    (call-next-method)))
+
+
+(defmethod on-state-activation :around ((state base-state))
+  (capture-sent-messages
+    (call-next-method)))
+
+
+(defmethod on-result :around ((state base-state) result)
+  (capture-sent-messages
+    (call-next-method)))
+

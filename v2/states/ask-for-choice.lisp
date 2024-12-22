@@ -38,6 +38,8 @@
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
+  (:import-from #:cl-telegram-bot2/state-with-commands
+                #:state-with-commands-mixin)
   (:export #:ask-for-choice))
 (in-package #:cl-telegram-bot2/states/ask-for-choice)
 
@@ -45,8 +47,9 @@
 (defparameter *default-var-name* "result")
 
 
-
-(defclass ask-for-choice (base-state)
+;; To allow this state process global commands, we need
+;; to inherit it from state-with-commands-mixin.
+(defclass ask-for-choice (state-with-commands-mixin base-state)
   ((prompt :initarg :prompt
            :type (or string symbol)
            :reader prompt)

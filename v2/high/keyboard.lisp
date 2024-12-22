@@ -742,15 +742,15 @@
 
 
 (defun inline-keyboard (buttons)
-  "Returns object of CL-TELEGRAM-BOT2/API:INLOINE-KEYBOARD-MARKUP class.
+  "Returns object of CL-TELEGRAM-BOT2/API:INLINE-KEYBOARD-MARKUP class.
 
    API docs: https://core.telegram.org/bots/api#replykeyboardmarkup"
-  (apply #'make-instance
-         'reply-keyboard-markup 
-         :inline-keyboard
-         (loop for row in (ensure-inline-buttons-rows buttons)
-               collect (loop for button in row
-                             do (make-inline-keyboard-button button)))))
+  (let ((api-buttons
+          (loop for row in (ensure-inline-buttons-rows buttons)
+                collect (loop for button in row
+                              collect (make-inline-keyboard-button button)))))
+    (make-instance 'inline-keyboard-markup 
+                   :inline-keyboard api-buttons)))
 
 
 (-> remove-keyboard (&key

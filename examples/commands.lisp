@@ -17,8 +17,7 @@
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:global-command
-                #:command
-                #:state-with-commands-mixin)
+                #:command)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
                 #:on-state-activation
@@ -73,7 +72,11 @@ additional command /reverse, which will reverse any given text.")
           :on-update (send-text "Give /next command to go to the second state.")
           :commands (list
                      (command "/next"
-                              (state (send-text "Second state. Give /back command to go to the initial state.")
+                              (state (send-text "Second state. Give /reverse command with an argument to return it in a reversed way.
+
+Or do /back command to go to the initial state.
+
+Note how commands list is changed depending on current bot's state.")
                                      :on-update (send-text "Give /back command to go to the initial state.")
                                      :commands (list
                                                 (command "/back" (back-to-id "initial")

@@ -13,7 +13,7 @@
 (defun call-if-action (obj func &rest args)
   "Useful in CL-TELEGRAM-BOT2/GENERICS:PROCESS handlers in case if
    state has additional handler stored in the slot and this
-   slot can be either state or action.
+   slot can be either state or action or a list of actions and states.
 
    This function is recursive, because processing of an action
    could return another action and we should call FUNC until
