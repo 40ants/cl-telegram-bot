@@ -261,7 +261,17 @@
            state-stack))
          ;; Processing BACK actions:
          ((typep new-state 'back)
-          (let* ((result (cl-telegram-bot2/term/back:result new-state)))
+          (let* ((result (cl-telegram-bot2/term/back:result new-state))
+                 ;; Result can be an fbound symbol and in this case we
+                 ;; neet to call it while we didn't change the current state.
+                 ;; This way a custom code may be used to calculate
+                 ;; result before it will be passed to some previous state.
+                 (result (cond
+                           ((and (symbolp result)
+                                 (fboundp result))
+                            (funcall result))
+                           (t
+                            result))))
 
             (multiple-value-bind (states-to-delete new-stack)
                 (split-stack new-state state-stack)
@@ -269,11 +279,13 @@
               (unless new-stack
                 (error "Unexpected behaviour - no states left in the stack."))
 
-              (let ((state-to-which-return (car new-stack)))
-                (log:debug "New state is ~A" state-to-which-return)
-                 
-                (loop for state-to-delete in states-to-delete
-                      do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
+              (loop for state-to-delete in states-to-delete
+                    do (let ((*current-state* state-to-delete))
+                         (cl-telegram-bot2/generics:on-state-deletion state-to-delete)))
+              
+              (let ((*current-state* (car new-stack))
+                    (*state* new-stack))
+                (log:debug "New state is ~A" *current-state*)
                  
                 (let* ((on-result-return-value
                          ;; We need to call ON-RESULT handler
@@ -282,11 +294,9 @@
                          ;; handler can send new messages and
                          ;; we need them to be saved inside the message
                          ;; to which we've returned:
-                         (let ((*current-state* state-to-which-return)
-                               (*state* new-stack))
-                           (cl-telegram-bot2/generics:on-result state-to-which-return
-                                                                ;; Result might be empty
-                                                                result))))
+                         (cl-telegram-bot2/generics:on-result *current-state*
+                                                              ;; Result might be empty
+                                                              result)))
                   (probably-switch-to-new-state on-result-return-value
                                                 new-stack))))))
          ((typep new-state 'base-state)

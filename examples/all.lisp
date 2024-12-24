@@ -52,7 +52,8 @@
            (state 'show-menu-buttons
                   :id "main-menu"
                   :commands (list (global-command "/menu"
-                                                  (back-to-id "main-menu")
+                                                  (list (delete-messages)
+                                                        (back-to-id "main-menu"))
                                                   :description "Show menu with all examples."))
                   :on-result 'show-menu-buttons
                   :on-callback-query (list (cons "open-calc"
@@ -75,16 +76,16 @@
 (defvar *bot* nil)
 
 
-(defun start ()
+(defun start (&key (log-level :warn) (debug t))
   (stop)
 
-  (40ants-logging:setup-for-repl :level :warn)
+  (40ants-logging:setup-for-repl :level log-level)
 
   (unless *bot*
     (setf *bot*
           (make-mega-bot (uiop:getenv "TELEGRAM_TOKEN"))))
   
-  (start-polling *bot* :debug t))
+  (start-polling *bot* :debug debug))
 
 
 (defun stop ()

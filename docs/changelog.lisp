@@ -21,7 +21,11 @@ Changed
 Added
 =====
 
-* New action CL-TELEGRAM-BOT2/ACTIONS/DELETE-MESSAGES:DELETE-MESSAGES was added.
+* New action for message deletion was added. Create it
+  using CL-TELEGRAM-BOT2/ACTIONS/DELETE-MESSAGES:DELETE-MESSAGES function.
+  It is able to delete messages send by bot and messages received from user as well.
+  By default, both message types are deleted.
+* Added :ON-DELETION argument to the CL-TELEGRAM-BOT2/STATE:STATE function.
 
 Fixed
 =====

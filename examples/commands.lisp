@@ -29,7 +29,9 @@
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
   (:import-from #:str
-                #:trim))
+                #:trim)
+  (:import-from #:cl-telegram-bot2/actions/delete-messages
+                #:delete-messages))
 (in-package #:cl-telegram-bot2-examples/commands)
 
 
@@ -70,6 +72,7 @@ additional command /reverse, which will reverse any given text.")
           :id "initial"
           :on-result (send-text "Welcome back! Give /next command to go to the second state.")
           :on-update (send-text "Give /next command to go to the second state.")
+          :on-deletion (delete-messages)
           :commands (list
                      (command "/next"
                               (state (send-text "Second state. Give /reverse command with an argument to return it in a reversed way.
@@ -78,6 +81,7 @@ Or do /back command to go to the initial state.
 
 Note how commands list is changed depending on current bot's state.")
                                      :on-update (send-text "Give /back command to go to the initial state.")
+                                     :on-deletion (delete-messages)
                                      :commands (list
                                                 (command "/back" (back-to-id "initial")
                                                          :description "Switch to the prev state")

@@ -35,7 +35,8 @@
            #:on-result
            #:on-callback-query
            #:on-web-app-data
-           #:callback-query-handlers))
+           #:callback-query-handlers
+           #:validate-on-deletion-arg))
 (in-package #:cl-telegram-bot2/state)
 
 
@@ -56,6 +57,14 @@
               :type workflow-blocks
               :initform nil
               :reader on-update)
+   (on-deletion :initarg :on-deletion
+                :type workflow-blocks
+                :initform nil
+                :reader on-deletion
+                :documentation "Result of these handlers is ignored, but they can be used for side-effects.
+
+                                Generic-function cl-telegram-bot2/generics:on-state-deletion will be
+                                called on these handlers.")
    (on-result :initarg :on-result
               :type workflow-blocks
               :initform nil
@@ -71,15 +80,37 @@
 
 
 (defmethod print-items append ((state state))
-  (append
-   (when (on-activation state)
-     (list (list :on-activation
-                 " on-activation = ~S"
-                 (on-activation state))))
-   (when (on-update state)
-     (list (list :on-update
-                 " on-update = ~S"
-                 (on-update state))))))
+  (macrolet ((handler (accessor-name)
+               `(when (,accessor-name state)
+                  (list (list (alexandria:make-keyword ',accessor-name)
+                              " ~A = ~S"
+                              (string-downcase ',accessor-name)
+                              (,accessor-name state))))))
+    (append
+     (handler on-activation)
+     (handler on-update)
+     (handler on-deletion)
+     (handler on-result)
+     (handler on-callback-query)
+     (handler on-web-app-data))))
+
+
+(-> validate-on-deletion-arg ((or null
+                                  workflow-block
+                                  workflow-blocks))
+    (values workflow-blocks &optional))
+
+(defun validate-on-deletion-arg (on-deletion)
+  "Validates if argument is valid for passing as :ON-DELETION argument to the state constructor.
+
+   It also normalizes an argument and return it as a list of workflow blocks."
+  (let ((on-deletion (uiop:ensure-list on-deletion)))
+    (loop for block in on-deletion
+          unless (typep block
+                        '(or action symbol))
+            do (error "Blocks of type ~S can't be used as handlers for state deletion."
+                      (type-of block)))
+    (values on-deletion)))
 
 
 (-> state ((or workflow-block
@@ -92,21 +123,25 @@
            (:on-update (or null
                            workflow-block
                            workflow-blocks))
+           (:on-deletion (or null
+                             workflow-block
+                             workflow-blocks))
            (:on-result (or null
                            workflow-block
                            workflow-blocks))
            (:on-callback-query callback-query-handlers)
            (:on-web-app-data (or null
-                                workflow-block
-                                workflow-blocks)))
+                                 workflow-block
+                                 workflow-blocks)))
     (values state &optional))
 
-(defun state (on-activation &key id commands on-update on-result on-callback-query on-web-app-data)
+(defun state (on-activation &key id commands on-update on-deletion on-result on-callback-query on-web-app-data)
   (make-instance 'state
                  :id id
                  :commands (uiop:ensure-list commands)
                  :on-activation (uiop:ensure-list on-activation)
                  :on-update (uiop:ensure-list on-update)
+                 :on-deletion (validate-on-deletion-arg on-deletion)
                  :on-result (uiop:ensure-list on-result)
                  :on-callback-query on-callback-query
                  :on-web-app-data (uiop:ensure-list on-web-app-data)))
@@ -223,6 +258,27 @@
     (t
      (error "Symbol ~S should be funcallable to process update."
             item))))
+
+
+(defmethod cl-telegram-bot2/generics:on-state-deletion ((state state))
+  (cl-telegram-bot2/generics:on-state-deletion (on-deletion state)))
+
+
+(defmethod cl-telegram-bot2/generics:on-state-deletion ((workflow-blocks list))
+  "Processing list of actions."
+  ;; Only actions and symbols are accepted as handlers for state deletion.
+  (loop for block in workflow-blocks
+        do (typecase block
+             (action
+                (cl-telegram-bot2/generics:on-state-deletion block))
+             (symbol
+                (funcall block))
+             ;; There should be a check in the constructor,
+             ;; but I'll leave this additional check here:
+             (t
+                (error "Blocks of type ~S can't be used as handlers for state deletion."
+                       (type-of block)))))
+  (values))
 
 
 (defmethod cl-telegram-bot2/generics:on-result ((state state) result)

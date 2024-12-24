@@ -29,7 +29,9 @@
                 #:ask-for-choice)
   (:import-from #:40ants-logging)
   (:import-from #:cl-telegram-bot2/term/back
-                #:back-to-id))
+                #:back-to-id)
+  (:import-from #:cl-telegram-bot2/actions/delete-messages
+                #:delete-messages))
 (in-package #:cl-telegram-bot2-examples/calc)
 
 
@@ -43,9 +45,14 @@
                             "-" #'-
                             "*" #'*
                             "/" #'/))))
-    (format nil "Result is: ~A"
-            (funcall op num1
-                     num2))))
+    (funcall op num1
+             num2)))
+
+(defun send-result (result)
+  (send-text
+   (format nil "Result is: ~A"
+           result)))
+
 
 (defun make-prompt-for-op-choice ()
   (fmt "Select an operation to apply to ~A and ~A:"
@@ -62,17 +69,25 @@
                    "Enter the first number:"
                    :to "first-num"
                    :on-validation-error (send-text "Enter the number, please.")
+                   :on-deletion (delete-messages)
                    :on-success (ask-for-number
                                 "Enter the second number:"
                                 :to "second-num"
                                 :on-validation-error (send-text "Enter the number, please.")
+                                :on-deletion (delete-messages)
                                 :on-success (ask-for-choice
                                              'make-prompt-for-op-choice
                                              '("+" "-" "*" "/")
                                              :to "operation-name"
-                                             :on-success (list (send-text 'calc-result)
-                                                               (back-to-id "start"))))))) :id
-          "start")))
+                                             :on-success (list ;; Here we just calculate result
+                                                               ;; and return back to "start" state
+                                                               ;; which will send result to the user
+                                                               ;; in the :ON-RESULT handler
+                                                               (back-to-id "start"
+                                                                           'calc-result))))))
+                 :on-deletion (delete-messages))
+          :on-result 'send-result
+          :id "start")))
 
 
 (defvar *bot* nil)
