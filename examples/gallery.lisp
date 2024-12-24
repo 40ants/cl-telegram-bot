@@ -37,6 +37,8 @@
                 #:edit-message-media)
   (:import-from #:cl-telegram-bot2/states/base
                 #:var)
+  (:import-from #:cl-telegram-bot2/actions/delete-messages
+                #:delete-messages)
   (:documentation "This example shows how to keep use state's vars to keep current photo's index and to edit message's media when user clicks on Prev/Next buttons."))
 (in-package #:cl-telegram-bot2-examples/gallery)
 
@@ -97,8 +99,9 @@
 (defbot test-bot ()
   ()
   (:initial-state
-   (state nil
+   (state 'show-photo
           :on-update 'show-photo
+          :on-deletion (delete-messages)
           :on-callback-query
           (list (cons "Next"
                       'show-next-photo)

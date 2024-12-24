@@ -4,6 +4,7 @@
                 #:process
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/state
+                #:validate-on-deletion-arg
                 #:base-state)
   (:import-from #:cl-telegram-bot2/states/base
                 #:state-var)
@@ -20,6 +21,8 @@
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
+  (:import-from #:cl-telegram-bot2/state
+                #:state)
   (:export #:ask-for-number))
 (in-package #:cl-telegram-bot2/states/ask-for-number)
 
@@ -27,7 +30,9 @@
 (defparameter *default-var-name* "result")
 
 
-(defclass ask-for-number (base-state)
+;; To allow this state process global commands, we need
+;; to inherit it from state-with-commands-mixin.
+(defclass ask-for-number (state)
   ((prompt :initarg :prompt
            :type string
            :reader prompt)
@@ -51,16 +56,20 @@
                         :reader on-validation-error)))
 
 
-(defun ask-for-number (prompt &key (to *default-var-name*)
-                                   on-success
-                                   on-validation-error)
+(defun ask-for-number (prompt &key
+                              (to *default-var-name*)
+                              on-success
+                              on-validation-error
+                              on-deletion)
+
   (make-instance 'ask-for-number
                  :prompt prompt
                  :to to
                  :on-success (uiop:ensure-list
                               on-success)
                  :on-validation-error (uiop:ensure-list
-                              on-validation-error)))
+                                       on-validation-error)
+                 :on-deletion (validate-on-deletion-arg on-deletion)))
 
 
 (defmethod on-state-activation ((state ask-for-number))

@@ -29,12 +29,15 @@
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-blocks
                 #:workflow-block)
-  (:import-from #:sento.actor
+  (:import-from #:sento.actor-cell
                 #:*state*)
   (:import-from #:cl-telegram-bot2/bot
                 #:bot-name)
   (:import-from #:cl-telegram-bot2/action
                 #:call-if-action)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:capture-sent-messages
+                #:save-received-message-id)
   (:export #:state-with-commands-mixin
            #:state-commands
            #:command
@@ -111,6 +114,10 @@
              :reader state-commands)))
 
 
+(defun supports-commands-p (state)
+  (typep state 'state-with-commands-mixin))
+
+
 (defun state-global-commands (state)
   (loop for command in (state-commands state)
         when (typep command 'global-command)
@@ -128,7 +135,8 @@
       
       (loop for command in (append (state-commands state)
                                    (flatten (mapcar #'state-global-commands
-                                                    (rest *state*))))
+                                                    (remove-if-not #'supports-commands-p
+                                                                   (rest *state*)))))
             for bot-command = (make-instance 'bot-command
                                              :command (command-name command)
                                              :description (or (command-description command)
@@ -205,29 +213,41 @@
             (or (null bot-name)
                 (string-equal (bot-name)
                               bot-name)))
-       (loop for command in (append (state-commands state)
-                                    ;; Here we need to search previos states
-                                    ;; on a stack to support their global
-                                    ;; commands in the current state:
-                                    (flatten (mapcar #'state-global-commands
-                                                     (rest *state*))))
-             when (string-equal command-name
-                                (command-name command))
-               do (return 
-                    (let ((handler (command-handler command)))
-                      ;; Handler might return an action or a state
-                      ;; in first case we have to apply PROCESS to an action
-                      (call-if-action
-                       (typecase handler
-                         ((or symbol function)
-                            (funcall handler rest-text update))
-                         (t
-                            handler))
-                       #'process
-                       update)))
-             finally (log:warn "Command ~A cant be processed by state ~S"
-                               command-name
-                               (class-name
-                                (class-of state)))))
+
+       ;; Command /start is special. If we will delete message with this
+       ;; command and chat become empty, Telegram client will send another
+       ;; /start message automaticall, and this could look strange, because
+       ;; before this bot can send a message to and /start message in the chat
+       ;; will go as a second message. Thus it is better to leave start message
+       ;; in the chat :(
+       (unless (string-equal command-name
+                             "/start")
+         (save-received-message-id state update))
+       
+       (capture-sent-messages (state)
+         (loop for command in (append (state-commands state)
+                                      ;; Here we need to search previos states
+                                      ;; on a stack to support their global
+                                      ;; commands in the current state:
+                                      (flatten (mapcar #'state-global-commands
+                                                       (rest *state*))))
+               when (string-equal command-name
+                                  (command-name command))
+                 do (return 
+                      (let ((handler (command-handler command)))
+                        ;; Handler might return an action or a state
+                        ;; in first case we have to apply PROCESS to an action
+                        (call-if-action
+                         (typecase handler
+                           ((or symbol function)
+                              (funcall handler rest-text update))
+                           (t
+                              handler))
+                         #'process
+                         update)))
+               finally (log:warn "Command ~A cant be processed by state ~S"
+                                 command-name
+                                 (class-name
+                                  (class-of state))))))
       (t
        (call-next-method)))))
