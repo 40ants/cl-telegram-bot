@@ -16,6 +16,8 @@
   (:import-from #:cl-telegram-bot2-examples/gallery)
   (:import-from #:cl-telegram-bot2-examples/payments)
   (:import-from #:cl-telegram-bot2-examples/mini-app)
+  (:import-from #:cl-telegram-bot2-examples/echo)
+  (:import-from #:cl-telegram-bot2-examples/text-chain)
   (:import-from #:cl-telegram-bot2/high/keyboard
                 #:inline-keyboard
                 #:call-callback)
@@ -33,21 +35,40 @@
              :reply-markup
              (inline-keyboard
               (list
-               (call-callback "Calc"
-                              "open-calc")
-               (call-callback "Commands"
-                              "open-commands")
-               (call-callback "Gallery"
-                              "open-gallery")))))
+               (list
+                (call-callback "Echo"
+                               "open-echo")
+                (call-callback "Text Chain"
+                               "open-text-chain")
+                (call-callback "Calc"
+                               "open-calc"))
+               (list
+                (call-callback "Commands"
+                               "open-commands")
+                (call-callback "Gallery"
+                               "open-gallery")
+                (call-callback "Mini-app"
+                               "open-mini-app"))
+               (list
+                (call-callback "Payments"
+                               "open-payments"))))))
 
 
 (defun make-mega-bot (token &rest args)
   (let* ((calc-state (initial-state
                       (cl-telegram-bot2-examples/calc::make-test-bot token)))
+         (echo-state (initial-state
+                      (cl-telegram-bot2-examples/echo::make-test-bot token)))
+         (text-chain-state (initial-state
+                            (cl-telegram-bot2-examples/text-chain::make-test-bot token)))
          (commands-state (initial-state
                           (cl-telegram-bot2-examples/commands::make-test-bot token)))
          (gallery-state (initial-state
                          (cl-telegram-bot2-examples/gallery::make-test-bot token)))
+         (mini-app-state (initial-state
+                          (cl-telegram-bot2-examples/mini-app::make-test-bot token)))
+         (payments-state (initial-state
+                          (cl-telegram-bot2-examples/payments::make-test-bot token)))
          (mega-state
            (state 'show-menu-buttons
                   :id "main-menu"
@@ -56,7 +77,13 @@
                                                         (back-to-id "main-menu"))
                                                   :description "Show menu with all examples."))
                   :on-result 'show-menu-buttons
-                  :on-callback-query (list (cons "open-calc"
+                  :on-callback-query (list (cons "open-echo"
+                                                 (list (delete-messages)
+                                                       echo-state))
+                                           (cons "open-text-chain"
+                                                 (list (delete-messages)
+                                                       text-chain-state))
+                                           (cons "open-calc"
                                                  (list (delete-messages)
                                                        calc-state))
                                            (cons "open-commands"
@@ -64,7 +91,13 @@
                                                        commands-state))
                                            (cons "open-gallery"
                                                  (list (delete-messages)
-                                                       gallery-state))))))
+                                                       gallery-state))
+                                           (cons "open-mini-app"
+                                                 (list (delete-messages)
+                                                       mini-app-state))
+                                           (cons "open-payments"
+                                                 (list (delete-messages)
+                                                       payments-state))))))
     (apply #'make-instance
            'cl-telegram-bot2/bot::bot
            :token token

@@ -100,15 +100,6 @@
   (start-polling *bot* :debug t))
 
 
-(defun clean-threads ()
-  "TODO: надо разобраться почему треды не подчищаются. Возможно это происходит когда случаются ошибки?"
-  (loop for tr in (bt:all-threads)
-        when (or (str:starts-with? "message-thread" (bt:thread-name tr))
-                 (str:starts-with? "timer-wheel" (bt:thread-name tr))
-                 (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr)))
-
-
 (defun current-state ()
   (first
    (sento.actor-cell:state

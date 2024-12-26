@@ -27,7 +27,9 @@
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/actions/send-text
-                #:send-text))
+                #:send-text)
+  (:import-from #:cl-telegram-bot2/actions/delete-messages
+                #:delete-messages))
 (in-package #:cl-telegram-bot2-examples/text-chain)
 
 
@@ -35,11 +37,12 @@
 (defbot test-bot ()
   ()
   (:initial-state
-   (state nil
-    :on-update (state (send-text "Hello!")
-                      :on-update (state (send-text "How are you doing?")
-                                        :on-update (state (list (send-text "Bye!")
-                                                                (back-to-nth-parent 2))))))))
+   (state (state (send-text "Hello!")
+                 :on-deletion (delete-messages)
+                 :on-update (state (send-text "How are you doing?")
+                                   :on-deletion (delete-messages)
+                                   :on-update (state (send-text "Bye!")
+                                                     :on-deletion (delete-messages)))))))
 
 
 (defvar *bot* nil)

@@ -111,7 +111,8 @@
   (setf *server*
         (clack:clackup *app*
                        :port port
-                       :debug debug)))
+                       :debug debug))
+  (values))
 
 
 
@@ -150,14 +151,16 @@ We will send the verification link to `~A`."
 
 
 (let ((keyboard
-        (keyboard (open-web-app "Open Mini App2"
+        (keyboard (open-web-app "Open Mini App"
                                 "https://cl-echo-bot.dev.40ants.com/")
                   :one-time-keyboard t)))
   (defbot test-bot ()
     ()
     (:initial-state
-     (state (send-text "Initial state. Give /app command to open the mini-app or press this button:"
-                       :reply-markup keyboard)
+     (state (list
+             'start-web-app
+             (send-text "Initial state. Give /app command to open the mini-app or press this button:"
+                        :reply-markup keyboard))
             :on-web-app-data (list 'save-form-data
                                    (send-text 'format-response-text
                                               :parse-mode "Markdown"
@@ -191,11 +194,3 @@ We will send the verification link to `~A`."
   
   (start-polling *bot* :debug t))
 
-
-(defun clean-threads ()
-  "TODO: надо разобраться почему треды не подчищаются. Возможно это происходит когда случаются ошибки?"
-  (loop for tr in (bt:all-threads)
-        when (or (str:starts-with? "message-thread" (bt:thread-name tr))
-                 (str:starts-with? "timer-wheel" (bt:thread-name tr))
-                 (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr)))
