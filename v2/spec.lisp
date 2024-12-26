@@ -28,7 +28,9 @@
   (:import-from #:cl-telegram-bot2/deps)
   (:import-from #:cl-telegram-bot2/errors
                 #:telegram-error)
-  (:import-from #:quri))
+  (:import-from #:quri)
+  (:import-from #:global-vars
+                #:define-global-parameter))
 (in-package #:cl-telegram-bot2/spec)
 
 
@@ -45,13 +47,6 @@
     (dict "InputMediaPhoto"
           (dict "media"
                 '(or string pathname))))
-  
-  (defvar *parents* nil
-    "The list of all generic classes")
-
-  (defvar *child-to-parent* (serapeum:dict)
-    "The hash table from the subclasses to their generic classes")
-
   
   (defvar *api-url* "https://api.telegram.org/"
     "The base URL to send bot methods to.
@@ -99,12 +94,12 @@ Bot token and method name is appended to it")
                       (symbol-package generic-class))))))
 
 
-(-> parse-as (symbol t))
+(-> parse-as ((soft-list-of symbol) symbol t))
 
-(defun parse-as (class-symbol object)
+(defun parse-as (all-generic-classes class-symbol object)
   (let ((real-class
           (cond
-            ((member class-symbol *parents*)
+            ((member class-symbol all-generic-classes)
              (let ((subclass (guess-generic-subclass class-symbol object)))
                (if subclass
                    subclass
@@ -133,10 +128,13 @@ Bot token and method name is appended to it")
                       append (list (make-keyword name)
                                    (if (subtypep (slot-definition-type slot)
                                                  'telegram-object)
-                                       (parse-as (slot-definition-type slot)
+                                       (parse-as all-generic-classes
+                                                 (slot-definition-type slot)
                                                  value)
                                        value)))))
-      (sequence (map 'list (curry #'parse-as real-class)
+      (sequence (map 'list (curry #'parse-as
+                                  all-generic-classes
+                                  real-class)
                      object))
       (t object))))
 
@@ -308,16 +306,22 @@ Bot token and method name is appended to it")
 
   
   (defun define-generics (generics)
-    (loop for generic across generics
+    (loop with child-to-parent = (dict)
+          for generic across generics
           for name = (json->name (jget "name" generic))
           do (setf (gethash (jget "name" generic) *types*)
                    name)
           do (loop for subtype across (jget "subtypes" generic)
-		   do (setf (gethash (json->name subtype) *child-to-parent*)
-			    name)
-                      (pushnew name *parents*))
+		   do (setf (gethash (json->name subtype)
+                                     child-to-parent)
+			    name))
+          collect name into parents
           collect `(export-always ',name)
-          collect `(defclass ,name (telegram-object) ())))
+            into forms
+          collect `(defclass ,name (telegram-object)
+                     ())
+            into forms
+          finally (return (values forms parents child-to-parent))))
 
 
   (-> adjust-type (string string (or symbol
@@ -340,7 +344,7 @@ Bot token and method name is appended to it")
      original-type))
   
   
-  (defun define-classes (classes)
+  (defun define-classes (all-generics-symbol child-to-parent classes)
     (loop for class across classes
           for string-class-name = (jget "name" class)
           for class-name = (json->name string-class-name)
@@ -348,8 +352,8 @@ Bot token and method name is appended to it")
                    class-name)
           collect `(export-always ',class-name)
           collect (let ((class-name class-name))
-                    `(defclass ,class-name (,@(if (gethash class-name *child-to-parent*)
-                                                (list (gethash class-name *child-to-parent*))
+                    `(defclass ,class-name (,@(if (gethash class-name child-to-parent)
+                                                (list (gethash class-name child-to-parent))
                                                 (list 'telegram-object)))
                        (,@(loop for param across (jget "params" class)
                                 for string-slot-name = (jget "name" param)
@@ -389,16 +393,18 @@ Bot token and method name is appended to it")
                                        ,(alexandria:if-let
                                             ;; TODO: надо избавиться от этого и parse-as вызывать сразу как
                                             ;; получили изначальный объект.
-                                            ((type (set-difference (map 'list #'type-name (jget "type" param))
+                                            ((type (set-difference (map 'list #'type-name (gethash "type" param))
                                                                    '(integer float string pathname t nil sequence))))
-                                          `(parse-as ',(elt type 0) (call-next-method))
+                                          `(parse-as ,all-generics-symbol
+                                                     ',(elt type 0)
+                                                     (call-next-method))
                                           `(call-next-method))
                                        t)
                                     (unbound-slot ()
                                       (values nil nil)))))))
 
   
-  (defun define-methods (methods)
+  (defun define-methods (all-generics-symbol methods)
     (loop for method across methods
           for params = (jget "params" method)
           for method-name
@@ -455,7 +461,8 @@ Bot token and method name is appended to it")
                                        ,(when rest-args? 'args)))))
                                ,(if (equalp #("true") (jget "return" method))
                                   'result
-                                  `(parse-as ',(type-name (elt (jget "return" method) 0))
+                                  `(parse-as ,all-generics-symbol
+                                             ',(type-name (elt (jget "return" method) 0))
                                              result)))))
                    (let ((combinations (type-combinations
                                         (map 'list (lambda (arg)
@@ -486,15 +493,24 @@ Bot token and method name is appended to it")
                                                             (make-pathname :directory '(:relative "v2")
                                                                            :name "spec"
                                                                            :type "json")))))
-      `(progn
-         ,@(define-generics (jget "generics" api))
-         ,@(define-classes (jget "models" api))
-         ,@(define-methods (jget "methods" api))
+      (multiple-value-bind (generic-forms all-generic-classes child-to-parent)
+          (define-generics (gethash "generics" api))
+        (let* ((all-generics-symbol (intern "*ALL-GENERIC-CLASSES*"))
+               (classes-forms (define-classes all-generics-symbol child-to-parent (gethash "models" api)))
+               (methods-forms (define-methods all-generics-symbol (gethash "methods" api))))
 
-         ;; After the expansion we need to free memory,
-         ;; because this process generates abot 700Mb of ram.
-         #+sbcl
-         (sb-ext:gc :full t)))))
+          `(progn
+             (define-global-parameter ,all-generics-symbol ',all-generic-classes
+               "This var will hold a list of all parent classes defined in a spec.")
+           
+             ,@generic-forms
+             ,@classes-forms
+             ,@methods-forms
+
+             ;; After the expansion we need to free memory,
+             ;; because this process generates abot 700Mb of ram.
+             #+sbcl
+             (sb-ext:gc :full t)))))))
 
 
 ;; Difference from cl-telegram-bot-auto-api:
