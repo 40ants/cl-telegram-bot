@@ -26,8 +26,18 @@
   (:import-from #:cl-telegram-bot2/term/back
                 #:back-to-id)
   (:import-from #:cl-telegram-bot2/actions/delete-messages
-                #:delete-messages))
+                #:delete-messages)
+  (:import-from #:cl-telegram-bot2/api
+                #:pre-checkout-query
+                #:pre-checkout-query-id
+                #:answer-pre-checkout-query)
+  (:import-from #:cl-telegram-bot2/generics
+                #:on-pre-checkout-query))
 (in-package #:cl-telegram-bot2-examples)
+
+
+(defclass all-examples-bot (cl-telegram-bot2/bot::bot)
+  ())
 
 
 (defun show-menu-buttons ()
@@ -99,11 +109,16 @@
                                                  (list (delete-messages)
                                                        payments-state))))))
     (apply #'make-instance
-           'cl-telegram-bot2/bot::bot
+           'all-examples-bot
            :token token
            :initial-state mega-state
            args)))
 
+
+(defmethod on-pre-checkout-query ((bot all-examples-bot) (query pre-checkout-query))
+  (answer-pre-checkout-query (pre-checkout-query-id query)
+                             t)
+  (values))
 
 
 (defvar *bot* nil)
