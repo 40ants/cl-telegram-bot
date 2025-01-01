@@ -45,6 +45,7 @@
   ()
   (:initial-state
    (state (send-text "Hello, I'm the echo bot.")
+          :id "echo-example"
           :on-update 'reply-with-same-text)))
 
 

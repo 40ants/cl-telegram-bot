@@ -29,6 +29,8 @@
                 #:call-with-one-or-zero-args)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-state*)
+  (:import-from #:cl-telegram-bot2/callback
+                #:callback)
   (:export #:state
            #:on-activation
            #:on-update
@@ -36,16 +38,14 @@
            #:on-callback-query
            #:on-web-app-data
            #:callback-query-handlers
-           #:validate-on-deletion-arg))
+           #:validate-on-deletion-arg
+           #:on-deletion))
 (in-package #:cl-telegram-bot2/state)
 
 
 (deftype callback-query-handlers ()
   "Type of ON-CALLBACK-QUERY argument of the STATE class."
-  '(serapeum:soft-alist-of string
-    (or 
-     workflow-block
-     workflow-blocks)))
+  '(soft-list-of callback))
 
 
 (defclass state (state-with-commands-mixin base-state)

@@ -161,6 +161,7 @@ We will send the verification link to `~A`."
              'start-web-app
              (send-text "Initial state. Give /app command to open the mini-app or press this button:"
                         :reply-markup keyboard))
+            :id "mini-app-example"
             :on-web-app-data (list 'save-form-data
                                    (send-text 'format-response-text
                                               :parse-mode "Markdown"

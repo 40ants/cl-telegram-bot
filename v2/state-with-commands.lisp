@@ -41,7 +41,11 @@
   (:export #:state-with-commands-mixin
            #:state-commands
            #:command
-           #:global-command))
+           #:global-command
+           #:command-name
+           #:command-handler
+           #:command-description
+           #:base-command))
 (in-package #:cl-telegram-bot2/state-with-commands)
 
 
@@ -60,6 +64,7 @@
          :reader command-name)
    (handler :initarg :handler
             :initform (required-argument ":HANDLER is required argument.")
+            ;; TODO: make it a list of workflow-blocks and rename to the command-handlers
             :type command-handler
             :documentation "An fbound symbol of two arguments (command-argument update-obj) or a workflow object to return from PROCESS generic-function."
             :reader command-handler)

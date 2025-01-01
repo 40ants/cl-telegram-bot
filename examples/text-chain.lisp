@@ -37,12 +37,14 @@
 (defbot test-bot ()
   ()
   (:initial-state
-   (state (state (send-text "Hello!")
-                 :on-deletion (delete-messages)
-                 :on-update (state (send-text "How are you doing?")
-                                   :on-deletion (delete-messages)
-                                   :on-update (state (send-text "Bye!")
-                                                     :on-deletion (delete-messages)))))))
+   (state
+    (state (send-text "Hello!")
+           :on-deletion (delete-messages)
+           :on-update (state (send-text "How are you doing?")
+                             :on-deletion (delete-messages)
+                             :on-update (state (send-text "Bye!")
+                                               :on-deletion (delete-messages))))
+    :id "text-chain-example")))
 
 
 (defvar *bot* nil)

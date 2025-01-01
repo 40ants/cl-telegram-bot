@@ -83,11 +83,11 @@
                                                                ;; and return back to "start" state
                                                                ;; which will send result to the user
                                                                ;; in the :ON-RESULT handler
-                                                               (back-to-id "start"
+                                                               (back-to-id "calc-example"
                                                                            'calc-result))))))
                  :on-deletion (delete-messages))
-          :on-result 'send-result
-          :id "start")))
+          :id "calc-example"
+          :on-result 'send-result)))
 
 
 (defvar *bot* nil)

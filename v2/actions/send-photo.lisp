@@ -67,23 +67,27 @@
 
 
 (defun send-reply (action)
-  (let ((path (call-if-needed
-               (image-path action)))
-        (caption (call-if-needed
-                  (caption action)))
-        (buttons (call-if-needed
-                  (inline-keyboard action))))
-    (cl-telegram-bot2/high:reply-with-photo
-     path
-     :caption caption
-     :reply-markup
-     (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
-                    :inline-keyboard
-                    (list
-                     (loop for button in buttons
-                           collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
-                                                  :text button
-                                                  :callback-data button)))))))
+  (let* ((path (call-if-needed
+                (image-path action)))
+         (caption (call-if-needed
+                   (caption action)))
+         (buttons (call-if-needed
+                   (inline-keyboard action)))
+         (reply-markup
+           (when buttons
+             (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
+                            :inline-keyboard
+                            (list
+                             (loop for button in buttons
+                                   collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
+                                                          :text button
+                                                          :callback-data button)))))))
+    (apply #'cl-telegram-bot2/high:reply-with-photo
+           path
+           :caption caption
+           (when reply-markup
+             (list 
+              :reply-markup reply-markup)))))
 
 
 (defmethod on-state-activation ((action send-photo))

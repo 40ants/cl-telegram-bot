@@ -69,7 +69,7 @@ additional command /reverse, which will reverse any given text.")
   ()
   (:initial-state
    (state (send-text "Initial state. Give /next command to go to the second state.")
-          :id "initial"
+          :id "commands-example"
           :on-result (send-text "Welcome back! Give /next command to go to the second state.")
           :on-update (send-text "Give /next command to go to the second state.")
           :on-deletion (delete-messages)
@@ -80,10 +80,11 @@ additional command /reverse, which will reverse any given text.")
 Or do /back command to go to the initial state.
 
 Note how commands list is changed depending on current bot's state.")
+                                     :id "commands-example-step2"
                                      :on-update (send-text "Give /back command to go to the initial state.")
                                      :on-deletion (delete-messages)
                                      :commands (list
-                                                (command "/back" (back-to-id "initial")
+                                                (command "/back" (back-to-id "commands-example")
                                                          :description "Switch to the prev state")
                                                 (command "/reverse" 'on-reverse-command
                                                          :description "Switch to the prev state")))

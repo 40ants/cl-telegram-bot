@@ -76,9 +76,16 @@
     (values back-to-id &optional))
 
 (defun back-to-id (id &optional result)
+  (break)
   (make-instance 'back-to-id
                  :id id
                  :result result))
+
+
+(defmethod print-object ((obj back-to-id) stream)
+  (print-unreadable-object (obj stream :type t :identity t)
+    (format stream "~S"
+            (parent-id obj))))
 
 
 (defmethod process ((item back) update)
