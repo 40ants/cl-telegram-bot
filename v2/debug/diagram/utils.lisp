@@ -21,7 +21,6 @@
            #:render-mapslot-value-with-link
            #:render-mapslot-value
            #:obj-id
-           #:state-name
            #:after-object
            #:render-objects-link
            #:on-after-object
@@ -38,7 +37,7 @@
 
 
 (defun obj-id (obj)
-  "Returns an alias of obj to be used in PlantUML diagram as a reference."
+  "Returns an alias of obj to be used in `PlantUML` diagram as a reference."
   (let ((obj-id (gethash obj *obj-to-id*)))
     (cond
       (obj-id
