@@ -38,6 +38,13 @@
   (:import-from #:cl-telegram-bot2/states/base
                 #:capture-sent-messages
                 #:save-received-message-id)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:to-text
+                #:slot-name
+                #:render-handlers)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:obj-id
+                #:render-handlers-inner)
   (:export #:state-with-commands-mixin
            #:state-commands
            #:command
@@ -256,3 +263,18 @@
                                   (class-of state))))))
       (t
        (call-next-method)))))
+
+
+(defmethod render-handlers ((obj command))
+  (render-handlers-inner (uiop:ensure-list (command-handler obj))
+                         (obj-id obj)))
+
+
+(defmethod slot-name ((obj command))
+  (command-name obj))
+
+
+(defmethod to-text ((command command))
+  (to-text
+   (uiop:ensure-list
+    (command-handler command))))

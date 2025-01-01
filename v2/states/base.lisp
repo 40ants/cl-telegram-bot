@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/states/base
   (:use #:cl)
   (:import-from #:serapeum
+                #:fmt
                 #:->
                 #:pretty-print-hash-table
                 #:dict
@@ -20,6 +21,15 @@
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/high
                 #:collect-sent-messages)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:obj-id
+                #:render-mapslot-value-with-link)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:render-handler-link)
+  (:import-from #:cl-telegram-bot2/debug/diagram/vars
+                #:*name-to-state*
+                #:*id-to-state*
+                #:*state-to-name*)
   (:export #:var
            #:state-var
            #:clear-state-vars
@@ -136,3 +146,42 @@
   (capture-sent-messages (state)
     (call-next-method)))
 
+
+(defun state-name (state)
+  "Returns name of the STATE object to be used as block title
+   on `PlantUML` diagram. If state object has some id, then
+   this id will be used as a name. Otherwise, name will be
+   generated automatically."
+  (let ((id (state-id state))
+        (name (gethash state *state-to-name*)))
+    (flet ((store-name (name)
+             (when id
+               (setf (gethash id *id-to-state*)
+                     state))
+             (setf (gethash state *state-to-name*)
+                   name)
+             (setf (gethash name *name-to-state*)
+                   state)
+             (values name)))
+      (cond
+        (name
+         (values name))
+        (id
+         (let ((name (format nil "state '~A'"
+                             id)))
+           (store-name name)))
+        (t
+         (loop for idx upfrom 1
+               for possible-name = (format nil "state #~A"
+                                           idx)
+               when (null (gethash possible-name *name-to-state*))
+                 do (return (store-name possible-name))))))))
+
+
+(defmethod render-handler-link ((state base-state))
+  (let ((state-id (obj-id state))
+        (state-name (state-name state)))
+    (render-mapslot-value-with-link
+     "goto"
+     state-name
+     (fmt "~A_slots" state-id))))

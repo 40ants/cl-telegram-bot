@@ -1,5 +1,10 @@
 (uiop:define-package #:cl-telegram-bot2/action
   (:use #:cl)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:to-text
+                #:render-handler-link)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:render-mapslot-value)
   (:export #:action
            #:call-if-action))
 (in-package #:cl-telegram-bot2/action)
@@ -32,3 +37,17 @@
               args))
     (t
        obj)))
+
+
+(defmethod render-handler-link ((action action))
+  (render-mapslot-value
+   "action"
+   (symbol-name
+    (class-name (class-of action)))))
+
+
+(defmethod to-text ((action action))
+  ;; NOTE: Decided to not render blocks for funcs and actions.
+  ;; Probably will need to show again if I decide to render
+  ;; output arrows from functions.
+  (values))

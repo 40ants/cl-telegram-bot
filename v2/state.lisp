@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/state
   (:use #:cl)
   (:import-from #:serapeum
+                #:fmt
                 #:->
                 #:pretty-print-hash-table
                 #:dict
@@ -17,9 +18,11 @@
                 #:print-items
                 #:print-items-mixin)
   (:import-from #:cl-telegram-bot2/state-with-commands
+                #:state-commands
                 #:command
                 #:state-with-commands-mixin)
   (:import-from #:cl-telegram-bot2/states/base
+                #:state-name
                 #:base-state)
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
@@ -30,7 +33,29 @@
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-state*)
   (:import-from #:cl-telegram-bot2/callback
+                #:callback-handlers
+                #:callback-data
                 #:callback)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:render-handlers
+                #:to-text
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/group
+                #:group-name
+                #:group-slots
+                #:sort-slots-and-groups
+                #:group)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot-handlers
+                #:slot-name
+                #:slot)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:obj-id
+                #:on-after-object
+                #:after-object
+                #:render-objects-link)
+  (:import-from #:cl-telegram-bot2/debug/diagram/vars
+                #:*diagram-stream*)
   (:export #:state
            #:on-activation
            #:on-update
@@ -168,8 +193,10 @@
       ;; If user pushed an inline keyboard button, then we'll try to
       ;; find a handler for it:
       (callback-data
-       (loop for (expected-value . workflow-blocks) in (on-callback-query state)
-             when (string= callback-data expected-value)
+       (loop for callback in (on-callback-query state)
+             for expected-data = (callback-data callback)
+             for workflow-blocks = (callback-handlers callback)
+             when (string= callback-data expected-data)
                do (return
                     ;; PROCESS should be repeated for actions and states
                     ;; from this list until we'll find a final action like BACK
@@ -326,3 +353,93 @@
                      obj)
                   (back
                      obj))))
+
+
+(defmethod get-slots ((state state))
+    (list*
+     (group "Commands"
+            (state-commands state))
+     (group "Callbacks"
+            (on-callback-query state))
+     (loop for slot-name in (list
+                             'on-activation
+                             'on-update
+                             'on-deletion
+                             'on-result
+                             'on-web-app-data)
+           collect
+           (slot (string-downcase slot-name)
+                 (slot-value state slot-name)))))
+
+
+
+(defmethod to-text ((state state))
+  (let* ((name (state-name state))
+         (obj-id (obj-id state))
+         (slots-id (fmt "~A_slots"
+                        obj-id))
+         (slots-or-groups (sort-slots-and-groups
+                           (remove nil
+                                   (get-slots state)))))
+
+    (flet ((add-slot-link (slot-name handlers-id)
+             (after-object (slots-id)
+               (render-objects-link 
+                (fmt "\"~A::~A\""
+                     slots-id
+                     slot-name)
+                handlers-id))))
+
+      ;; Traverse tree of workflow depth first:
+      (loop for slot-or-group in slots-or-groups
+            do (to-text slot-or-group))
+
+      ;; End of traverse,
+      ;; rendering the state itself:
+        
+      (format *diagram-stream*
+              "package ~S as ~A {~%"
+              name
+              obj-id)
+
+      (loop for slot-or-group in slots-or-groups
+            do (render-handlers slot-or-group))
+        
+      (format *diagram-stream*
+              "object \"**state slots**\" as ~A {~%"
+              slots-id)
+
+      (flet ((render-slot (slot)
+               (let* ((name (slot-name slot))
+                      (obj-id (obj-id (slot-handlers slot)))
+                      (handlers-id (fmt "~A_handlers" obj-id)))
+
+                 (format *diagram-stream*
+                         "~A~%"
+                         name)
+                 (add-slot-link name handlers-id))))
+
+        (loop for slot-or-group in slots-or-groups
+              do (etypecase slot-or-group
+                   (slot
+                      (render-slot slot-or-group))
+                   (group
+                      (format *diagram-stream*
+                              ".. ~A ..~%"
+                              (group-name slot-or-group))
+                      (mapc #'render-slot
+                            (sort (copy-list
+                                   (group-slots slot-or-group))
+                                  #'string<
+                                  :key #'slot-name))))))
+        
+      ;; End of object
+      (format *diagram-stream*
+              "}~%")
+
+      ;; Output links
+      (on-after-object slots-id)
+      
+      ;; End of package
+      (format *diagram-stream*
+              "}~%"))))

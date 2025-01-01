@@ -6,6 +6,11 @@
                 #:->)
   (:import-from #:cl-telegram-bot2/generics
                 #:process)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:find-state-by-id)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:to-text
+                #:render-handler-link)
   (:export #:back
            #:back-to
            #:back-to-nth-parent
@@ -76,7 +81,6 @@
     (values back-to-id &optional))
 
 (defun back-to-id (id &optional result)
-  (break)
   (make-instance 'back-to-id
                  :id id
                  :result result))
@@ -93,3 +97,18 @@
   ;; then PROCESS generic-function will be called on it again
   ;; and in this case we should return the same BACK object to interrupt the list processing
   (values item))
+
+
+(defmethod render-handler-link ((action back-to-id))
+
+    (let* ((parent-id (parent-id action))
+           (state (or (find-state-by-id parent-id)
+                      (error "Unable to find state with id ~S."
+                             parent-id))))
+      (render-handler-link state)))
+
+
+(defmethod to-text ((action back))
+  ;; We don't render back blocks explicintly, replacing the
+  ;; with a link between handler in the map and the state\
+  (values))
