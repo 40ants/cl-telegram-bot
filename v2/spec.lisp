@@ -30,7 +30,9 @@
                 #:telegram-error)
   (:import-from #:quri)
   (:import-from #:global-vars
-                #:define-global-parameter))
+                #:define-global-parameter)
+  (:export
+   #:telegram-object))
 (in-package #:cl-telegram-bot2/spec)
 
 
@@ -139,28 +141,26 @@ Bot token and method name is appended to it")
       (t object))))
 
 
-(eval-always
-  (export 'telegram-object)
-  
-  (defclass telegram-object ()
-    ())
-  
-  (defgeneric unparse (object)
-    (:method ((object t))
-      object)
-    (:method ((object list))
-      (mapcar #'unparse
-              object))
-    (:method ((object telegram-object))
-      (loop with result = (serapeum:dict)
-            for slot in (mapcar #'closer-mop:slot-definition-name
-                                (closer-mop:class-slots (class-of object)))
-            when (slot-boundp object slot)
-              do (setf (gethash (string-downcase (substitute #\_ #\- (symbol-name slot)))
-                                result)
-                       (unparse (slot-value object slot)))
-            finally (return result)))
-    (:documentation "Transform the object into an NJSON-friendly hash table of literal values when necessary")))
+(defclass telegram-object ()
+  ())
+
+
+(defgeneric unparse (object)
+  (:method ((object t))
+    object)
+  (:method ((object list))
+    (mapcar #'unparse
+            object))
+  (:method ((object telegram-object))
+    (loop with result = (serapeum:dict)
+          for slot in (mapcar #'closer-mop:slot-definition-name
+                              (closer-mop:class-slots (class-of object)))
+          when (slot-boundp object slot)
+            do (setf (gethash (string-downcase (substitute #\_ #\- (symbol-name slot)))
+                              result)
+                     (unparse (slot-value object slot)))
+          finally (return result)))
+  (:documentation "Transform the object into an NJSON-friendly hash table of literal values when necessary"))
 
 
 (defmethod print-object ((object telegram-object) stream)
