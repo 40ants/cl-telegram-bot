@@ -52,6 +52,7 @@
   (:import-from #:alexandria
                 #:once-only)
   (:import-from #:serapeum
+                #:fmt
                 #:push-end)
   (:import-from #:cl-telegram-bot2/debug/diagram/utils
                 #:obj-id
@@ -65,6 +66,8 @@
                 #:render-handler-link)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
+  (:import-from #:cl-telegram-bot2/vars
+                #:*current-bot*)
   (:export #:render-workflow-diagram))
 (in-package #:cl-telegram-bot2/debug/diagram)
 
@@ -124,11 +127,15 @@ left to right direction~%")
 
 
 (defmethod cl-telegram-bot2/generics:process ((action render-workflow-diagram) (update t))
-  (let ((workflow (workflow-to-text cl-telegram-bot2/vars::*current-bot*)))
-    (uiop:with-temporary-file (:pathname temp-file :keep t)
-      (40ants-plantuml:render workflow
-                              temp-file)
-  
-      (send-photo temp-file))))
+  (handler-case
+      (let ((workflow (workflow-to-text *current-bot*)))
+        (uiop:with-temporary-file (:pathname temp-file :keep t)
+          (40ants-plantuml:render workflow
+                                  temp-file)
+          
+          (send-photo temp-file)))
+    (serious-condition (err)
+      (send-text (fmt "~A"
+                      err)))))
 
 

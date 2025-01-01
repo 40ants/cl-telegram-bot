@@ -185,19 +185,19 @@
         (name
          (values name))
         (id
-         (let ((name (format nil "~A '~A'"
-                             (string-downcase
-                              (class-name
-                               (class-of state)))
-                             id)))
+         (let ((name (fmt "~A '~A'"
+                          (string-downcase
+                           (class-name
+                            (class-of state)))
+                          id)))
            (store-name name)))
         (t
          (loop for idx upfrom 1
-               for possible-name = (format nil "~A #~A"
-                                           (string-downcase
-                                            (class-name
-                                             (class-of state)))
-                                           idx)
+               for possible-name = (fmt "~A #~A"
+                                        (string-downcase
+                                         (class-name
+                                          (class-of state)))
+                                        idx)
                when (null (gethash possible-name *name-to-state*))
                  do (return (store-name possible-name))))))))
 
