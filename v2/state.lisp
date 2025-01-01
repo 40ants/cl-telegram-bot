@@ -22,7 +22,6 @@
                 #:command
                 #:state-with-commands-mixin)
   (:import-from #:cl-telegram-bot2/states/base
-                #:state-name
                 #:base-state)
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
@@ -54,8 +53,6 @@
                 #:on-after-object
                 #:after-object
                 #:render-objects-link)
-  (:import-from #:cl-telegram-bot2/debug/diagram/vars
-                #:*diagram-stream*)
   (:export #:state
            #:on-activation
            #:on-update
@@ -371,75 +368,3 @@
            (slot (string-downcase slot-name)
                  (slot-value state slot-name)))))
 
-
-
-(defmethod to-text ((state state))
-  (let* ((name (state-name state))
-         (obj-id (obj-id state))
-         (slots-id (fmt "~A_slots"
-                        obj-id))
-         (slots-or-groups (sort-slots-and-groups
-                           (remove nil
-                                   (get-slots state)))))
-
-    (flet ((add-slot-link (slot-name handlers-id)
-             (after-object (slots-id)
-               (render-objects-link 
-                (fmt "\"~A::~A\""
-                     slots-id
-                     slot-name)
-                handlers-id))))
-
-      ;; Traverse tree of workflow depth first:
-      (loop for slot-or-group in slots-or-groups
-            do (to-text slot-or-group))
-
-      ;; End of traverse,
-      ;; rendering the state itself:
-        
-      (format *diagram-stream*
-              "package ~S as ~A {~%"
-              name
-              obj-id)
-
-      (loop for slot-or-group in slots-or-groups
-            do (render-handlers slot-or-group))
-        
-      (format *diagram-stream*
-              "object \"**state slots**\" as ~A {~%"
-              slots-id)
-
-      (flet ((render-slot (slot)
-               (let* ((name (slot-name slot))
-                      (obj-id (obj-id (slot-handlers slot)))
-                      (handlers-id (fmt "~A_handlers" obj-id)))
-
-                 (format *diagram-stream*
-                         "~A~%"
-                         name)
-                 (add-slot-link name handlers-id))))
-
-        (loop for slot-or-group in slots-or-groups
-              do (etypecase slot-or-group
-                   (slot
-                      (render-slot slot-or-group))
-                   (group
-                      (format *diagram-stream*
-                              ".. ~A ..~%"
-                              (group-name slot-or-group))
-                      (mapc #'render-slot
-                            (sort (copy-list
-                                   (group-slots slot-or-group))
-                                  #'string<
-                                  :key #'slot-name))))))
-        
-      ;; End of object
-      (format *diagram-stream*
-              "}~%")
-
-      ;; Output links
-      (on-after-object slots-id)
-      
-      ;; End of package
-      (format *diagram-stream*
-              "}~%"))))

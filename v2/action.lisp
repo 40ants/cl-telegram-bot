@@ -14,7 +14,6 @@
   ())
 
 
-
 (defun call-if-action (obj func &rest args)
   "Useful in CL-TELEGRAM-BOT2/GENERICS:PROCESS handlers in case if
    state has additional handler stored in the slot and this
@@ -34,6 +33,7 @@
     (action
        (apply #'call-if-action
               (apply func obj args)
+              func
               args))
     (t
        obj)))

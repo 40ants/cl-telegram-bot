@@ -23,6 +23,10 @@
                 #:action)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot)
   (:export #:ask-for-number))
 (in-package #:cl-telegram-bot2/states/ask-for-number)
 
@@ -102,3 +106,14 @@
                      update)))))
       (t
        (values)))))
+
+
+(defmethod get-slots ((state ask-for-number))
+  (append
+   (loop for slot-name in (list
+                           'on-success
+                           'on-validation-error)
+         collect
+         (slot (string-downcase slot-name)
+               (slot-value state slot-name)))
+   (call-next-method)))

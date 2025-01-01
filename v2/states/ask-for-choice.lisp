@@ -40,6 +40,10 @@
                 #:workflow-blocks)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot)
   (:export #:ask-for-choice))
 (in-package #:cl-telegram-bot2/states/ask-for-choice)
 
@@ -178,3 +182,14 @@
 (defmethod on-state-deletion ((state ask-for-choice))
   (delete-created-messages state)
   (values))
+
+
+(defmethod get-slots ((state ask-for-choice))
+  (append
+   (loop for slot-name in (list
+                           'on-success
+                           'on-wrong-user-message)
+         collect
+         (slot (string-downcase slot-name)
+               (slot-value state slot-name)))
+   (call-next-method)))

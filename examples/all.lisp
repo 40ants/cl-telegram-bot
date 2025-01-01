@@ -101,7 +101,7 @@
                                                         (back-to-id "megabot-main-menu"))
                                                   :description "Show menu with all examples.")
                                   (global-command "/debug"
-                                                  'render-workflow-diagram
+                                                  (render-workflow-diagram)
                                                   :description "Show menu with all examples."))
                   :on-result 'show-menu-buttons
                   :on-callback-query (list (callback "open-echo"

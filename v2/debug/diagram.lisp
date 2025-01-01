@@ -63,6 +63,8 @@
                 #:to-text
                 #:render-handlers
                 #:render-handler-link)
+  (:import-from #:cl-telegram-bot2/action
+                #:action)
   (:export #:render-workflow-diagram))
 (in-package #:cl-telegram-bot2/debug/diagram)
 
@@ -113,16 +115,20 @@ left to right direction~%")
                 "@enduml~%")))))
 
 
-;; (defun render-workflow-diagram ()
-;;   (setf *bot*
-;;         cl-telegram-bot2/vars::*current-bot*)
-;;   (40ants-plantuml:render "
-;; @startuml
-;; object firstObj
-;; object seconObj
-;; @enduml
-;; "
-;;                           "~/test7.png")
-;;   #P"~/test7.png"
-;;   )
+(defclass render-workflow-diagram (action)
+  ())
+
+
+(defun render-workflow-diagram ()
+  (make-instance 'render-workflow-diagram))
+
+
+(defmethod cl-telegram-bot2/generics:process ((action render-workflow-diagram) (update t))
+  (let ((workflow (workflow-to-text cl-telegram-bot2/vars::*current-bot*)))
+    (uiop:with-temporary-file (:pathname temp-file :keep t)
+      (40ants-plantuml:render workflow
+                              temp-file)
+  
+      (send-photo temp-file))))
+
 
