@@ -17,6 +17,8 @@
   :cache t
   :jobs ((40ants-ci/jobs/linter:linter
           :asdf-systems ("cl-telegram-bot"
+                         "cl-telegram-bot2"
+                         "cl-telegram-bot-examples"
                          "cl-telegram-bot-docs"
                          "cl-telegram-bot-tests")
           :env (("DYNAMIC_SPACE_SIZE" . "4Gb")))))
