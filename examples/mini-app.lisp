@@ -53,65 +53,70 @@
   "https://cl-echo-bot.dev.40ants.com/")
 
 
-(defvar *app* (make-instance 'ningle:app))
-
-
 (defvar *server* nil)
 
 
-(setf (ningle:route *app* "/")
-      (with-html-string
-        (:html :style "background: white"
-         (:head
-          (:script :src "https://telegram.org/js/telegram-web-app.js")
-          (:script :src "https://unpkg.com/htmx.org@2.0.3")
-          (:script :src "https://cdn.tailwindcss.com"))
-         
-         (:body
-          (:form :class "flex flex-col gap-8 m-4"
-           (:p :class "text-xl"
-               "To finish the registration, please, enter additional data:")
-           (:div :class "flex flex-col gap-2"
-            (:label :for "email"
-                    :class "text-l"
-                    "Your email address:")
-            (:input :class "border rounded p-2 mx-[-8]"
-                    :type "email"
-                    :name "email"
-                    :placeholder "your@email.com"))
-           (:div :class "flex flex gap-2 items-center"
-            (:label :for "sign"
-                    "Sign to our newsletter:")
-            (:input :type "checkbox"
-                    :name "sign"
-                    :checked t))
-           (:button :class "middle none center mr-4 rounded-lg bg-blue-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                    :hx-post "/clicked"
-                    "Submit"))))))
+(defparameter *index-page*
+  (with-html-string
+    (:html :style "background: white"
+           (:head
+            (:script :src "https://telegram.org/js/telegram-web-app.js")
+            (:script :src "https://unpkg.com/htmx.org@2.0.3")
+            (:script :src "https://cdn.tailwindcss.com"))
+           
+           (:body
+            (:form :class "flex flex-col gap-8 m-4"
+                   (:p :class "text-xl"
+                       "To finish the registration, please, enter additional data:")
+                   (:div :class "flex flex-col gap-2"
+                         (:label :for "email"
+                                 :class "text-l"
+                                 "Your email address:")
+                         (:input :class "border rounded p-2 mx-[-8]"
+                                 :type "email"
+                                 :name "email"
+                                 :placeholder "your@email.com"))
+                   (:div :class "flex flex gap-2 items-center"
+                         (:label :for "sign"
+                                 "Sign to our newsletter:")
+                         (:input :type "checkbox"
+                                 :name "sign"
+                                 :checked t))
+                   (:button :class "middle none center mr-4 rounded-lg bg-blue-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                            :hx-post "/clicked"
+                            "Submit"))))))
 
 
-(setf (ningle:route *app* "/clicked" :method :POST)
-      (lambda (params)
-        (let* ((email (assoc-value params "email" :test #'string-equal))
-               (sign (assoc-value params "sign" :test #'string-equal))
-               (data (dict "email" email
-                           "sign" sign))
-               (encoded (with-output-to-string* ()
-                          (yason:encode data))))
-          (with-html-string
-            (:script (:raw (fmt "window.Telegram.WebApp.sendData('~A')"
-                                encoded)))))))
+(defun on-click (params)
+  (let* ((email (assoc-value params "email" :test #'string-equal))
+         (sign (assoc-value params "sign" :test #'string-equal))
+         (data (dict "email" email
+                     "sign" sign))
+         (encoded (with-output-to-string* ()
+                    (yason:encode data))))
+    (with-html-string
+      (:script (:raw (fmt "window.Telegram.WebApp.sendData('~A')"
+                          encoded))))))
 
 
 (defun start-web-app (&key (port 10120) (debug t))
-  (when *server*
-    (clack:stop *server*)
-    (setf *server* nil))
+  (let ((app (make-instance 'ningle:app)))
+    (uiop:with-muffled-conditions ('(warning))
+      (setf (ningle:route app "/")
+            *index-page*)
+
+      (setf (ningle:route app "/clicked" :method :POST)
+            #'on-click))
   
-  (setf *server*
-        (clack:clackup *app*
-                       :port port
-                       :debug debug)))
+    (when *server*
+      (clack:stop *server*)
+      (setf *server* nil))
+  
+    (setf *server*
+          (clack:clackup app
+                         :port port
+                         :debug debug)))
+  (values))
 
 
 
@@ -150,14 +155,17 @@ We will send the verification link to `~A`."
 
 
 (let ((keyboard
-        (keyboard (open-web-app "Open Mini App2"
+        (keyboard (open-web-app "Open Mini App"
                                 "https://cl-echo-bot.dev.40ants.com/")
                   :one-time-keyboard t)))
   (defbot test-bot ()
     ()
     (:initial-state
-     (state (send-text "Initial state. Give /app command to open the mini-app or press this button:"
-                       :reply-markup keyboard)
+     (state (list
+             'start-web-app
+             (send-text "Initial state. Give /app command to open the mini-app or press this button:"
+                        :reply-markup keyboard))
+            :id "mini-app-example"
             :on-web-app-data (list 'save-form-data
                                    (send-text 'format-response-text
                                               :parse-mode "Markdown"
@@ -191,11 +199,3 @@ We will send the verification link to `~A`."
   
   (start-polling *bot* :debug t))
 
-
-(defun clean-threads ()
-  "TODO: надо разобраться почему треды не подчищаются. Возможно это происходит когда случаются ошибки?"
-  (loop for tr in (bt:all-threads)
-        when (or (str:starts-with? "message-thread" (bt:thread-name tr))
-                 (str:starts-with? "timer-wheel" (bt:thread-name tr))
-                 (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr)))

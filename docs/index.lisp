@@ -19,6 +19,8 @@
                 #:defautodoc)
   (:import-from #:cl-telegram-bot-docs/tutorial
                 #:@first-bot)
+  (:import-from #:cl-telegram-bot-docs/examples
+                #:@examples)
   (:export #:@index
            #:@readme
            #:@changelog))
@@ -43,6 +45,7 @@
         :root-sections '(@index
                          @first-bot
                          @states-and-actions
+                         @examples
                          @api-v2
                          @v1)))
 

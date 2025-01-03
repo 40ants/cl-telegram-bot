@@ -45,6 +45,7 @@
   ()
   (:initial-state
    (state (send-text "Hello, I'm the echo bot.")
+          :id "echo-example"
           :on-update 'reply-with-same-text)))
 
 
@@ -70,12 +71,3 @@
           (make-test-bot (uiop:getenv "TELEGRAM_TOKEN"))))
   
   (start-polling *bot* :debug t))
-
-
-(defun clean-threads ()
-  "TODO: надо разобраться почему треды не подчищаются. Возможно это происходит когда случаются ошибки?"
-  (loop for tr in (bt:all-threads)
-        when (or (str:starts-with? "message-thread" (bt:thread-name tr))
-                 (str:starts-with? "timer-wheel" (bt:thread-name tr))
-                 (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr)))

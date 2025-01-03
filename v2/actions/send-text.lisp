@@ -9,6 +9,7 @@
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
   (:import-from #:serapeum
+                #:fmt
                 #:soft-list-of
                 #:->)
   (:import-from #:cl-telegram-bot2/utils
@@ -16,6 +17,14 @@
   (:import-from #:cl-telegram-bot2/types
                 #:reply-markup-type
                 #:inline-keyboard-buttons)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:render-handler-link)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:render-mapslot-value)
+  (:import-from #:str
+                #:shorten)
+  (:import-from #:cl-telegram-bot2/debug/diagram/vars
+                #:*send-text-limit*)
   (:export #:send-text
            #:text
            #:reply-markup
@@ -99,3 +108,18 @@
 
 (defmethod on-result ((action send-text) result)
   (do-action action))
+
+
+
+(defmethod render-handler-link ((action send-text))
+  (render-mapslot-value
+   "action"
+   (fmt "~A\\n~A"
+        (class-name (class-of action))
+        (let ((text (text action)))
+          (etypecase text
+            (string
+               (shorten *send-text-limit*
+                        text))
+            (symbol
+               text))))))

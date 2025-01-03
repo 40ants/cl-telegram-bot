@@ -1,5 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/debug
-  (:use #:cl))
+  (:use #:cl)
+  (:export
+   #:bot-actors-info))
 (in-package #:cl-telegram-bot2/debug)
 
 

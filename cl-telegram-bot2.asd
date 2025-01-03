@@ -31,4 +31,5 @@
 (asdf:register-system-packages "dexador" '("DEX"))
 (asdf:register-system-packages "sento" '("SENTO.ACTOR-SYSTEM"
                                          "SENTO.ACTOR-CONTEXT"
-                                         "SENTO.ACTOR"))
+                                         "SENTO.ACTOR"
+                                         "SENTO.ACTOR-CELL"))
