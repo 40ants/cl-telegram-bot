@@ -73,7 +73,7 @@ Now our bot will respond to the message with a static message:
 
 ![](asdf:cl-telegram-bot-media:images/tutorial-2.gif)
 
-Good! But what if we want to execute some custom logic before reponse? The one way is to define your own action class, but the easiest way
+Good! But what if we want to execute some custom logic before response? The one way is to define your own action class, but the easiest way
 is to use a function. For demonstration, we'll create a function which will reply with a reversed text:
 
 ```

@@ -46,7 +46,10 @@
   (:import-from #:alexandria
                 #:once-only)
   (:import-from #:cl-telegram-bot2/debug/diagram
-                #:render-workflow-diagram))
+                #:render-workflow-diagram)
+  (:export
+   #:start
+   #:stop))
 (in-package #:cl-telegram-bot2-examples)
 
 

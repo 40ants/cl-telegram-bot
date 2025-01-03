@@ -11,7 +11,7 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
-  (0.8.0 2024-12-23
+  (0.8.0 2025-01-02
          "
 Changed
 =======
@@ -26,6 +26,7 @@ Added
   It is able to delete messages send by bot and messages received from user as well.
   By default, both message types are deleted.
 * Added :ON-DELETION argument to the CL-TELEGRAM-BOT2/STATE:STATE function.
+* Added a new feature allowing to render the workflow diagram of the botc.
 
 Fixed
 =====
