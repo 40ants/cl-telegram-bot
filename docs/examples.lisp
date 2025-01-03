@@ -24,10 +24,15 @@
 
 (defsection @running (:title "Running Examples")
   "
+To run a bot combining all examples, register some bot at BotFather, then do:
+
+```
 CL-USER> (ql:quickload :cl-telegram-bot2-examples)
 
 CL-USER> (setf (uiop:getenv \"TELEGRAM_TOKEN\")
                \"520*****:AAH*****\")
 
 CL-USER> (cl-telegram-bot2-examples:start)
+```
+
 ")
