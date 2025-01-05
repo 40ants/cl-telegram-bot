@@ -6,7 +6,9 @@
   (:import-from #:40ants-ci/jobs/docs
                 #:build-docs)
   (:import-from #:40ants-ci/workflow
-                #:defworkflow))
+                #:defworkflow)
+  (:import-from #:40ants-ci/steps/sh
+                #:sh))
 (in-package #:cl-telegram-bot-ci/ci)
 
 
@@ -21,7 +23,8 @@
                          "cl-telegram-bot2-examples"
                          "cl-telegram-bot-docs"
                          "cl-telegram-bot-tests")
-          :env (("DYNAMIC_SPACE_SIZE" . "4Gb")))))
+          :env (("DYNAMIC_SPACE_SIZE" . "4Gb"))
+          :check-imports t)))
 
 (defworkflow docs
   :on-push-to "master"
@@ -30,7 +33,10 @@
   :cache t
   :jobs ((build-docs
           :asdf-system "cl-telegram-bot-docs"
-          :dynamic-space-size "4gb")))
+          :dynamic-space-size "4gb"
+          :steps (list
+                  (sh "Install PlantUML"
+                      "sudo apt-get install -y plantuml")))))
 
 
 (defworkflow ci

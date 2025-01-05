@@ -36,6 +36,11 @@
           }
         },
         {
+          "name": "Install PlantUML",
+          "run": "sudo apt-get install -y plantuml",
+          "shell": "bash"
+        },
+        {
           "name": "Build Docs",
           "uses": "40ants/build-docs@v1",
           "with": {
