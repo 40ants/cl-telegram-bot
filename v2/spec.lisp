@@ -15,6 +15,7 @@
                 #:class-slots
                 #:finalize-inheritance)
   (:import-from #:alexandria
+                #:read-file-into-string
                 #:hash-table-keys
                 #:curry
                 #:make-keyword
@@ -489,10 +490,12 @@ Bot token and method name is appended to it")
 
   
   (defmacro define-tg-apis ()
-    (let ((api (from-json (asdf:system-relative-pathname "cl-telegram-bot2"
-                                                         (make-pathname :directory '(:relative "v2")
-                                                                        :name "spec"
-                                                                        :type "json")))))
+    (let ((api (from-json
+                (read-file-into-string
+                 (asdf:system-relative-pathname "cl-telegram-bot2"
+                                                (make-pathname :directory '(:relative "v2")
+                                                               :name "spec"
+                                                               :type "json"))))))
       (multiple-value-bind (generic-forms all-generic-classes child-to-parent)
           (define-generics (gethash "generics" api))
         (let* ((all-generics-symbol (intern "*ALL-GENERIC-CLASSES*"))

@@ -77,7 +77,8 @@
     (values t &optional))
 
 (defun from-json (string)
-  (yason:parse string))
+  (yason:parse string
+               :json-arrays-as-vectors t))
 
 
 
