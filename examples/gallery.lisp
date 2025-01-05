@@ -5,32 +5,10 @@
   (:import-from #:cl-telegram-bot2/server
                 #:stop-polling
                 #:start-polling)
-  (:import-from #:cl-telegram-bot2/high
-                #:reply
-                #:chat-state)
   (:import-from #:serapeum
                 #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to
-                #:back)
-  (:import-from #:cl-telegram-bot2/api
-                #:message-message-id)
-  (:import-from #:cl-telegram-bot2/state-with-commands
-                #:global-command
-                #:command
-                #:state-with-commands-mixin)
-  (:import-from #:cl-telegram-bot2/generics
-                #:on-result
-                #:on-state-activation
-                #:process)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
-  (:import-from #:cl-telegram-bot2/term/back
-                #:back-to-id)
-  (:import-from #:cl-telegram-bot2/actions/send-text
-                #:send-text)
-  (:import-from #:str
-                #:trim)
   (:import-from #:cl-telegram-bot2/actions/send-photo
                 #:send-photo)
   (:import-from #:cl-telegram-bot2/actions/edit-message-media

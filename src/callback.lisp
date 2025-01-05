@@ -9,6 +9,7 @@
                 #:send-message)
   (:import-from #:cl-telegram-bot/pipeline
                 #:process)
+  (:import-from #:log)
   (:import-from #:cl-telegram-bot/chat
                 #:get-chat
                 #:get-chat-id)

@@ -14,9 +14,6 @@
                 #:fmt)
   (:import-from #:spinneret
                 #:with-html-string)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to
-                #:back)
   (:import-from #:ningle)
   (:import-from #:clack)
   (:import-from #:cl-telegram-bot2/api
@@ -26,18 +23,10 @@
                 #:global-command
                 #:command
                 #:state-with-commands-mixin)
-  (:import-from #:cl-telegram-bot2/generics
-                #:on-result
-                #:on-state-activation
-                #:process)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
-  (:import-from #:cl-telegram-bot2/term/back
-                #:back-to-id)
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
-  (:import-from #:str
-                #:trim)
   (:import-from #:alexandria
                 #:assoc-value)
   (:import-from #:yason

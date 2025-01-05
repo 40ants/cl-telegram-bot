@@ -15,6 +15,10 @@
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 
+;; My linter of imports is angry when I
+;; do import-from something which looks like a package-inferred system name
+;; but do not create corresponding package. That is why I'm using a proxy-system
+;; for such dependencies.
 (defsystem "cl-telegram-bot2/deps"
   :description "Utility system to load non-package-inferred systems using package-inferred imports."
   :author "Alexander Artemenko <svetlyak.40wt@gmail.com>"
@@ -22,7 +26,9 @@
   :homepage "https://40ants.com/cl-telegram-bot/"
   :source-control (:git "https://github.com/40ants/cl-telegram-bot")
   :bug-tracker "https://github.com/40ants/cl-telegram-bot/issues"
-  :depends-on ("njson/jzon"))
+  :depends-on ("njson/jzon")
+  :components ((:module "v2"
+                :components ((:file "deps")))))
 
 
 (asdf:register-system-packages "bordeaux-threads" '("BORDEAUX-THREADS-2"))

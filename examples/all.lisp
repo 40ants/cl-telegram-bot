@@ -1,7 +1,8 @@
 (uiop:define-package #:cl-telegram-bot2-examples
   (:use #:cl)
   (:nicknames #:cl-telegram-bot2-examples/all)
-  (:import-from #:40ants-plantuml)
+  (:import-from #:40ants-logging)
+  (:import-from #:bordeaux-threads)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/server
@@ -34,17 +35,9 @@
                 #:answer-pre-checkout-query)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-pre-checkout-query)
-  (:import-from #:cl-telegram-bot2/actions/send-photo
-                #:send-photo)
   (:import-from #:cl-telegram-bot2/callback
                 #:callback-data
                 #:callback)
-  (:import-from #:serapeum
-                #:defvar-unbound
-                #:fmt
-                #:push-end)
-  (:import-from #:alexandria
-                #:once-only)
   (:import-from #:cl-telegram-bot2/debug/diagram
                 #:render-workflow-diagram)
   (:export

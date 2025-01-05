@@ -8,20 +8,9 @@
   (:import-from #:cl-telegram-bot2/high
                 #:reply
                 #:chat-state)
-  (:import-from #:serapeum
-                #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to
-                #:back)
-  (:import-from #:cl-telegram-bot2/api
-                #:message-message-id)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:global-command
                 #:command)
-  (:import-from #:cl-telegram-bot2/generics
-                #:on-result
-                #:on-state-activation
-                #:process)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/term/back

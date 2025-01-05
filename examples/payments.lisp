@@ -5,9 +5,6 @@
   (:import-from #:cl-telegram-bot2/server
                 #:stop-polling
                 #:start-polling)
-  (:import-from #:cl-telegram-bot2/high
-                #:reply
-                #:chat-state)
   (:import-from #:cl-telegram-bot2/actions/send-invoice
                 #:send-invoice)
   (:import-from #:cl-telegram-bot2/state-with-commands
@@ -16,9 +13,6 @@
                 #:state-with-commands-mixin)
   (:import-from #:serapeum
                 #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to
-                #:back)
   (:import-from #:cl-telegram-bot2/api
                 #:answer-pre-checkout-query
                 #:pre-checkout-query
@@ -104,10 +98,3 @@
   
   (start-polling *bot* :debug t))
 
-
-(defun current-state ()
-  (first
-   (sento.actor-cell:state
-    (first
-     (sento.actor-context:all-actors
-      (cl-telegram-bot2/bot::actors-system *bot*))))))

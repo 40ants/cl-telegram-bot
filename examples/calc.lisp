@@ -1,5 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2-examples/calc
   (:use #:cl)
+  (:import-from #:bordeaux-threads)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/actions/send-text
@@ -9,18 +10,9 @@
   (:import-from #:cl-telegram-bot2/server
                 #:stop-polling
                 #:start-polling)
-  (:import-from #:cl-telegram-bot2/high
-                #:reply
-                #:chat-state)
   (:import-from #:serapeum
                 #:dict
                 #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to-nth-parent
-                #:back-to
-                #:back)
-  (:import-from #:cl-telegram-bot2/api
-                #:message-message-id)
   (:import-from #:cl-telegram-bot2/states/ask-for-number
                 #:ask-for-number)
   (:import-from #:cl-telegram-bot2/states/base

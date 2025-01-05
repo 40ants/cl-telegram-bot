@@ -21,7 +21,11 @@
           :asdf-systems ("cl-telegram-bot"
                          "cl-telegram-bot2"
                          "cl-telegram-bot2-examples"
-                         "cl-telegram-bot-docs"
+                         ;; Documentation intentionally has
+                         ;; a lot of unused imports. Actually they
+                         ;; are used in docstrings, but linter
+                         ;; can't understand this case.
+                         ;; "cl-telegram-bot-docs"
                          "cl-telegram-bot-tests")
           :env (("DYNAMIC_SPACE_SIZE" . "4Gb"))
           :check-imports t)))

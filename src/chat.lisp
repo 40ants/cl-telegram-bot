@@ -4,8 +4,6 @@
                 #:class-slots
                 #:slot-definition-initargs)
   (:import-from #:kebab)
-  (:import-from #:cl-telegram-bot/network
-                #:make-request)
   (:import-from #:cl-telegram-bot/telegram-call
                 #:prepare-arg
                 #:def-telegram-call

@@ -38,7 +38,8 @@
                 #:back-to
                 #:back-to-nth-parent)
   (:import-from #:cl-telegram-bot2/utils
-                #:deep-copy))
+                #:deep-copy)
+  (:import-from #:sento.actor))
 (in-package cl-telegram-bot2/pipeline)
 
 

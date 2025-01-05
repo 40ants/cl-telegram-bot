@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2-examples/echo
   (:use #:cl)
-    (:import-from #:cl-telegram-bot2/state
+  (:import-from #:bordeaux-threads)
+  (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
@@ -12,26 +13,11 @@
   (:import-from #:cl-telegram-bot2/high
                 #:reply
                 #:chat-state)
-  (:import-from #:serapeum
-                #:dict
-                #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to-nth-parent
-                #:back-to
-                #:back)
   (:import-from #:cl-telegram-bot2/api
                 #:update-message
                 #:message-text
                 #:message-message-id)
-  (:import-from #:cl-telegram-bot2/states/ask-for-number
-                #:ask-for-number)
-  (:import-from #:cl-telegram-bot2/states/base
-                #:var)
-  (:import-from #:cl-telegram-bot2/states/ask-for-choice
-                #:ask-for-choice)
-  (:import-from #:40ants-logging)
-  (:import-from #:cl-telegram-bot2/term/back
-                #:back-to-id))
+  (:import-from #:40ants-logging))
 (in-package #:cl-telegram-bot2-examples/echo)
 
 
