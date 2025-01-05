@@ -41,13 +41,15 @@
                 #:delete-messages)
   (:import-from #:cl-telegram-bot2/callback
                 #:callback)
+  (:import-from #:cl-telegram-bot-media
+                #:get-path-to-dir)
   (:documentation "This example shows how to keep use state's vars to keep current photo's index and to edit message's media when user clicks on Prev/Next buttons."))
 (in-package #:cl-telegram-bot2-examples/gallery)
 
 
 (defparameter *photos*
   (directory (uiop:wilden
-              (cl-telegram-bot-media:get-path-to-dir "images" "cats"))))
+              (get-path-to-dir "images" "cats"))))
 
 
 (defun make-keyboard (photo-index)
