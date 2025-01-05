@@ -19,18 +19,18 @@
                 #:curry
                 #:make-keyword
                 #:hash-table-alist)
-  (:import-from #:njson
-                #:jget)
   (:import-from #:cl-json
                 #:simplified-camel-case-to-lisp)
   (:import-from #:str
                 #:param-case)
-  (:import-from #:cl-telegram-bot2/deps)
   (:import-from #:cl-telegram-bot2/errors
                 #:telegram-error)
   (:import-from #:quri)
   (:import-from #:global-vars
                 #:define-global-parameter)
+  (:import-from #:cl-telegram-bot2/utils
+                #:to-json
+                #:from-json)
   (:export
    #:telegram-object))
 (in-package #:cl-telegram-bot2/spec)
@@ -160,7 +160,7 @@ Bot token and method name is appended to it")
                               result)
                      (unparse (slot-value object slot)))
           finally (return result)))
-  (:documentation "Transform the object into an NJSON-friendly hash table of literal values when necessary"))
+  (:documentation "Transform the object into a hash table of literal values when necessary"))
 
 
 (defmethod print-object ((object telegram-object) stream)
@@ -231,9 +231,9 @@ Bot token and method name is appended to it")
                                            string)
                                          prepared-value)
                                       (t
-                                         (njson:encode prepared-value)))))
+                                         (to-json prepared-value)))))
                 pathnames-to-upload))))
-         (return (njson:decode
+         (return (from-json
                   (handler-case
                       (dex:post
                              ;; NOTE: probably it is better to pass token as a header?
@@ -256,11 +256,11 @@ Bot token and method name is appended to it")
                       (dex:response-body e))))))
     
     (cond
-      ((ignore-errors (jget "ok" return))
-       (jget "result" return))
+      ((ignore-errors (gethash "ok" return))
+       (gethash "result" return))
       (t
        (cerror "Ignore this error"
-               'telegram-error :description (jget "description" return))))))
+               'telegram-error :description (gethash "description" return))))))
 
 (eval-always
   (defclass telegram-method (standard-generic-function)
@@ -308,10 +308,10 @@ Bot token and method name is appended to it")
   (defun define-generics (generics)
     (loop with child-to-parent = (dict)
           for generic across generics
-          for name = (json->name (jget "name" generic))
-          do (setf (gethash (jget "name" generic) *types*)
+          for name = (json->name (gethash "name" generic))
+          do (setf (gethash (gethash "name" generic) *types*)
                    name)
-          do (loop for subtype across (jget "subtypes" generic)
+          do (loop for subtype across (gethash "subtypes" generic)
 		   do (setf (gethash (json->name subtype)
                                      child-to-parent)
 			    name))
@@ -346,38 +346,38 @@ Bot token and method name is appended to it")
   
   (defun define-classes (all-generics-symbol child-to-parent classes)
     (loop for class across classes
-          for string-class-name = (jget "name" class)
+          for string-class-name = (gethash "name" class)
           for class-name = (json->name string-class-name)
-          do (setf (gethash (jget "name" class) *types*)
+          do (setf (gethash (gethash "name" class) *types*)
                    class-name)
           collect `(export-always ',class-name)
           collect (let ((class-name class-name))
                     `(defclass ,class-name (,@(if (gethash class-name child-to-parent)
                                                 (list (gethash class-name child-to-parent))
                                                 (list 'telegram-object)))
-                       (,@(loop for param across (jget "params" class)
-                                for string-slot-name = (jget "name" param)
+                       (,@(loop for param across (gethash "params" class)
+                                for string-slot-name = (gethash "name" param)
                                 for slot-name = (json->name string-slot-name)
                                 for initarg = (alexandria:make-keyword slot-name)
-                                for documentation = (jget "description" param)
+                                for documentation = (gethash "description" param)
                                 for type = (cond
-                                             ((serapeum:single (jget "type" param))
-                                              (nth-value 1 (type-name (elt (jget "type" param) 0))))
+                                             ((serapeum:single (gethash "type" param))
+                                              (nth-value 1 (type-name (elt (gethash "type" param) 0))))
                                              (t
                                               `(or ,@(map 'list (lambda (type)
 								  (nth-value 1 (type-name type)))
-							  (jget "type" param)))))
+							  (gethash "type" param)))))
                                 for adjusted-type = (adjust-type string-class-name string-slot-name type)
-                                collect `(,(json->name (jget "name" param))
+                                collect `(,(json->name (gethash "name" param))
                                           :initarg ,initarg
                                           :type ,adjusted-type
                                           :documentation ,documentation)))
-                       (:documentation ,(jget "description" class))))
-          append (loop for param across (jget "params" class)
+                       (:documentation ,(gethash "description" class))))
+          append (loop for param across (gethash "params" class)
                        )
-          append (loop for param across (jget "params" class)
+          append (loop for param across (gethash "params" class)
                        for slot-name = (json->name
-                                        (jget "name" param))
+                                        (gethash "name" param))
                        for name = (json->name (fmt "~A-~A"
                                                    class-name
                                                    slot-name))
@@ -406,22 +406,22 @@ Bot token and method name is appended to it")
   
   (defun define-methods (all-generics-symbol methods)
     (loop for method across methods
-          for params = (jget "params" method)
+          for params = (gethash "params" method)
           for method-name
-            = (json->name (jget "name" method))
+            = (json->name (gethash "name" method))
           for required-args
-            = (remove-if (curry #'jget "optional")
+            = (remove-if (curry #'gethash "optional")
                          params)
           for required-arg-names
             = (loop for arg across required-args
-                    collect (json->name (jget "name" arg)))
+                    collect (json->name (gethash "name" arg)))
           for optional-args
             = (remove-if (lambda (p)
                            (find p required-args))
 			 params)
           for optional-arg-names
             = (loop for arg across optional-args
-                    collect (json->name (jget "name" arg)))
+                    collect (json->name (gethash "name" arg)))
           collect `(export-always ',method-name)
           collect `(defgeneric ,method-name
                        (,@required-arg-names
@@ -433,13 +433,13 @@ Bot token and method name is appended to it")
                      (:documentation ,(apply
                                        #'concatenate
                                        'string
-                                       (jget "description" method)
+                                       (gethash "description" method)
                                        (string #\newline)
                                        (map 'list
 					    (lambda (p)
 					      (cl:format nil "~:@(~a~) -- ~a~&"
-                                                         (substitute #\- #\_ (jget "name" p))
-                                                         (jget "description" p)))
+                                                         (substitute #\- #\_ (gethash "name" p))
+                                                         (gethash "description" p)))
 					    params))))
           append (labels ((type-combinations (types)
 			    (cond
@@ -453,21 +453,21 @@ Bot token and method name is appended to it")
                             `(let ((result
                                      (apply
                                       #'invoke-method
-                                      ,(jget "name" method)
+                                      ,(gethash "name" method)
                                       (append
                                        (list ,@(loop for name in required-arg-names
                                                      append (list (alexandria:make-keyword name)
                                                                   name)))
                                        ,(when rest-args? 'args)))))
-                               ,(if (equalp #("true") (jget "return" method))
+                               ,(if (equalp #("true") (gethash "return" method))
                                   'result
                                   `(parse-as ,all-generics-symbol
-                                             ',(type-name (elt (jget "return" method) 0))
+                                             ',(type-name (elt (gethash "return" method) 0))
                                              result)))))
                    (let ((combinations (type-combinations
                                         (map 'list (lambda (arg)
 						     (map 'list (lambda (type) (nth-value 1 (type-name type)))
-                                                          (jget "type" arg)))
+                                                          (gethash "type" arg)))
 					     required-args))))
                      (if combinations
                        (loop for combination in combinations
@@ -489,10 +489,10 @@ Bot token and method name is appended to it")
 
   
   (defmacro define-tg-apis ()
-    (let ((api (njson:decode (asdf:system-relative-pathname "cl-telegram-bot2"
-                                                            (make-pathname :directory '(:relative "v2")
-                                                                           :name "spec"
-                                                                           :type "json")))))
+    (let ((api (from-json (asdf:system-relative-pathname "cl-telegram-bot2"
+                                                         (make-pathname :directory '(:relative "v2")
+                                                                        :name "spec"
+                                                                        :type "json")))))
       (multiple-value-bind (generic-forms all-generic-classes child-to-parent)
           (define-generics (gethash "generics" api))
         (let* ((all-generics-symbol (intern "*ALL-GENERIC-CLASSES*"))
