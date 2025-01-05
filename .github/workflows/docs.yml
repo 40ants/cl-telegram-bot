@@ -15,9 +15,9 @@
   },
   "jobs": {
     "build-docs": {
-      "runs-on": "ubuntu-latest",
+      "runs-on": "ubuntu-24.04",
       "env": {
-        "OS": "ubuntu-latest",
+        "OS": "ubuntu-24.04",
         "QUICKLISP_DIST": "quicklisp",
         "LISP": "sbcl-bin"
       },

@@ -26,12 +26,14 @@
           :env (("DYNAMIC_SPACE_SIZE" . "4Gb"))
           :check-imports t)))
 
+
 (defworkflow docs
   :on-push-to "master"
   :by-cron "0 10 * * 1"
   :on-pull-request t
   :cache t
   :jobs ((build-docs
+          :os "ubuntu-24.04"
           :asdf-system "cl-telegram-bot-docs"
           :dynamic-space-size "4gb"
           :steps (list
