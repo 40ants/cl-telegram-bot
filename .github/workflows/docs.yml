@@ -41,6 +41,11 @@
           "shell": "bash"
         },
         {
+          "name": "Update PlantUML",
+          "run": "curl -L https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-mit-1.2024.8.jar | sudo cat > /usr/share/plantuml/plantuml.jar",
+          "shell": "bash"
+        },
+        {
           "name": "Build Docs",
           "uses": "40ants/build-docs@v1",
           "with": {
