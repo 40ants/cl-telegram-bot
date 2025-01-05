@@ -9,7 +9,8 @@
   :class :40ants-asdf-system
   :defsystem-depends-on ("40ants-asdf-system")
   :pathname "v2"
-  :depends-on ("cl-telegram-bot2/api"
+  :depends-on ("cl-telegram-bot2/deps"
+               "cl-telegram-bot2/api"
                "cl-telegram-bot2/pipeline"
                "cl-telegram-bot2/server")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
