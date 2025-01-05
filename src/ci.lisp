@@ -45,7 +45,7 @@
                       "sudo apt-get install -y plantuml")
                   ;; Ubuntu 24.04 uses old PlantUML version, so we upgrade it here:
                   (sh "Update PlantUML"
-                      "curl -L https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-mit-1.2024.8.jar | sudo cat > /usr/share/plantuml/plantuml.jar")))))
+                      "sudo curl --output /usr/share/plantuml/plantuml.jar -L https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-mit-1.2024.8.jar")))))
 
 
 (defworkflow ci
