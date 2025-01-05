@@ -47,9 +47,7 @@
 
 (defparameter *photos*
   (directory (uiop:wilden
-              (asdf:system-relative-pathname
-               :cl-telegram-bot2-examples
-               (make-pathname :directory '(:relative "examples" "images"))))))
+              (cl-telegram-bot-media:get-path-to-dir "images" "cats"))))
 
 
 (defun make-keyboard (photo-index)

@@ -1,7 +1,12 @@
 (uiop:define-package #:cl-telegram-bot-docs/examples
   (:use #:cl)
   (:import-from #:40ants-doc
-                #:defsection))
+                #:defsection)
+  (:import-from #:40ants-doc-plantuml
+                #:defdiagram)
+  (:import-from #:cl-telegram-bot2/debug/diagram
+                #:workflow-to-text)
+  (:import-from #:cl-telegram-bot2-examples/calc))
 (in-package #:cl-telegram-bot-docs/examples)
 
 
@@ -19,7 +24,8 @@
 
    All these examples can be run on their own or as a part of the bigger Megabot. See @RUNNING section to learn how to run the Megabot.
    "
-  (@running section))
+  (@running section)
+  (@calc section))
 
 
 (defsection @running (:title "Running Examples")
@@ -36,3 +42,30 @@ CL-USER> (cl-telegram-bot2-examples:start)
 ```
 
 ")
+
+
+(defsection @calc (:title "Calc Example")
+  "
+
+Example in the calc.lisp file consist of 3 types of the state.
+
+In it's first state it greets the user and then switches to the next state
+where it awaits while user will provide a number. Then it switches to the next
+state where waits for another number and finally to the state where user should
+choose one of the arithmetic operations:
+
+![](asdf:cl-telegram-bot-media:images/examples/calc-bot.gif)
+
+If we'll use /debug command to draw the diagram of the state transitions, then
+it will show a picture like this:
+
+"
+
+  (@calc-states diagram))
+
+
+
+(defdiagram @calc-states ()
+  (workflow-to-text
+   (cl-telegram-bot2-examples/calc::make-test-bot "")))
+

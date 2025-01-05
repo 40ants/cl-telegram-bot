@@ -101,7 +101,7 @@
         do (to-text obj)))
 
 
-(defun workflow-to-text (bot)
+(defun workflow-to-text (bot &key left-to-right)
   (with-output-to-string (*diagram-stream*)
     (with-on-after
       (let ((*state-to-name* (make-hash-table))
@@ -110,8 +110,10 @@
             (*obj-to-id* (make-hash-table))
             (*id-to-obj* (make-hash-table :test 'equal)))
         (format *diagram-stream*
-                "@startuml
-left to right direction~%")
+                "@startuml~%")
+        (when left-to-right
+          (format *diagram-stream*
+                  "left to right direction~%"))
         (to-text (cl-telegram-bot2/bot::initial-state bot))
         (format *diagram-stream*
                 ;; remove @unlinked

@@ -99,7 +99,7 @@
                           encoded))))))
 
 
-(defun start-web-app (&key (port 10120) (debug t))
+(defun start-web-app (&key port (debug t))
   (let ((app (make-instance 'ningle:app)))
     (uiop:with-muffled-conditions ('(warning))
       (setf (ningle:route app "/")
@@ -114,7 +114,11 @@
   
     (setf *server*
           (clack:clackup app
-                         :port port
+                         :port (parse-integer (or port
+                                                  (uiop:getenv "APP_PORT")
+                                                  "10120"))
+                         :address (or (uiop:getenv "APP_INTERFACE")
+                                      "localhost")
                          :debug debug)))
   (values))
 
