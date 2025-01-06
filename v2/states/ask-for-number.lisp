@@ -27,7 +27,11 @@
                 #:get-slots)
   (:import-from #:cl-telegram-bot2/debug/diagram/slot
                 #:slot)
-  (:export #:ask-for-number))
+  (:export #:ask-for-number
+           #:prompt
+           #:var-name
+           #:on-success
+           #:on-validation-error))
 (in-package #:cl-telegram-bot2/states/ask-for-number)
 
 

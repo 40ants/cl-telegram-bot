@@ -44,7 +44,15 @@
                 #:get-slots)
   (:import-from #:cl-telegram-bot2/debug/diagram/slot
                 #:slot)
-  (:export #:ask-for-choice))
+  (:export #:ask-for-choice
+           #:prompt
+           #:var-name
+           #:buttons
+           #:on-success
+           #:on-wrong-user-message
+           #:delete-messages-p
+           #:delete-wrong-user-messages-p
+           #:message-ids-to-delete))
 (in-package #:cl-telegram-bot2/states/ask-for-choice)
 
 

@@ -26,7 +26,9 @@
   (:import-from #:cl-telegram-bot2/states/base
                 #:received-message-ids
                 #:sent-message-ids)
-  (:export #:delete-messages))
+  (:export #:delete-messages
+           #:delete-sent-messages-p
+           #:delete-received-messages-p))
 (in-package #:cl-telegram-bot2/actions/delete-messages)
 
 

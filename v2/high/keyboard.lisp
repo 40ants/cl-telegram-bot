@@ -29,7 +29,37 @@
            #:copy-text
            #:open-game
            #:pay-button
-           #:remove-keyboard))
+           #:remove-keyboard
+           #:inline-query
+           #:query
+           #:allow-user-chats-p
+           #:allow-bot-chats-p
+           #:allow-group-chats-p
+           #:allow-channel-chats-p
+           #:users-request-id
+           #:chat-is-channel-p
+           #:chat-is-forum-p
+           #:chat-has-username-p
+           #:chat-is-created-p
+           #:user-administration-rights
+           #:bot-administration-rights
+           #:bot-is-member-p
+           #:request-title-p
+           #:request-username-p
+           #:request-photo-p
+           #:user-is-bot-p
+           #:user-is-premium-p
+           #:max-quantity
+           #:request-name-p
+           #:requested-poll-type
+           #:url
+           #:callback-data
+           #:login-url
+           #:forward-text
+           #:bot-username
+           #:request-write-access-p
+           #:text-to-copy
+           #:web-app-url))
 (in-package #:cl-telegram-bot2/high/keyboard)
 
 

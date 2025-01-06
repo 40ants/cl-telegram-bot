@@ -193,6 +193,9 @@ And start communicating with him:
 
 (defautodoc @api-v2 (:title "API v2"
                      :system :cl-telegram-bot2
-                     :ignore-words ("CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
+                     :ignore-words (
+                                    ;; "CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
+                                    ;; "CL-TELEGRAM-BOT2/API:INLINE-KEYBOARD-MARKUP"
+                                    ;; "CL-TELEGRAM-BOT2/API:REPLY-KEYBOARD-MARKUP"
                                     "API")
-                     :ignore-packages ("cl-telegram-bot2/api")))
+                     :ignore-packages ("CL-TELEGRAM-BOT2/API")))
