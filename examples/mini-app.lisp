@@ -38,11 +38,31 @@
 (in-package #:cl-telegram-bot2-examples/mini-app)
 
 
-(defparameter *link*
-  "https://cl-echo-bot.dev.40ants.com/")
-
-
 (defvar *server* nil)
+
+
+(defun get-mini-app-interface ()
+  (or (uiop:getenv "APP_INTERFACE")
+      "localhost"))
+
+
+(defun get-mini-app-port ()
+  (parse-integer
+   (or (uiop:getenv "APP_PORT")
+       "10120")))
+
+
+(defun get-mini-app-url ()
+  (or (uiop:getenv "MINI_APP_URL")
+      (fmt "http://~A:~A/"
+           (get-miniapp-interface)
+           (get-miniapp-port))))
+
+
+(defun is-mini-app-in-debug-mode-p ()
+  (member (uiop:getenv "MINI_APP_DEBUG")
+          '("yes" "on" "true" "1")
+          :test #'string-equal))
 
 
 (defparameter *index-page*
@@ -88,7 +108,7 @@
                           encoded))))))
 
 
-(defun start-web-app (&key port (debug t))
+(defun start-web-app ()
   (let ((app (make-instance 'ningle:app)))
     (uiop:with-muffled-conditions ('(warning))
       (setf (ningle:route app "/")
@@ -103,12 +123,9 @@
   
     (setf *server*
           (clack:clackup app
-                         :port (parse-integer (or port
-                                                  (uiop:getenv "APP_PORT")
-                                                  "10120"))
-                         :address (or (uiop:getenv "APP_INTERFACE")
-                                      "localhost")
-                         :debug debug)))
+                         :port (get-mini-app-port)
+                         :address (get-mini-app-interface)
+                         :debug (is-mini-app-in-debug-mode-p))))
   (values))
 
 
@@ -147,31 +164,33 @@ We will send the verification link to `~A`."
          email)))
 
 
-(let ((keyboard
-        (keyboard (open-web-app "Open Mini App"
-                                "https://cl-echo-bot.dev.40ants.com/")
-                  :one-time-keyboard t)))
-  (defbot test-bot ()
-    ()
-    (:initial-state
-     (state (list
-             'start-web-app
-             (send-text "Initial state. Give /app command to open the mini-app or press this button:"
-                        :reply-markup keyboard))
-            :id "mini-app-example"
-            :on-web-app-data (list 'save-form-data
-                                   (send-text 'format-response-text
-                                              :parse-mode "Markdown"
-                                              :reply-markup (remove-keyboard)))
-            :on-result (send-text "Welcome back!")
-            :on-update (send-text "Give /app command to open the mini-app or press this button:"
-                                  :reply-markup keyboard)
-            :commands (list
-                       (command "/app"
-                                (send-text "App opening is not implemented yet.")
-                                :description "Open a mini-app.")
-                       (global-command "/help" 'on-help-command
-                                       :description "Show information about bot's commands."))))))
+(defun make-keyboard ()
+  (keyboard (open-web-app "Open Mini App"
+                          (get-mini-app-url))
+            :one-time-keyboard t))
+
+
+(defbot test-bot ()
+  ()
+  (:initial-state
+   (state (list
+           'start-web-app
+           (send-text "Initial state. To open the mini-app press this button:"
+                      :reply-markup (make-keyboard)))
+          :id "mini-app-example"
+          :on-web-app-data (list 'save-form-data
+                                 (send-text 'format-response-text
+                                            :parse-mode "Markdown"
+                                            :reply-markup (remove-keyboard)))
+          :on-result (send-text "Welcome back!")
+          :on-update (send-text "To open the mini-app press this button:"
+                                :reply-markup (make-keyboard))
+          :commands (list
+                     ;; (command "/app"
+                     ;;          (send-text "App opening is not implemented yet.")
+                     ;;          :description "Open a mini-app.")
+                     (global-command "/help" 'on-help-command
+                                     :description "Show information about bot's commands.")))))
 
 
 (defvar *bot* nil)
