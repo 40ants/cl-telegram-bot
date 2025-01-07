@@ -1,6 +1,6 @@
 #-asdf3.1 (error "cl-telegram-bot requires ASDF 3.1 because for lower versions pathname does not work for package-inferred systems.")
 (defsystem "cl-telegram-bot2-examples"
-  :description "Telegram Bot API, based on sovietspaceship's work but mostly rewritten."
+  :description "Examples of Telegram Bot API Common Lisp library."
   :author "Alexander Artemenko <svetlyak.40wt@gmail.com>"
   :license "MIT"
   :homepage "https://40ants.com/cl-telegram-bot/"
@@ -10,9 +10,5 @@
   :defsystem-depends-on ("40ants-asdf-system")
   :pathname "examples"
   :depends-on ("clack-handler-hunchentoot"
-               "cl-telegram-bot2-examples/calc"
-               "cl-telegram-bot2-examples/commands"
-               "cl-telegram-bot2-examples/gallery"
-               "cl-telegram-bot2-examples/payments"
-               "cl-telegram-bot2-examples/mini-app")
+               "cl-telegram-bot2-examples/all")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))

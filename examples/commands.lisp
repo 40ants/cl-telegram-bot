@@ -8,21 +8,9 @@
   (:import-from #:cl-telegram-bot2/high
                 #:reply
                 #:chat-state)
-  (:import-from #:serapeum
-                #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to
-                #:back)
-  (:import-from #:cl-telegram-bot2/api
-                #:message-message-id)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:global-command
-                #:command
-                #:state-with-commands-mixin)
-  (:import-from #:cl-telegram-bot2/generics
-                #:on-result
-                #:on-state-activation
-                #:process)
+                #:command)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/term/back
@@ -30,7 +18,9 @@
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
   (:import-from #:str
-                #:trim))
+                #:trim)
+  (:import-from #:cl-telegram-bot2/actions/delete-messages
+                #:delete-messages))
 (in-package #:cl-telegram-bot2-examples/commands)
 
 
@@ -68,15 +58,22 @@ additional command /reverse, which will reverse any given text.")
   ()
   (:initial-state
    (state (send-text "Initial state. Give /next command to go to the second state.")
-          :id "initial"
+          :id "commands-example"
           :on-result (send-text "Welcome back! Give /next command to go to the second state.")
           :on-update (send-text "Give /next command to go to the second state.")
+          :on-deletion (delete-messages)
           :commands (list
                      (command "/next"
-                              (state (send-text "Second state. Give /back command to go to the initial state.")
+                              (state (send-text "Second state. Give /reverse command with an argument to return it in a reversed way.
+
+Or do /back command to go to the initial state.
+
+Note how commands list is changed depending on current bot's state.")
+                                     :id "commands-example-step2"
                                      :on-update (send-text "Give /back command to go to the initial state.")
+                                     :on-deletion (delete-messages)
                                      :commands (list
-                                                (command "/back" (back-to-id "initial")
+                                                (command "/back" (back-to-id "commands-example")
                                                          :description "Switch to the prev state")
                                                 (command "/reverse" 'on-reverse-command
                                                          :description "Switch to the prev state")))
@@ -103,11 +100,3 @@ additional command /reverse, which will reverse any given text.")
   
   (start-polling *bot* :debug t))
 
-
-(defun clean-threads ()
-  "TODO: надо разобраться почему треды не подчищаются. Возможно это происходит когда случаются ошибки?"
-  (loop for tr in (bt:all-threads)
-        when (or (str:starts-with? "message-thread" (bt:thread-name tr))
-                 (str:starts-with? "timer-wheel" (bt:thread-name tr))
-                 (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr)))

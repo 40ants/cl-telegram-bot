@@ -1,6 +1,6 @@
 (uiop:define-package #:cl-telegram-bot/entities/command
   (:use #:cl)
-  (:import-from #:log4cl)
+  (:import-from #:log)
   (:import-from #:cl-telegram-bot/entities/generic
                 #:make-entity-internal)
   (:import-from #:cl-telegram-bot/entities/core

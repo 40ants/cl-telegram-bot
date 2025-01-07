@@ -1,6 +1,6 @@
 (uiop:define-package #:cl-telegram-bot/message
   (:use #:cl)
-  (:import-from #:log4cl)
+  (:import-from #:log)
   (:import-from #:cl-telegram-bot/chat
                 #:get-chat-id
                 #:make-chat

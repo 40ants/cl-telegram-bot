@@ -5,47 +5,29 @@
   (:import-from #:cl-telegram-bot2/server
                 #:stop-polling
                 #:start-polling)
-  (:import-from #:cl-telegram-bot2/high
-                #:reply
-                #:chat-state)
   (:import-from #:serapeum
                 #:fmt)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back-to
-                #:back)
-  (:import-from #:cl-telegram-bot2/api
-                #:message-message-id)
-  (:import-from #:cl-telegram-bot2/state-with-commands
-                #:global-command
-                #:command
-                #:state-with-commands-mixin)
-  (:import-from #:cl-telegram-bot2/generics
-                #:on-result
-                #:on-state-activation
-                #:process)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
-  (:import-from #:cl-telegram-bot2/term/back
-                #:back-to-id)
-  (:import-from #:cl-telegram-bot2/actions/send-text
-                #:send-text)
-  (:import-from #:str
-                #:trim)
   (:import-from #:cl-telegram-bot2/actions/send-photo
                 #:send-photo)
   (:import-from #:cl-telegram-bot2/actions/edit-message-media
                 #:edit-message-media)
   (:import-from #:cl-telegram-bot2/states/base
                 #:var)
+  (:import-from #:cl-telegram-bot2/actions/delete-messages
+                #:delete-messages)
+  (:import-from #:cl-telegram-bot2/callback
+                #:callback)
+  (:import-from #:cl-telegram-bot-media
+                #:get-path-to-dir)
   (:documentation "This example shows how to keep use state's vars to keep current photo's index and to edit message's media when user clicks on Prev/Next buttons."))
 (in-package #:cl-telegram-bot2-examples/gallery)
 
 
 (defparameter *photos*
   (directory (uiop:wilden
-              (asdf:system-relative-pathname
-               :cl-telegram-bot2-examples
-               (make-pathname :directory '(:relative "examples" "images"))))))
+              (get-path-to-dir "images" "cats"))))
 
 
 (defun make-keyboard (photo-index)
@@ -97,13 +79,15 @@
 (defbot test-bot ()
   ()
   (:initial-state
-   (state nil
+   (state 'show-photo
+          :id "gallery-example"
           :on-update 'show-photo
+          :on-deletion (delete-messages)
           :on-callback-query
-          (list (cons "Next"
-                      'show-next-photo)
-                (cons "Prev"
-                      'show-prev-photo)))))
+          (list (callback "Next"
+                          'show-next-photo)
+                (callback "Prev"
+                          'show-prev-photo)))))
 
 
 ;; Technical part
@@ -111,19 +95,10 @@
 (defvar *bot* nil)
 
 
-(defun clean-threads ()
-  (loop for tr in (bt:all-threads)
-        when (or (str:starts-with? "message-thread" (bt:thread-name tr))
-                 (str:starts-with? "timer-wheel" (bt:thread-name tr))
-                 (str:starts-with? "telegram-bot" (bt:thread-name tr)))
-        do (bt:destroy-thread tr)))
-
-
 (defun stop ()
   (when *bot*
     (stop-polling *bot*)
-    (setf *bot* nil)
-    (clean-threads))
+    (setf *bot* nil))
   (values))
 
 

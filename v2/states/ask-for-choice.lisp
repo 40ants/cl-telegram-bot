@@ -38,15 +38,30 @@
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
-  (:export #:ask-for-choice))
+  (:import-from #:cl-telegram-bot2/state
+                #:state)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot)
+  (:export #:ask-for-choice
+           #:prompt
+           #:var-name
+           #:buttons
+           #:on-success
+           #:on-wrong-user-message
+           #:delete-messages-p
+           #:delete-wrong-user-messages-p
+           #:message-ids-to-delete))
 (in-package #:cl-telegram-bot2/states/ask-for-choice)
 
 
 (defparameter *default-var-name* "result")
 
 
-
-(defclass ask-for-choice (base-state)
+;; To allow this state process global commands, we need
+;; to inherit it from state-with-commands-mixin.
+(defclass ask-for-choice (state)
   ((prompt :initarg :prompt
            :type (or string symbol)
            :reader prompt)
@@ -175,3 +190,14 @@
 (defmethod on-state-deletion ((state ask-for-choice))
   (delete-created-messages state)
   (values))
+
+
+(defmethod get-slots ((state ask-for-choice))
+  (append
+   (loop for slot-name in (list
+                           'on-success
+                           'on-wrong-user-message)
+         collect
+         (slot (string-downcase slot-name)
+               (slot-value state slot-name)))
+   (call-next-method)))

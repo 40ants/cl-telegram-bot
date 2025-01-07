@@ -2,12 +2,15 @@
   (:use #:cl)
   (:import-from #:alexandria)
   (:import-from #:dexador)
+  (:import-from #:jonathan)
   (:import-from #:log)
   (:import-from #:yason)
   (:import-from #:cl-telegram-bot/utils
                 #:obfuscate)
   (:import-from #:cl-telegram-bot/bot
                 #:get-endpoint)
+  (:import-from #:serapeum
+                #:href)
   (:export
    #:make-request
    #:request-error
@@ -55,7 +58,7 @@
                                   (lambda (err)
                                     (let* ((response (dexador:response-body err))
                                            (data (yason:parse response))
-                                           (sleep-time (or (serapeum:href data "parameters" "retry_after")
+                                           (sleep-time (or (href data "parameters" "retry_after")
                                                            (progn
                                                              (log:warn "Unable to get parameters->retry_after from" response)
                                                              10))))

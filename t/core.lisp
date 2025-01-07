@@ -1,5 +1,6 @@
 (uiop:define-package #:cl-telegram-bot-tests/core
   (:use #:cl)
+  (:import-from #:cl-telegram-bot/chat)
   (:import-from #:cl-telegram-bot/message
                 #:get-entities
                 #:get-text

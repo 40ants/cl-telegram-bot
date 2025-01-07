@@ -1,5 +1,6 @@
 (uiop:define-package #:cl-telegram-bot/envelope
   (:use #:cl)
+  (:import-from #:log)
   (:import-from #:cl-telegram-bot/pipeline
                 #:process)
   (:export #:wrapped-message

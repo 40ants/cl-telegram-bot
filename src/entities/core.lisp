@@ -1,9 +1,5 @@
 (uiop:define-package #:cl-telegram-bot/entities/core
   (:use #:cl)
-  (:import-from #:cl-telegram-bot/utils
-                #:make-keyword)
-  (:import-from #:arrows
-                #:->)
   (:import-from #:cl-telegram-bot/message
                 #:message)
   (:import-from #:cl-telegram-bot/chat
