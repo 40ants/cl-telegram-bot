@@ -30,6 +30,7 @@
   (:import-from #:global-vars
                 #:define-global-parameter)
   (:import-from #:cl-telegram-bot2/utils
+                #:bool-value-to-symbol
                 #:to-json
                 #:from-json)
   (:export
@@ -38,12 +39,12 @@
 
 
 (eval-always
-  (defvar *types* (dict "int" 'integer
-                        "float" 'float
-                        "str" 'string
-                        "file" 'pathname
-                        "bool" 't
-                        "array" 'sequence)
+  (defparameter *types* (dict "int" 'integer
+                              "float" 'float
+                              "str" 'string
+                              "file" 'pathname
+                              "bool" 'boolean
+                              "array" 'sequence)
     "The table with all the types API has, from the Telegram name to Lisp type")
 
   (defparameter *adjusted-types*
@@ -154,12 +155,21 @@ Bot token and method name is appended to it")
             object))
   (:method ((object telegram-object))
     (loop with result = (serapeum:dict)
-          for slot in (mapcar #'closer-mop:slot-definition-name
-                              (closer-mop:class-slots (class-of object)))
-          when (slot-boundp object slot)
-            do (setf (gethash (string-downcase (substitute #\_ #\- (symbol-name slot)))
+          for slot in (closer-mop:class-slots (class-of object))
+          for slot-name = (closer-mop:slot-definition-name slot)
+          for slot-type = (closer-mop:slot-definition-type slot)
+          when (slot-boundp object slot-name)
+            do (setf (gethash (string-downcase (substitute #\_ #\- (symbol-name slot-name)))
                               result)
-                     (unparse (slot-value object slot)))
+                     (let ((raw-value (slot-value object slot-name)))
+                       (cond
+                         ;; Without this special processing of booleans,
+                         ;; Yason will serialize NIL as NULL and Telegram API
+                         ;; will complain on these values if it expects a boolean True/False value:
+                         ((equal slot-type 'boolean)
+                          (bool-value-to-symbol raw-value))
+                         (t
+                          (unparse raw-value)))))
           finally (return result)))
   (:documentation "Transform the object into a hash table of literal values when necessary"))
 
@@ -466,10 +476,23 @@ Bot token and method name is appended to it")
                                              ',(type-name (elt (gethash "return" method) 0))
                                              result)))))
                    (let ((combinations (type-combinations
-                                        (map 'list (lambda (arg)
-						     (map 'list (lambda (type) (nth-value 1 (type-name type)))
-                                                          (gethash "type" arg)))
-					     required-args))))
+                                        (loop for arg across required-args
+                                              collect (loop for  tg-type across (gethash "type" arg)
+                                                            for cl-type = (nth-value 1 (type-name tg-type))
+                                                            collect (case cl-type
+                                                                      ;; He can't use boolean
+                                                                      ;; as method specializer,
+                                                                      ;; because of this error:
+                                                                      ;; There is no class named COMMON-LISP:BOOLEAN.
+                                                                      (boolean t)
+                                                                      (otherwise cl-type))))
+                                        ;; (map 'list (lambda (arg)
+					;; 	     (map 'list
+                                        ;;                   (lambda (type)
+                                        ;;                     (nth-value 1 (type-name type)))
+                                        ;;                   (gethash "type" arg)))
+					;;      required-args)
+                                        )))
                      (if combinations
                        (loop for combination in combinations
                              collect `(defmethod ,method-name (,@(loop for name in required-arg-names

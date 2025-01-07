@@ -64,6 +64,16 @@
             symbol))))
 
 
+(-> bool-value-to-symbol (t)
+    (values (member yason:true yason:false)
+            &optional))
+
+(defun bool-value-to-symbol (value)
+  (if value
+    yason:true
+    yason:false))
+
+
 (-> to-json (t)
     (values string &optional))
 
