@@ -32,8 +32,7 @@
           "with": {
             "asdf-system": "cl-telegram-bot-docs",
             "dynamic-space-size": "4gb",
-            "cache": "true",
-            "cache-suffix": "dyn-space"
+            "cache": "true"
           }
         },
         {
