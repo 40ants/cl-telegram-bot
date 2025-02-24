@@ -50,7 +50,7 @@ Note, the bot was started and a function which can stop it was returned from CL-
 
 Now let's see how our bot will behave:
 
-![](asdf:cl-telegram-bot-media:images/tutorial-1.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-1.gif)
 
 As you can see, our bot greets the user but does not respond ot it's message. What if we'll use SEND-TEXT function to create
 an action for update event?
@@ -71,7 +71,7 @@ CL-USER> (setf *stop-func*
 
 Now our bot will respond to the message with a static message:
 
-![](asdf:cl-telegram-bot-media:images/tutorial-2.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-2.gif)
 
 Good! But what if we want to execute some custom logic before reponse? The one way is to define your own action class, but the easiest way
 is to use a function. For demonstration, we'll create a function which will reply with a reversed text:
@@ -98,7 +98,7 @@ CL-USER> (setf *stop-func*
                                 :on-update 'reply-with-reversed-text))))
 ```
 
-![](asdf:cl-telegram-bot-media:images/tutorial-3.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-3.gif)
 
 Now let's combine two actions together. First we'll send a static text, then call a function
 and send the reversed user input:
@@ -120,7 +120,7 @@ CL-USER> (setf *stop-func*
                                                  'reply-with-reversed-text)))))
 ```
 
-![](asdf:cl-telegram-bot-media:images/tutorial-4.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-4.gif)
 
 As we said in the beginning of the tutorial, the real power of the second version of cl-telegram-bot is
 it's ability to keep context as the current state. At the next step we'll create the second state at which
@@ -167,7 +167,7 @@ CL-USER> (setf *stop-func*
 ```
 
 
-![](asdf:cl-telegram-bot-media:images/tutorial-5.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-5.gif)
 
 As you can see, now our bot has stuck in the second state and there is no way to jump back to the first one.
 How would we do this?
@@ -211,7 +211,7 @@ CL-USER> (setf *stop-func*
                                                                    (cl-telegram-bot2/term/back:back))))))))
 ```
 
-![](asdf:cl-telegram-bot-media:images/tutorial-6.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-6.gif)
 
 As you can see, now bot switches between first and second states. But `back` function can do more, because
 this kind of actions are special and is able not only to switch current bot's state, but also to return some
@@ -269,7 +269,7 @@ CL-USER> (setf *stop-func*
                                 :on-result 'process-result))))
 ```
 
-![](asdf:cl-telegram-bot-media:images/tutorial-7.gif)
+![](asdf:cl-telegram-bot-media:images/tutorial/tutorial-7.gif)
 
 This is all for now. In the next tutorial we'll see how to define a custom states to make some building blocks for our workflow.
 
