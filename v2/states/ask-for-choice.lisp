@@ -153,7 +153,7 @@
   (values))
 
 
-(defmethod process ((state ask-for-choice) (update update))
+(defmethod process ((bot t) (state ask-for-choice) (update update))
   (let* ((callback (cl-telegram-bot2/api:update-callback-query update))
          (callback-data
            (when callback
@@ -165,7 +165,8 @@
                         (var-name state))
              callback-data)
       
-       (prog1 (process (on-success state)
+       (prog1 (process bot
+                       (on-success state)
                        update)
          (delete-created-messages state)))
       (t
@@ -178,7 +179,8 @@
        
        (multiple-value-bind (sent-messages result)
            (collect-sent-messages
-             (process (on-wrong-user-message state)
+             (process bot
+                      (on-wrong-user-message state)
                       update))
          (when (delete-messages-p state)
            (loop for message in sent-messages

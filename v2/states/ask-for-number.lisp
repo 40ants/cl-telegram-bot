@@ -85,7 +85,7 @@
   (values))
 
 
-(defmethod process ((state ask-for-number) update)
+(defmethod process ((bot t) (state ask-for-number) update)
   (let* ((message
            (update-message
             update))
@@ -103,10 +103,12 @@
                              (var-name state))
                   parsed)
             
-            (process (on-success state)
+            (process bot
+                     (on-success state)
                      update))
            (t
-            (process (on-validation-error state)
+            (process bot
+                     (on-validation-error state)
                      update)))))
       (t
        (values)))))

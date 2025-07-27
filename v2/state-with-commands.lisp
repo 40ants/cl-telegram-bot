@@ -217,7 +217,7 @@
                     rest-text)))))))
 
 
-(defmethod process :around ((state state-with-commands-mixin) update)
+(defmethod process :around (bot (state state-with-commands-mixin) update)
   (multiple-value-bind (command-name bot-name rest-text)
       (extract-command-name update)
     (cond

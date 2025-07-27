@@ -138,7 +138,7 @@
   (perform-action action))
 
 
-(defmethod process ((action send-invoice) update)
+(defmethod process ((bot t) (action send-invoice) update)
   (perform-action action))
 
 

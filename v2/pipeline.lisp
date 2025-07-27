@@ -126,7 +126,7 @@
                                ;; Return no updates
                                (values)))
              do (restart-case
-                    (process bot update)
+                    (process bot nil update)
                   (continue-processing (&optional delay)
                     :report "Continue processing updates from Telegram"
                     (when delay
@@ -155,6 +155,10 @@
 
 
 (defgeneric get-user (object)
+  (:documentation "Returns a use associated with object, author of the message.
+
+                   If found, it will be CL-TELEGRAM-BOT2/API:USER, otherwise - NIL.")
+  
   (:method ((object null))
     nil)
   
@@ -179,7 +183,7 @@
                                               slot-name)))))))
 
 
-(defmethod process ((bot bot) (update cl-telegram-bot2/api:update))
+(defmethod process ((bot bot) (state null) (update cl-telegram-bot2/api:update))
   "By default, just calls `process' on the payload."
   (log:debug "Processing update" update)
 
@@ -211,7 +215,7 @@
                    ;; bordeaux-threads sets this var to T and this breaks logging
                    ;; our objects. So we have to turn this off.
                    nil))
-             (process-chat-update update))))
+             (process-chat-update bot update))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
@@ -321,14 +325,14 @@
                nil)))))
 
 
-(defun process-chat-update (update)
+(defun process-chat-update (bot update)
   (handler-bind ((serious-condition #'invoke-debugger))
     (log:info "Processing chat update"
               update)
     (let* ((*current-state* (car *state*))
            (*current-chat* (get-chat update))
            (*current-user* (get-user update))
-           (new-state (process *current-state* update)))
+           (new-state (process bot *current-state* update)))
 
       (setf *state*
             (probably-switch-to-new-state new-state *state*)))

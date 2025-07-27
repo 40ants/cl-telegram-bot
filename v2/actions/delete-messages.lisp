@@ -86,7 +86,7 @@
   (values))
 
 
-(defmethod process ((action delete-messages) update)
+(defmethod process ((bot t) (action delete-messages) update)
   (delete-created-messages action)
   (values))
 

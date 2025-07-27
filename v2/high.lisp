@@ -42,10 +42,19 @@
 
    - CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT
    - CL-TELEGRAM-BOT2/ACTIONS/SEND-PHOTO:SEND-PHOTO"
-  `(let* ((*collected-messages* nil)
-          (result-values (multiple-value-list ,@body)))
-     (values-list (list* *collected-messages*
-                         result-values))))
+  `(let ((vars
+           ;; This check allows us to use nested calls to collect-sent-messages.
+           ;; Here inner call can see messages added during outer call,
+           ;; but I don't consider this an issue for the moment.
+           (unless (boundp '*collected-messages*)
+             (list '*collected-messages*)))
+         (vals
+           (unless (boundp '*collected-messages*)
+             (list nil))))
+     (progv vars vals
+       (let ((result-values (multiple-value-list ,@body)))
+         (values-list (list* *collected-messages*
+                             result-values))))))
 
 
 (defmacro defun-with-same-keys ((func-name copy-kwargs-from-func) lambda-list &body body)

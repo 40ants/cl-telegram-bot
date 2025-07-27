@@ -12,7 +12,7 @@
 (in-package #:cl-telegram-bot2/generics)
 
 
-(defgeneric process (bot-or-state object)
+(defgeneric process (bot bot-or-state object)
   (:documentation "This method is called by when processing a single update.
                    It is called multiple times on different parts of an update.
                    Whole pipeline looks like that:
@@ -23,7 +23,7 @@
                    "))
 
 
-(defmethod process (bot-or-state object)
+(defmethod process (bot bot-or-state object)
   "By default, processing does nothing"
   (log:warn "No PROCESS method for processing objects like ~A by ~A."
             object
@@ -31,7 +31,7 @@
   (values))
 
 
-(defmethod process :around (bot-or-state object)
+(defmethod process :around (bot bot-or-state object)
   "By default, processing does nothing"
   (log:debug "Calling PROCESS method for processing objects of ~A type by ~A: ~S"
              (type-of object)

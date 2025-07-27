@@ -112,7 +112,7 @@
   (values))
 
 
-(defmethod process ((action edit-message-media) update)
+(defmethod process ((bot t) (action edit-message-media) update)
   (send-reply action)
   (values))
 

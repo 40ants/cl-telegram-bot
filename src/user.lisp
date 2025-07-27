@@ -69,6 +69,10 @@
                     :type boolean
                     :initform nil
                     :reader can-join-groups-p)
+   (has-main-web-app :initarg :has-main-web-app
+                     :type boolean
+                     :initform nil
+                     :reader has-main-web-app-p)
    (raw-data :initarg :raw-data
              :reader raw-data)))
 

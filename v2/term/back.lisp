@@ -92,7 +92,7 @@
             (parent-id obj))))
 
 
-(defmethod process ((item back) update)
+(defmethod process (bot (item back) update)
   ;; If a some action returns a BACK object when processing a list of actions,
   ;; then PROCESS generic-function will be called on it again
   ;; and in this case we should return the same BACK object to interrupt the list processing

@@ -181,7 +181,7 @@
                      obj))))
 
 
-(defmethod process ((state state) update)
+(defmethod process (bot (state state) update)
   (let* ((callback (cl-telegram-bot2/api:update-callback-query update))
          (callback-data
            (when callback
@@ -203,7 +203,8 @@
                     ;; PROCESS works differently when it is processing
                     ;; a list - it only executes actions and returns states as is.
                     ;; So here we should ensure a list is passed:
-                    (process (uiop:ensure-list workflow-blocks)
+                    (process bot
+                             (uiop:ensure-list workflow-blocks)
                              update))))
       ;; Otherwise call an ON-UPDATE action.
       (t
@@ -216,14 +217,16 @@
                               (cl-telegram-bot2/api:message-web-app-data message))))
          (cond
            (web-app-data
-            (process (on-web-app-data state)
+            (process bot
+                     (on-web-app-data state)
                      web-app-data))
            (t
-            (process (on-update state)
+            (process bot
+                     (on-update state)
                      update))))))))
 
 
-(defmethod process ((items list) update)
+(defmethod process ((bot t) (items list) update)
   (loop for obj in items
         thereis (etypecase obj
                   (symbol
@@ -250,10 +253,11 @@
                              ;;           obj)))
                              ))
                        (when maybe-other-action
-                         (process maybe-other-action
+                         (process bot
+                                  maybe-other-action
                                   update))))
                   (action
-                     (process obj update))
+                     (process bot obj update))
                   ;; Here is a little kludge,
                   ;; PROCESS is only called once on the current action
                   ;; and if it returns a list, then we don't need
@@ -271,7 +275,7 @@
 
 
 
-(defmethod process ((item symbol) update)
+(defmethod process (bot (item symbol) update)
   (cond
     ((null item)
      ;; We don't need to do anything to process NIL items.
@@ -282,7 +286,8 @@
      ;; using some dynamic variable, because
      ;; some callbacks might be called when update is not available
      ;; yet, for example, on state activation.
-     (process (funcall item)
+     (process bot
+              (funcall item)
               update))
     (t
      (error "Symbol ~S should be funcallable to process update."

@@ -95,7 +95,7 @@
   (values))
 
 
-(defmethod process ((action send-photo) update)
+(defmethod process ((bot t) (action send-photo) update)
   (send-reply action)
   (values))
 

@@ -1,22 +1,23 @@
 (uiop:define-package #:cl-telegram-bot2/debug
   (:use #:cl)
+  (:import-from #:cl-telegram-bot2/bot)
   (:export
    #:bot-actors-info))
 (in-package #:cl-telegram-bot2/debug)
 
 
-(defun queue-size (q)
-  (etypecase q
-    (sento.queue::queue
-     (+ (length (sento.queue::queue-head q))
-        (length (sento.queue::queue-tail q))))
-    (sento.queue:queue-bounded
-     (sento.queue:queued-count q))
+;; (defun queue-size (q)
+;;   (etypecase q
+;;     (sento.queue::queue
+;;      (+ (length (sento.queue::queue-head q))
+;;         (length (sento.queue::queue-tail q))))
+;;     (sento.queue:queue-bounded
+;;      (sento.queue:queued-count q))
     
-    (sento.queue:queue-unbounded
-     (let ((inner-queue (slot-value q
-                                    'sento.queue::queue)))
-       (queue-size inner-queue)))))
+;;     (sento.queue:queue-unbounded
+;;      (let ((inner-queue (slot-value q
+;;                                     'sento.queue::queue)))
+;;        (queue-size inner-queue)))))
 
 
 (defun bot-actors-info (bot)
@@ -40,8 +41,8 @@
           do (if thread
                  (format t "~A: ~A (~A) ~@[msgbox-name=~A~]~%"
                          (sento.actor-cell:name actor)
-                         ;; (sento.queue:queued-count queue)
-                         (queue-size queue)
+                         (sento.queue:queued-count queue)
+                         ;; (queue-size queue)
                          (if (bt2:thread-alive-p thread)
                              "thread alive"
                              "thread died")
@@ -49,6 +50,7 @@
                            (sento.messageb::name msgbox)))
                  (format t "~A: ~A~%"
                          (sento.actor-cell:name actor)
-                         ;; (sento.queue:queued-count queue)
-                         (queue-size queue)))))) ;; 
+                         (sento.queue:queued-count queue)
+                         ;; (queue-size queue)
+                         ))))) ;; 
 

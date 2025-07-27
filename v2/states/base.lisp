@@ -148,7 +148,7 @@
   (values))
 
 
-(defmethod process :around ((state base-state) (update t))
+(defmethod process :around ((bot t) (state base-state) (update t))
   (save-received-message-id state update)
   
   (capture-sent-messages (state)

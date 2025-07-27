@@ -102,7 +102,7 @@
   (do-action action))
 
 
-(defmethod process ((action send-text) update)
+(defmethod process ((bot t) (action send-text) update)
   (do-action action))
 
 

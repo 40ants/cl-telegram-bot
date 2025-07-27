@@ -33,6 +33,8 @@
                 #:aif)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:state-with-commands-mixin)
+  (:import-from #:alexandria
+                #:curry)
   (:export #:wait-for-payment
            #:on-success))
 (in-package #:cl-telegram-bot2/states/wait-for-payment)
@@ -52,7 +54,7 @@
                  :commands commands))
 
 
-(defmethod process ((state wait-for-payment) update)
+(defmethod process ((bot t) (state wait-for-payment) update)
   (let* ((message
            (cl-telegram-bot2/api:update-message
             update))
@@ -64,7 +66,7 @@
          (cl-telegram-bot2/action:call-if-action
           (call-if-needed (on-success state)
                           successful-payment)
-          #'process
+          (curry #'process bot)
           update))
         (t
          (error "There is no ON-SUCCESS handler for ~S state."
