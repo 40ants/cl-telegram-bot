@@ -9,6 +9,7 @@
                 #:get-last-update-id
                 #:bot)
   (:import-from #:cl-telegram-bot2/vars
+                #:*default-special-bindings*
                 #:*current-state*
                 #:*current-bot*
                 #:*current-user*)
@@ -39,7 +40,9 @@
                 #:back-to-nth-parent)
   (:import-from #:cl-telegram-bot2/utils
                 #:deep-copy)
-  (:import-from #:sento.actor))
+  (:import-from #:sento.actor)
+  (:import-from #:alexandria
+                #:named-lambda))
 (in-package cl-telegram-bot2/pipeline)
 
 
@@ -207,6 +210,21 @@
               update)))))
 
 
+(defun %compute-special-bindings (bindings)
+  (remove-duplicates bindings
+                     :from-end t :key #'car))
+
+(defun %establish-dynamic-env (function special-bindings)
+  "Return a closure that binds the symbols in SPECIAL-BINDINGS and calls
+FUNCTION."
+  (let* ((bindings (%compute-special-bindings special-bindings))
+         (specials (mapcar #'car bindings))
+         (values (mapcar (lambda (f) (eval (cdr f))) bindings)))
+    (named-lambda %call-with-dynamic-env (&rest args)
+      (progv specials values
+        (apply function args)))))
+
+
 (defun get-or-create-chat-actor (bot chat-id)
   (flet ((local-process-chat-update (update)
            (let ((*current-bot* bot)
@@ -225,13 +243,13 @@
                       (let* ((initial-state
                                (etypecase (initial-state bot)
                                  (symbol
-                                    (make-instance
-                                     (initial-state bot)))
+                                  (make-instance
+                                   (initial-state bot)))
                                  (base-state
-                                    ;; Here we need to copy a state
-                                    ;; to prevent results sharing between different chats
-                                    (deep-copy
-                                     (initial-state bot)))))
+                                  ;; Here we need to copy a state
+                                  ;; to prevent results sharing between different chats
+                                  (deep-copy
+                                   (initial-state bot)))))
                              ;; TODO: here we call on-state activation
                              ;; only once, however we should do this
                              ;; until  new state is returned from
@@ -244,7 +262,8 @@
                         (sento.actor-context:actor-of
                          system
                          :name actor-name
-                         :receive #'local-process-chat-update
+                         :receive (%establish-dynamic-env #'local-process-chat-update
+                                                          *default-special-bindings*)
                          :state state-stack)))))
       (values actor))))
 

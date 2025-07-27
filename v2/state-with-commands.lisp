@@ -5,6 +5,7 @@
                 #:process
                 #:on-state-activation)
   (:import-from #:alexandria
+                #:curry
                 #:flatten
                 #:length=
                 #:required-argument)
@@ -217,7 +218,7 @@
                     rest-text)))))))
 
 
-(defmethod process :around (bot (state state-with-commands-mixin) update)
+(defmethod process :around ((bot t) (state state-with-commands-mixin) update)
   (multiple-value-bind (command-name bot-name rest-text)
       (extract-command-name update)
     (cond
@@ -255,7 +256,7 @@
                               (funcall handler rest-text update))
                            (t
                               handler))
-                         #'process
+                         (curry #'process bot)
                          update)))
                finally (log:warn "Command ~A cant be processed by state ~S"
                                  command-name
