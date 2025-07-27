@@ -86,10 +86,15 @@
   (let* ((initial-state
            (first
             (assoc-value options :initial-state)))
+         (explicit-default-initargs
+           (assoc-value options :default-initargs))
          (default-initargs
-           (when initial-state
-             (list :initial-state
-                   initial-state))))
+           (append
+            explicit-default-initargs
+            
+            (when initial-state
+              (list :initial-state
+                    initial-state)))))
     `(progn
        (defclass ,name ,base-classes
          ,slots

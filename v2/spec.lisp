@@ -72,6 +72,14 @@ Bot token and method name is appended to it")
    "administrator" "chat-member-administrator"))
 
 
+(defparameter *message-origin-type-to-class*
+  (dict
+   "user" "message-origin-user"
+   "hidden_user" "message-origin-hidden-user"
+   "chat" "message-origin-chat"
+   "channel" "message-origin-channel"))
+
+
 (-> guess-generic-subclass (symbol hash-table)
     (values (or null symbol) &optional))
 
@@ -92,7 +100,14 @@ Bot token and method name is appended to it")
                               *chat-member-status-to-class*)))
                (or real-class
                    (error "Unable to parse generic CHAT-MEMBER with status \"~A\"."
-                          (gethash "status" object))))))))
+                          (gethash "status" object)))))
+            ((string-equal generic-class "message-origin")
+             (let ((real-class
+                     (gethash (gethash "type" object)
+                              *message-origin-type-to-class*)))
+               (or real-class
+                   (error "Unable to parse generic MESSAGE-ORIGIN with type \"~A\"."
+                          (gethash "type" object))))))))
     (when result
       (values (intern (string-upcase result)
                       (symbol-package generic-class))))))
@@ -101,46 +116,46 @@ Bot token and method name is appended to it")
 (-> parse-as ((soft-list-of symbol) symbol t))
 
 (defun parse-as (all-generic-classes class-symbol object)
-  (let ((real-class
-          (cond
-            ((member class-symbol all-generic-classes)
-             (let ((subclass (guess-generic-subclass class-symbol object)))
-               (if subclass
-                   subclass
-                   (error "Generic ~S cant be parsed."
-                          class-symbol))))
-            (t class-symbol))))
-    (declare (type symbol real-class))
-    
-    (etypecase object
-      (hash-table
-       (finalize-inheritance (find-class real-class))
-       (apply #'make-instance
-              real-class
-              (loop with slots = (class-slots (find-class real-class))
-                    for (key . value) in (hash-table-alist  object)
-                    for name = (string-upcase (substitute #\- #\_ key))
-                    for slot = (or (find name slots
-                                         :test #'string-equal :key #'slot-definition-name)
-                                   ;; Telegram API can add new slots which are absent from our spec.json,
-                                   ;; but we should not fail in such case.
-                                   (log:warn "Unable to find slot \"~A\" in class ~S. Probably spec.json file should be updated."
-                                             name
-                                             real-class)
-                                   nil)
-                    when slot
-                      append (list (make-keyword name)
-                                   (if (subtypep (slot-definition-type slot)
-                                                 'telegram-object)
+  (etypecase object
+    (hash-table
+       (let ((real-class
+               (cond
+                 ((member class-symbol all-generic-classes)
+                  (let ((subclass (guess-generic-subclass class-symbol object)))
+                    (if subclass
+                      subclass
+                      (error "Generic ~S cant be parsed."
+                             class-symbol))))
+                 (t class-symbol))))
+         (declare (type symbol real-class))
+         
+         (finalize-inheritance (find-class real-class))
+         (apply #'make-instance
+                real-class
+                (loop with slots = (class-slots (find-class real-class))
+                      for (key . value) in (hash-table-alist  object)
+                      for name = (string-upcase (substitute #\- #\_ key))
+                      for slot = (or (find name slots
+                                           :test #'string-equal :key #'slot-definition-name)
+                                     ;; Telegram API can add new slots which are absent from our spec.json,
+                                     ;; but we should not fail in such case.
+                                     (log:warn "Unable to find slot \"~A\" in class ~S. Probably spec.json file should be updated."
+                                               name
+                                               real-class)
+                                     nil)
+                      when slot
+                        append (list (make-keyword name)
+                                     (if (subtypep (slot-definition-type slot)
+                                                   'telegram-object)
                                        (parse-as all-generic-classes
                                                  (slot-definition-type slot)
                                                  value)
-                                       value)))))
-      (sequence (map 'list (curry #'parse-as
-                                  all-generic-classes
-                                  real-class)
-                     object))
-      (t object))))
+                                       value))))))
+    (sequence (map 'list (curry #'parse-as
+                                all-generic-classes
+                                class-symbol)
+                   object))
+    (t object)))
 
 
 (defclass telegram-object ()

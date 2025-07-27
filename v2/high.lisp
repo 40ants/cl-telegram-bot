@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/high
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/api
+                #:chat-title
                 #:send-photo
                 #:message-chat
                 #:update-message
@@ -13,6 +14,9 @@
                 #:key-lambda-vars)
   (:import-from #:trivial-arguments
                 #:arglist)
+  (:import-from #:cl-telegram-bot2/errors
+                #:error-description
+                #:telegram-error)
   (:documentation "High level API for implementing Telegram bots.")
   (:export #:reply
            #:chat-state
@@ -62,10 +66,19 @@
 (defun-with-same-keys (reply send-message)
                       (text &rest rest)
   (let* ((chat-id (chat-id *current-chat*))
-         (message (apply #'send-message
-                         chat-id
-                         text
-                         rest)))
+         (chat-title (chat-title *current-chat*))
+         (message (handler-bind
+                      ((telegram-error (lambda (err)
+                                         (when (string= (error-description err)
+                                                        "Bad Request: need administrator rights in the channel chat")
+                                           (log:warn "Unable to reply to chat ~S (~A) because bot needs administration rights on this channel"
+                                                     chat-title
+                                                     chat-id)
+                                           (return-from reply nil)))))
+                    (apply #'send-message
+                           chat-id
+                           text
+                           rest))))
     (when (boundp '*collected-messages*)
       (push message *collected-messages*))
     (values message)))

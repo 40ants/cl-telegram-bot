@@ -11,7 +11,13 @@
   :pathname "v2"
   :depends-on ("cl-telegram-bot2/api"
                "cl-telegram-bot2/pipeline"
-               "cl-telegram-bot2/server")
+               "cl-telegram-bot2/server"
+               "cl-telegram-bot2/state"
+               "cl-telegram-bot2/actions/delete-messages"
+               "cl-telegram-bot2/actions/edit-message-media"
+               "cl-telegram-bot2/actions/send-invoice"
+               "cl-telegram-bot2/actions/send-photo"
+               "cl-telegram-bot2/actions/send-text")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 

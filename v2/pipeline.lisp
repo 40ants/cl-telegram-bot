@@ -87,9 +87,11 @@
   (let* ((current-id (get-last-update-id bot))
          (*api-url* (api-uri bot))
          (*token* (token bot))
-         (updates (cl-telegram-bot2/api:get-updates :limit limit
-                                                    :offset current-id
-                                                    :timeout timeout)))
+         (updates (progn
+                    (log:debug "Requesting updates" current-id)
+                    (cl-telegram-bot2/api:get-updates :limit limit
+                                                      :offset current-id
+                                                      :timeout timeout))))
     
     (when updates
       (let ((max-id (reduce #'max

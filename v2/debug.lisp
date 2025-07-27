@@ -23,11 +23,11 @@
   (actors-info (cl-telegram-bot2/bot::actors-system bot)))
 
 
-(defun actors-info (system)
+(defun actors-info (system &key (verbose nil))
   (let* ((actors (append (sento.actor-system::%all-actors system :user)
                          (sento.actor-system::%all-actors system :internal))))
     (loop for actor in (sort
-                        ;; TODO: убедиться что sort ломает внутреннюю структуру
+                        ;; Sort is destructive, so we have to copy actors list here
                         (copy-list actors)
                         #'string<
                         :key #'sento.actor-cell:name)
@@ -38,13 +38,17 @@
           for queue = (slot-value msgbox
                                   'sento.messageb::queue)
           do (if thread
-                 (format t "~A: ~A (~A)~%"
+                 (format t "~A: ~A (~A) ~@[msgbox-name=~A~]~%"
                          (sento.actor-cell:name actor)
+                         ;; (sento.queue:queued-count queue)
                          (queue-size queue)
                          (if (bt2:thread-alive-p thread)
                              "thread alive"
-                             "thread died"))
+                             "thread died")
+                         (when verbose
+                           (sento.messageb::name msgbox)))
                  (format t "~A: ~A~%"
                          (sento.actor-cell:name actor)
+                         ;; (sento.queue:queued-count queue)
                          (queue-size queue)))))) ;; 
 

@@ -207,8 +207,13 @@
                              update))))
       ;; Otherwise call an ON-UPDATE action.
       (t
-       (let* ((message (cl-telegram-bot2/api:update-message update))
-              (web-app-data (cl-telegram-bot2/api:message-web-app-data message)))
+       (let* ((message (or
+                        (cl-telegram-bot2/api:update-message update)
+                        (cl-telegram-bot2/api:update-edited-message update)
+                        (cl-telegram-bot2/api:update-channel-post update)
+                        (cl-telegram-bot2/api:update-edited-channel-post update)))
+              (web-app-data (when message
+                              (cl-telegram-bot2/api:message-web-app-data message))))
          (cond
            (web-app-data
             (process (on-web-app-data state)
