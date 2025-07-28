@@ -33,10 +33,11 @@
   (:import-from #:sento.actor-cell
                 #:*state*)
   (:import-from #:cl-telegram-bot2/bot
+                #:bot
                 #:bot-name)
   (:import-from #:cl-telegram-bot2/action
                 #:call-if-action)
-  (:import-from #:cl-telegram-bot2/states/base
+  (:import-from #:cl-telegram-bot2/sent-messages
                 #:capture-sent-messages
                 #:save-received-message-id)
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
@@ -218,7 +219,7 @@
                     rest-text)))))))
 
 
-(defmethod process :around ((bot t) (state state-with-commands-mixin) update)
+(defmethod process :around ((bot bot) (state state-with-commands-mixin) update)
   (multiple-value-bind (command-name bot-name rest-text)
       (extract-command-name update)
     (cond

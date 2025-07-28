@@ -55,9 +55,7 @@
            #:state-id
            #:sent-message-ids
            #:state-vars
-           #:received-message-ids
-           #:save-received-message-id
-           #:capture-sent-messages))
+           #:received-message-ids))
 (in-package #:cl-telegram-bot2/states/base)
 
 
@@ -117,52 +115,6 @@
   (setf (state-var (first *state*)
                    var-name)
         new-value))
-
-
-(defmacro capture-sent-messages ((state-var) &body body)
-  "Use this macro to capture messages end during PROCESS generic-function handling
-   in case if your state inherits from BASE-STATE but does not call CALL-NEXT-METHOD."
-  `(multiple-value-bind (sent-messages result)
-       (collect-sent-messages
-         ,@body)
-    
-     (loop for message in sent-messages
-           do (push (message-message-id message)
-                    (sent-message-ids ,state-var)))
-     (values result)))
-
-
-(-> save-received-message-id (base-state update)
-    (values &optional))
-
-(defun save-received-message-id (state update)
-  "If some state class processes update and don't call CALL-NEXT-METHOD,
-   then it have to call this function to register received message id.
-
-   If you don't do this, then received messages deletion will not work
-   for this state."
-  (let ((message (update-message update)))
-    (when message
-      (push (message-message-id message)
-            (received-message-ids state))))
-  (values))
-
-
-(defmethod process :around ((bot t) (state base-state) (update t))
-  (save-received-message-id state update)
-  
-  (capture-sent-messages (state)
-    (call-next-method)))
-
-
-(defmethod on-state-activation :around ((state base-state))
-  (capture-sent-messages (state)
-    (call-next-method)))
-
-
-(defmethod on-result :around ((state base-state) result)
-  (capture-sent-messages (state)
-    (call-next-method)))
 
 
 (defun state-name (state)
