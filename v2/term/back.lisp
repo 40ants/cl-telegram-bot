@@ -5,7 +5,7 @@
   (:import-from #:serapeum
                 #:->)
   (:import-from #:cl-telegram-bot2/generics
-                #:process)
+                #:process-state)
   (:import-from #:cl-telegram-bot2/debug/diagram/utils
                 #:find-state-by-id)
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
@@ -92,9 +92,9 @@
             (parent-id obj))))
 
 
-(defmethod process (bot (item back) update)
+(defmethod process-state (bot (item back) update)
   ;; If a some action returns a BACK object when processing a list of actions,
-  ;; then PROCESS generic-function will be called on it again
+  ;; then PROCESS-STATE generic-function will be called on it again
   ;; and in this case we should return the same BACK object to interrupt the list processing
   (values item))
 

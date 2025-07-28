@@ -4,7 +4,7 @@
                 #:action)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
@@ -102,7 +102,7 @@
   (do-action action))
 
 
-(defmethod process ((bot t) (action send-text) update)
+(defmethod process-state ((bot t) (action send-text) update)
   (do-action action))
 
 

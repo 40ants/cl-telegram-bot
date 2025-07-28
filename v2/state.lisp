@@ -10,7 +10,7 @@
                 #:call-if-action
                 #:action)
   (:import-from #:cl-telegram-bot2/generics
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back)
@@ -181,7 +181,7 @@
                      obj))))
 
 
-(defmethod process (bot (state state) update)
+(defmethod process-state (bot (state state) update)
   (let* ((callback (cl-telegram-bot2/api:update-callback-query update))
          (callback-data
            (when callback
@@ -203,9 +203,9 @@
                     ;; PROCESS works differently when it is processing
                     ;; a list - it only executes actions and returns states as is.
                     ;; So here we should ensure a list is passed:
-                    (process bot
-                             (uiop:ensure-list workflow-blocks)
-                             update))))
+                    (process-state bot
+                                   (uiop:ensure-list workflow-blocks)
+                                   update))))
       ;; Otherwise call an ON-UPDATE action.
       (t
        (let* ((message (or
@@ -217,16 +217,16 @@
                               (cl-telegram-bot2/api:message-web-app-data message))))
          (cond
            (web-app-data
-            (process bot
-                     (on-web-app-data state)
-                     web-app-data))
+            (process-state bot
+                           (on-web-app-data state)
+                           web-app-data))
            (t
-            (process bot
-                     (on-update state)
-                     update))))))))
+            (process-state bot
+                           (on-update state)
+                           update))))))))
 
 
-(defmethod process ((bot t) (items list) update)
+(defmethod process-state ((bot t) (items list) update)
   (loop for obj in items
         thereis (etypecase obj
                   (symbol
@@ -253,15 +253,15 @@
                              ;;           obj)))
                              ))
                        (when maybe-other-action
-                         (process bot
-                                  maybe-other-action
-                                  update))))
+                         (process-state bot
+                                        maybe-other-action
+                                        update))))
                   (action
-                     (process bot obj update))
+                     (process-state bot obj update))
                   ;; Here is a little kludge,
-                  ;; PROCESS is only called once on the current action
+                  ;; PROCESS-STATE is only called once on the current action
                   ;; and if it returns a list, then we don't need
-                  ;; to call PROCESS on the state in the list again,
+                  ;; to call PROCESS-STATE on the state in the list again,
                   ;; because this is the state to switch to, not to
                   ;; process the UPDATE.
                   ;;
@@ -275,7 +275,7 @@
 
 
 
-(defmethod process (bot (item symbol) update)
+(defmethod process-state (bot (item symbol) update)
   (cond
     ((null item)
      ;; We don't need to do anything to process NIL items.
@@ -286,9 +286,9 @@
      ;; using some dynamic variable, because
      ;; some callbacks might be called when update is not available
      ;; yet, for example, on state activation.
-     (process bot
-              (funcall item)
-              update))
+     (process-state bot
+                    (funcall item)
+                    update))
     (t
      (error "Symbol ~S should be funcallable to process update."
             item))))

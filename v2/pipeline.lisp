@@ -15,7 +15,8 @@
                 #:*current-user*)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-state-activation
-                #:process)
+                #:process-update
+                #:process-state)
   (:import-from #:cl-telegram-bot2/spec
                 #:telegram-object
                 #:*token*
@@ -129,7 +130,7 @@
                                ;; Return no updates
                                (values)))
              do (restart-case
-                    (process bot nil update)
+                    (process-update-in-actor bot update)
                   (continue-processing (&optional delay)
                     :report "Continue processing updates from Telegram"
                     (when delay
@@ -186,7 +187,7 @@
                                               slot-name)))))))
 
 
-(defmethod process ((bot bot) (state null) (update cl-telegram-bot2/api:update))
+(defun process-update-in-actor (bot update)
   "By default, just calls `process' on the payload."
   (log:debug "Processing update" update)
 
@@ -226,14 +227,14 @@ FUNCTION."
 
 
 (defun get-or-create-chat-actor (bot chat-id)
-  (flet ((local-process-chat-update (update)
+  (flet ((local-process-update (update)
            (let ((*current-bot* bot)
                  (*token* (cl-telegram-bot2/bot::token bot))
                  (*print-readably*
                    ;; bordeaux-threads sets this var to T and this breaks logging
                    ;; our objects. So we have to turn this off.
                    nil))
-             (process-chat-update bot update))))
+             (process-update bot update))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
@@ -262,7 +263,7 @@ FUNCTION."
                         (sento.actor-context:actor-of
                          system
                          :name actor-name
-                         :receive (%establish-dynamic-env #'local-process-chat-update
+                         :receive (%establish-dynamic-env #'local-process-update
                                                           *default-special-bindings*)
                          :state state-stack)))))
       (values actor))))
@@ -344,14 +345,14 @@ FUNCTION."
                nil)))))
 
 
-(defun process-chat-update (bot update)
+(defmethod process-update ((bot bot) (update cl-telegram-bot2/api:update))
   (handler-bind ((serious-condition #'invoke-debugger))
     (log:info "Processing chat update"
               update)
     (let* ((*current-state* (car *state*))
            (*current-chat* (get-chat update))
            (*current-user* (get-user update))
-           (new-state (process bot *current-state* update)))
+           (new-state (process-state bot *current-state* update)))
 
       (setf *state*
             (probably-switch-to-new-state new-state *state*)))

@@ -1,7 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/states/wait-for-payment
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/generics
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/state
                 #:base-state)
@@ -54,7 +54,7 @@
                  :commands commands))
 
 
-(defmethod process ((bot t) (state wait-for-payment) update)
+(defmethod process-state ((bot t) (state wait-for-payment) update)
   (let* ((message
            (cl-telegram-bot2/api:update-message
             update))
@@ -66,7 +66,7 @@
          (cl-telegram-bot2/action:call-if-action
           (call-if-needed (on-success state)
                           successful-payment)
-          (curry #'process bot)
+          (curry #'process-state bot)
           update))
         (t
          (error "There is no ON-SUCCESS handler for ~S state."

@@ -2,7 +2,7 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:alexandria
                 #:curry
@@ -219,7 +219,7 @@
                     rest-text)))))))
 
 
-(defmethod process :around ((bot bot) (state state-with-commands-mixin) update)
+(defmethod process-state :around ((bot bot) (state state-with-commands-mixin) update)
   (multiple-value-bind (command-name bot-name rest-text)
       (extract-command-name update)
     (cond
@@ -257,7 +257,7 @@
                               (funcall handler rest-text update))
                            (t
                               handler))
-                         (curry #'process bot)
+                         (curry #'process-state bot)
                          update)))
                finally (log:warn "Command ~A cant be processed by state ~S"
                                  command-name

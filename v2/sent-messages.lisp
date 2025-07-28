@@ -29,7 +29,7 @@
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
                 #:on-state-activation
-                #:process)
+                #:process-state)
   (:import-from #:cl-telegram-bot2/api
                 #:update
                 #:update-message
@@ -61,7 +61,7 @@
 
 
 (defmacro capture-sent-messages ((state-var) &body body)
-  "Use this macro to capture messages end during PROCESS generic-function handling
+  "Use this macro to capture messages end during PROCESS-STATE generic-function handling
    in case if your state inherits from BASE-STATE but does not call CALL-NEXT-METHOD."
   `(multiple-value-bind (sent-messages result)
        (collect-sent-messages
@@ -89,7 +89,7 @@
   (values))
 
 
-(defmethod process :around ((bot bot) (state base-state) (update t))
+(defmethod process-state :around ((bot bot) (state base-state) (update t))
   (save-received-message-id state update)
   
   (capture-sent-messages (state)
