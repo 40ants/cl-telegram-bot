@@ -1,6 +1,8 @@
 (uiop:define-package #:cl-telegram-bot2/pipeline
   (:use #:cl)
   (:import-from #:log)
+  (:import-from #:log4cl-extras/error
+                #:with-log-unhandled)
   (:import-from #:cl-telegram-bot2/api)
   (:import-from #:cl-telegram-bot2/bot
                 #:initial-state
@@ -228,13 +230,14 @@ FUNCTION."
 
 (defun get-or-create-chat-actor (bot chat-id)
   (flet ((local-process-update (update)
-           (let ((*current-bot* bot)
-                 (*token* (cl-telegram-bot2/bot::token bot))
-                 (*print-readably*
-                   ;; bordeaux-threads sets this var to T and this breaks logging
-                   ;; our objects. So we have to turn this off.
-                   nil))
-             (process-update bot update))))
+           (with-log-unhandled ()
+             (let ((*current-bot* bot)
+                   (*token* (cl-telegram-bot2/bot::token bot))
+                   (*print-readably*
+                     ;; bordeaux-threads sets this var to T and this breaks logging
+                     ;; our objects. So we have to turn this off.
+                     nil))
+               (process-update bot update)))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
