@@ -74,12 +74,12 @@
     yason:false))
 
 
-(-> to-json (t)
+(-> to-json (t &key (:indent (or null integer)))
     (values string &optional))
 
 
-(defun to-json (obj)
-  (with-output-to-string* ()
+(defun to-json (obj &key indent)
+  (with-output-to-string* (:indent indent)
     (yason:encode obj)))
 
 
