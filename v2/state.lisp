@@ -32,6 +32,7 @@
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-state*)
   (:import-from #:cl-telegram-bot2/callback
+                #:callback-matcher
                 #:callback-handlers
                 #:callback-data
                 #:callback)
@@ -53,6 +54,8 @@
                 #:on-after-object
                 #:after-object
                 #:render-objects-link)
+  (:import-from #:cl-telegram-bot2/match
+                #:matchp)
   (:export #:state
            #:on-activation
            #:on-update
@@ -191,9 +194,9 @@
       ;; find a handler for it:
       (callback-data
        (loop for callback in (on-callback-query state)
-             for expected-data = (callback-data callback)
+             for matcher = (callback-matcher callback)
              for workflow-blocks = (callback-handlers callback)
-             when (string= callback-data expected-data)
+             when (matchp matcher callback-data)
                do (return
                     ;; PROCESS should be repeated for actions and states
                     ;; from this list until we'll find a final action like BACK
