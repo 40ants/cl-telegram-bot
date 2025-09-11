@@ -23,7 +23,8 @@
            #:raw-data
            #:get-me
            #:last-name
-           #:get-user-info))
+           #:get-user-info
+           #:has-main-web-app-p))
 (in-package #:cl-telegram-bot/user)
 
 

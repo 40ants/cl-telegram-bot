@@ -197,5 +197,6 @@ And start communicating with him:
                                     ;; "CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
                                     ;; "CL-TELEGRAM-BOT2/API:INLINE-KEYBOARD-MARKUP"
                                     ;; "CL-TELEGRAM-BOT2/API:REPLY-KEYBOARD-MARKUP"
+                                    "HTTPS"
                                     "API")
                      :ignore-packages ("CL-TELEGRAM-BOT2/API")))

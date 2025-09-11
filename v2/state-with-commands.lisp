@@ -75,7 +75,7 @@
             :initform (required-argument ":HANDLER is required argument.")
             ;; TODO: make it a list of workflow-blocks and rename to the command-handlers
             :type command-handler
-            :documentation "An fbound symbol of two arguments (command-argument update-obj) or a workflow object to return from PROCESS generic-function."
+            :documentation "An fbound symbol of two arguments (command-argument update-obj) or a workflow object to return from PROCESS-STATE generic-function."
             :reader command-handler)
    (description :initarg :description
                 :initform nil
@@ -257,7 +257,7 @@
                                   handler)))
                              (handler-result
                                ;; Handler might return an action or a state
-                               ;; in first case we have to apply PROCESS to an action
+                               ;; in first case we have to apply PROCESS-STATE to an action
                                (call-if-action action-or-state
                                                (curry #'process-state bot)
                                                update)))

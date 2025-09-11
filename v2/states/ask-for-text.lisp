@@ -43,7 +43,8 @@
            #:var-name
            #:on-success
            #:on-validation-error
-           #:validation-regex))
+           #:prompt-keyboard
+           #:text-matcher))
 (in-package #:cl-telegram-bot2/states/ask-for-text)
 
 

@@ -15,7 +15,7 @@
 
 
 (defun call-if-action (obj func &rest args)
-  "Useful in CL-TELEGRAM-BOT2/GENERICS:PROCESS handlers in case if
+  "Useful in CL-TELEGRAM-BOT2/GENERICS:PROCESS-STATE generic-function methods in case if
    state has additional handler stored in the slot and this
    slot can be either state or action or a list of actions and states.
 
