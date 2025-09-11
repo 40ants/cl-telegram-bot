@@ -9,7 +9,6 @@
                 #:workflow-blocks)
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
                 #:to-text
-                #:slot-name
                 #:render-handlers)
   (:import-from #:cl-telegram-bot2/debug/diagram/utils
                 #:render-handlers-inner
@@ -59,8 +58,10 @@
                          (obj-id obj)))
 
 
-(defmethod slot-name ((obj callback))
-  (callback-data obj))
+;; NOTE: previously we used callback-data as slot name,
+;; but then this data slot was replaced with matcher.
+;; (defmethod slot-name ((obj callback))
+;;   (cl-telegram-bot2/callback:callback-data obj))
 
 
 (defmethod to-text ((command callback))

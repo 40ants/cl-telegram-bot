@@ -29,8 +29,6 @@
   (:import-from #:cl-telegram-bot2/utils
                 #:call-if-needed
                 #:call-with-one-or-zero-args)
-  (:import-from #:cl-telegram-bot2/vars
-                #:*current-state*)
   (:import-from #:cl-telegram-bot2/callback
                 #:callback-matcher
                 #:callback-handlers
@@ -49,11 +47,6 @@
                 #:slot-handlers
                 #:slot-name
                 #:slot)
-  (:import-from #:cl-telegram-bot2/debug/diagram/utils
-                #:obj-id
-                #:on-after-object
-                #:after-object
-                #:render-objects-link)
   (:import-from #:cl-telegram-bot2/match
                 #:matchp)
   (:export #:state

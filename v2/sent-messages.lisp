@@ -6,26 +6,6 @@
                 #:pretty-print-hash-table
                 #:dict
                 #:soft-list-of)
-  (:import-from #:cl-telegram-bot2/debug/diagram/group
-                #:group-name
-                #:group-slots
-                #:sort-slots-and-groups
-                #:group)
-  (:import-from #:cl-telegram-bot2/debug/diagram/utils
-                #:after-object
-                #:on-after-object
-                #:render-objects-link)
-  (:import-from #:cl-telegram-bot2/debug/diagram/slot
-                #:slot
-                #:slot-name
-                #:slot-handlers)
-  (:import-from #:sento.actor-cell
-                #:*state*)
-  (:import-from #:cl-telegram-bot2/debug/diagram/vars
-                #:*diagram-stream*)
-  (:import-from #:print-items
-                #:print-items
-                #:print-items-mixin)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
                 #:on-state-activation
@@ -39,15 +19,6 @@
   (:import-from #:cl-telegram-bot2/debug/diagram/utils
                 #:obj-id
                 #:render-mapslot-value-with-link)
-  (:import-from #:cl-telegram-bot2/debug/diagram/generics
-                #:to-text
-                #:get-slots
-                #:render-handlers
-                #:render-handler-link)
-  (:import-from #:cl-telegram-bot2/debug/diagram/vars
-                #:*name-to-state*
-                #:*id-to-state*
-                #:*state-to-name*)
   (:import-from #:cl-telegram-bot2/bot
                 #:bot)
   (:import-from #:cl-telegram-bot2/states/base

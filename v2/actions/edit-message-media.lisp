@@ -15,8 +15,6 @@
                 #:on-result
                 #:process-state
                 #:on-state-activation)
-  (:import-from #:cl-telegram-bot2/high
-                #:reply)
   (:import-from #:serapeum
                 #:soft-list-of
                 #:->)

@@ -3,12 +3,8 @@
   (:import-from #:cl-telegram-bot2/generics
                 #:process-state
                 #:on-state-activation)
-  (:import-from #:cl-telegram-bot2/state
-                #:base-state)
   (:import-from #:cl-telegram-bot2/states/base
                 #:state-var)
-  (:import-from #:cl-telegram-bot2/pipeline
-                #:back)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
   (:import-from #:cl-telegram-bot2/api
@@ -17,10 +13,6 @@
                 #:answer-pre-checkout-query
                 #:message-text
                 #:update-message)
-  (:import-from #:str
-                #:trim)
-  (:import-from #:serapeum
-                #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
                 #:call-if-action
                 #:action)
@@ -29,9 +21,6 @@
                 #:workflow-blocks)
   (:import-from #:cl-telegram-bot2/utils
                 #:call-if-needed)
-  (:import-from #:anaphora
-                #:it
-                #:aif)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:state-with-commands-mixin)
   (:import-from #:alexandria

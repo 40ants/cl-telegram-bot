@@ -2,8 +2,6 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
-  (:import-from #:cl-telegram-bot2/vars
-                #:*current-chat*)
   (:import-from #:cl-telegram-bot2/api
                 #:message-chat
                 #:update-message

@@ -1,8 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2/types
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/api)
-  (:import-from #:serapeum
-                #:soft-list-of)
   (:export #:reply-markup-type))
 (in-package #:cl-telegram-bot2/types)
 

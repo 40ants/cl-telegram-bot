@@ -26,16 +26,6 @@
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
-  (:import-from #:cl-telegram-bot2/generics
-                #:on-result
-                #:on-state-activation
-                #:process)
-  (:import-from #:cl-telegram-bot2/api
-                #:update
-                #:update-message
-                #:message-message-id)
-  (:import-from #:cl-telegram-bot2/high
-                #:collect-sent-messages)
   (:import-from #:cl-telegram-bot2/debug/diagram/utils
                 #:obj-id
                 #:render-mapslot-value-with-link)

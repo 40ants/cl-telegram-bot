@@ -23,8 +23,6 @@
                 #:dict
                 #:->
                 #:soft-list-of)
-  (:import-from #:cl-telegram-bot2/action
-                #:action)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
@@ -33,8 +31,6 @@
                 #:slot)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:state-with-commands-mixin)
-  (:import-from #:cl-ppcre
-                #:count-matches)
   (:import-from #:cl-telegram-bot2/match
                 #:matchp
                 #:matcher)
