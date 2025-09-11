@@ -22,6 +22,7 @@
   (:import-from #:serapeum
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
+                #:call-if-action
                 #:action)
   (:import-from #:cl-telegram-bot2/workflow
                 #:funcallable-symbol
@@ -43,14 +44,18 @@
 (defclass wait-for-payment (state-with-commands-mixin base-state)
   ((on-success :initarg :on-success
                :initform nil
-               :type workflow-blocks
-               :reader on-success)))
+               :type (or symbol
+                         workflow-blocks)
+               :reader on-success
+               :documentation "On success could be an fbound symbol which function returns a list of workflow blocks or a list of workflow blocks.")))
 
 
 (defun wait-for-payment (&key on-success commands)
   (make-instance 'wait-for-payment
-                 :on-success (uiop:ensure-list
-                              on-success)
+                 :on-success (typecase on-success
+                               (symbol on-success)
+                               (t
+                                (uiop:ensure-list on-success)))
                  :commands commands))
 
 
@@ -59,18 +64,28 @@
            (cl-telegram-bot2/api:update-message
             update))
          (successful-payment
-           (cl-telegram-bot2/api:message-successful-payment message)))
-    (when successful-payment
-      (cond
-        ((on-success state)
-         (cl-telegram-bot2/action:call-if-action
-          (call-if-needed (on-success state)
-                          successful-payment)
-          (curry #'process-state bot)
-          update))
-        (t
-         (error "There is no ON-SUCCESS handler for ~S state."
-                (type-of state)))))))
+           ;; Sometimes user might click a button again and update will have no
+           ;; a message at all, only callback-query.
+           (when message
+             (cl-telegram-bot2/api:message-successful-payment message))))
+
+    (cond
+      (successful-payment
+       (cond
+         ((on-success state)
+          (let ((action-or-state
+                  (call-if-needed (on-success state)
+                                  successful-payment)))
+            (call-if-action action-or-state
+                            (curry #'process-state bot)
+                            update)))
+         (t
+          (error "There is no ON-SUCCESS handler for ~S state."
+                 (type-of state)))))
+      (t
+       ;; TODO: Probably we should show a Back button if user just enters a text
+       ;; or does some callback calls while we are waiting for the payment?
+       (cl-telegram-bot2/high:reply "We are still waiting for the payment.")))))
 
 
 ;; (defmethod cl-telegram-bot2/generics:on-pre-checkout-query ((state wait-for-payment) (query pre-checkout-query))

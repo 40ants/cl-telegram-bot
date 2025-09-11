@@ -3,8 +3,8 @@
   (:import-from #:cl-telegram-bot2/action
                 #:action)
   (:import-from #:cl-telegram-bot2/generics
+                #:process-state
                 #:on-result
-                #:process
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
@@ -138,7 +138,7 @@
   (perform-action action))
 
 
-(defmethod process ((bot t) (action send-invoice) update)
+(defmethod process-state ((bot t) (action send-invoice) update)
   (perform-action action))
 
 

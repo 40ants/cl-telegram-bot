@@ -1,7 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/states/ask-for-number
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/generics
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/state
                 #:validate-on-deletion-arg
@@ -85,7 +85,7 @@
   (values))
 
 
-(defmethod process ((bot t) (state ask-for-number) update)
+(defmethod process-state ((bot t) (state ask-for-number) update)
   (let* ((message
            (update-message
             update))
@@ -103,13 +103,13 @@
                              (var-name state))
                   parsed)
             
-            (process bot
-                     (on-success state)
-                     update))
+            (process-state bot
+                           (on-success state)
+                           update))
            (t
-            (process bot
-                     (on-validation-error state)
-                     update)))))
+            (process-state bot
+                           (on-validation-error state)
+                           update)))))
       (t
        (values)))))
 

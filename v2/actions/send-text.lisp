@@ -54,7 +54,7 @@
 
 (-> send-text ((or string symbol)
                &key
-               (:reply-markup reply-markup-type)
+               (:reply-markup (or null reply-markup-type))
                (:parse-mode (or null string)))
     (values send-text &optional))
 

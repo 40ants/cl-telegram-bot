@@ -234,31 +234,18 @@
         thereis (etypecase obj
                   (symbol
                      (let ((maybe-other-action
-                             (call-with-one-or-zero-args obj update)
-                             ;; (cond
-                             ;;   ((fboundp obj)
-                             ;;    (case (arity obj)
-                             ;;      (0
-                             ;;         (funcall obj))
-                             ;;      (1
-                             ;;         ;; If function accepts a single argument,
-                             ;;         ;; then we call it with update object.
-                             ;;         ;; This way objects like web-app-data
-                             ;;         ;; could be processed.
-                             ;;         (funcall obj update))
-                             ;;      (otherwise
-                             ;;         (error "Unable to process ~A because function ~S requires ~A arguments."
-                             ;;                update
-                             ;;                obj
-                             ;;                (arity obj)))))
-                             ;;   (t
-                             ;;    (error "Symbol ~S should be funcallble."
-                             ;;           obj)))
-                             ))
+                             (call-with-one-or-zero-args obj update)))
                        (when maybe-other-action
-                         (process-state bot
-                                        maybe-other-action
-                                        update))))
+                         ;; An action might return a new state
+                         ;; or a final action BACK. In this case
+                         ;; we should not call another PROCESS-STATE on them.
+                         (typecase maybe-other-action
+                           (base-state maybe-other-action)
+                           (back maybe-other-action)
+                           (t
+                            (process-state bot
+                                           maybe-other-action
+                                           update))))))
                   (action
                      (process-state bot obj update))
                   ;; Here is a little kludge,

@@ -12,7 +12,7 @@
                 #:send-message)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
@@ -95,7 +95,7 @@
   (values))
 
 
-(defmethod process ((bot t) (action send-photo) update)
+(defmethod process-state ((bot t) (action send-photo) update)
   (send-reply action)
   (values))
 

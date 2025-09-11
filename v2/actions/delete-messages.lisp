@@ -14,7 +14,7 @@
   (:import-from #:cl-telegram-bot2/generics
                 #:on-state-deletion
                 #:on-result
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
@@ -86,7 +86,7 @@
   (values))
 
 
-(defmethod process ((bot t) (action delete-messages) update)
+(defmethod process-state ((bot t) (action delete-messages) update)
   (delete-created-messages action)
   (values))
 

@@ -64,7 +64,9 @@
        :initform nil
        :type (or null string)
        :reader state-id)
-   (vars :initform (dict)
+   (vars :initarg :vars
+         :initform (dict)
+         :type hash-table
          :reader state-vars)
    (sent-message-ids :initform nil
                      :accessor sent-message-ids)

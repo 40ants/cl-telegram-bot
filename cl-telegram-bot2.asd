@@ -19,7 +19,8 @@
                "cl-telegram-bot2/actions/send-photo"
                "cl-telegram-bot2/actions/send-text"
                "cl-telegram-bot2/matchers/string"
-               "cl-telegram-bot2/matchers/regex")
+               "cl-telegram-bot2/matchers/regex"
+               "cl-telegram-bot2/states/ask-for-text")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 

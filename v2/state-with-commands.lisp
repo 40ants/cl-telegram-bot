@@ -248,17 +248,20 @@
                when (string-equal command-name
                                   (command-name command))
                  do (return 
-                      (let ((handler (command-handler command)))
-                        ;; Handler might return an action or a state
-                        ;; in first case we have to apply PROCESS to an action
-                        (call-if-action
-                         (typecase handler
-                           ((or symbol function)
-                              (funcall handler rest-text update))
-                           (t
-                              handler))
-                         (curry #'process-state bot)
-                         update)))
+                      (let* ((handler (command-handler command))
+                             (action-or-state
+                               (typecase handler
+                                 ((or symbol function)
+                                  (funcall handler rest-text update))
+                                 (t
+                                  handler)))
+                             (handler-result
+                               ;; Handler might return an action or a state
+                               ;; in first case we have to apply PROCESS to an action
+                               (call-if-action action-or-state
+                                               (curry #'process-state bot)
+                                               update)))
+                        (values handler-result)))
                finally (log:warn "Command ~A cant be processed by state ~S"
                                  command-name
                                  (class-name
