@@ -1,6 +1,8 @@
 (uiop:define-package #:cl-telegram-bot2/pipeline
   (:use #:cl)
   (:import-from #:log)
+  (:import-from #:log4cl-extras/error
+                #:with-log-unhandled)
   (:import-from #:cl-telegram-bot2/api)
   (:import-from #:cl-telegram-bot2/bot
                 #:initial-state
@@ -9,12 +11,14 @@
                 #:get-last-update-id
                 #:bot)
   (:import-from #:cl-telegram-bot2/vars
+                #:*default-special-bindings*
                 #:*current-state*
                 #:*current-bot*
                 #:*current-user*)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-state-activation
-                #:process)
+                #:process-update
+                #:process-state)
   (:import-from #:cl-telegram-bot2/spec
                 #:telegram-object
                 #:*token*
@@ -22,7 +26,7 @@
   (:import-from #:serapeum
                 #:->
                 #:fmt)
-  (:import-from #:sento.actor
+  (:import-from #:sento.actor-cell
                 #:*state*)
   (:import-from #:sento.actor-context)
   (:import-from #:cl-telegram-bot2/vars
@@ -38,7 +42,10 @@
                 #:back-to
                 #:back-to-nth-parent)
   (:import-from #:cl-telegram-bot2/utils
-                #:deep-copy))
+                #:deep-copy)
+  (:import-from #:sento.actor)
+  (:import-from #:alexandria
+                #:named-lambda))
 (in-package cl-telegram-bot2/pipeline)
 
 
@@ -86,9 +93,11 @@
   (let* ((current-id (get-last-update-id bot))
          (*api-url* (api-uri bot))
          (*token* (token bot))
-         (updates (cl-telegram-bot2/api:get-updates :limit limit
-                                                    :offset current-id
-                                                    :timeout timeout)))
+         (updates (progn
+                    (log:debug "Requesting updates" current-id)
+                    (cl-telegram-bot2/api:get-updates :limit limit
+                                                      :offset current-id
+                                                      :timeout timeout))))
     
     (when updates
       (let ((max-id (reduce #'max
@@ -123,7 +132,7 @@
                                ;; Return no updates
                                (values)))
              do (restart-case
-                    (process bot update)
+                    (process-update-in-actor bot update)
                   (continue-processing (&optional delay)
                     :report "Continue processing updates from Telegram"
                     (when delay
@@ -152,6 +161,10 @@
 
 
 (defgeneric get-user (object)
+  (:documentation "Returns a use associated with object, author of the message.
+
+                   If found, it will be CL-TELEGRAM-BOT2/API:USER, otherwise - NIL.")
+  
   (:method ((object null))
     nil)
   
@@ -176,7 +189,7 @@
                                               slot-name)))))))
 
 
-(defmethod process ((bot bot) (update cl-telegram-bot2/api:update))
+(defun process-update-in-actor (bot update)
   "By default, just calls `process' on the payload."
   (log:debug "Processing update" update)
 
@@ -200,15 +213,31 @@
               update)))))
 
 
+(defun %compute-special-bindings (bindings)
+  (remove-duplicates bindings
+                     :from-end t :key #'car))
+
+(defun %establish-dynamic-env (function special-bindings)
+  "Return a closure that binds the symbols in SPECIAL-BINDINGS and calls
+FUNCTION."
+  (let* ((bindings (%compute-special-bindings special-bindings))
+         (specials (mapcar #'car bindings))
+         (values (mapcar (lambda (f) (eval (cdr f))) bindings)))
+    (named-lambda %call-with-dynamic-env (&rest args)
+      (progv specials values
+        (apply function args)))))
+
+
 (defun get-or-create-chat-actor (bot chat-id)
-  (flet ((local-process-chat-update (update)
-           (let ((*current-bot* bot)
-                 (*token* (cl-telegram-bot2/bot::token bot))
-                 (*print-readably*
-                   ;; bordeaux-threads sets this var to T and this breaks logging
-                   ;; our objects. So we have to turn this off.
-                   nil))
-             (process-chat-update update))))
+  (flet ((local-process-update (update)
+           (with-log-unhandled ()
+             (let ((*current-bot* bot)
+                   (*token* (cl-telegram-bot2/bot::token bot))
+                   (*print-readably*
+                     ;; bordeaux-threads sets this var to T and this breaks logging
+                     ;; our objects. So we have to turn this off.
+                     nil))
+               (process-update bot update)))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
@@ -225,79 +254,110 @@
                                   ;; to prevent results sharing between different chats
                                   (deep-copy
                                    (initial-state bot)))))
-                             (probably-new-state
-                               (on-state-activation initial-state))
+                             ;; TODO: here we call on-state activation
+                             ;; only once, however we should do this
+                             ;; until  new state is returned from
+                             ;; the call:
                              (state-stack
-                               (if (and probably-new-state
-                                        (not (eql initial-state
-                                                  probably-new-state)))
-                                   (list probably-new-state
-                                         initial-state)
-                                   (list initial-state))))
+                               (probably-switch-to-new-state
+                                initial-state
+                                nil)))
                         (log:info "Creating new actor with" actor-name)
                         (sento.actor-context:actor-of
                          system
                          :name actor-name
-                         :receive #'local-process-chat-update
+                         :receive (%establish-dynamic-env #'local-process-update
+                                                          *default-special-bindings*)
                          :state state-stack)))))
       (values actor))))
 
 
-(defun process-chat-update (update)
+(defun probably-switch-to-new-state (new-state state-stack)
+  "Returns two values, probably new stack as first value and a flag. If flag is NIL, then the state stack was not changed."
+  (let ((*current-state* (car state-stack)))
+    (cond
+      ((and new-state
+            (not (eql *current-state* new-state)))
+       (cond
+         ;; If next state is a symbol, we need to instantiate it
+         ;; using either as a function or as a class name:
+         ((symbolp new-state)
+          (probably-switch-to-new-state
+           (cond
+             ((fboundp new-state)
+              (funcall new-state))
+             (t
+              (make-instance new-state)))
+           state-stack))
+         ;; Processing BACK actions:
+         ((typep new-state 'back)
+          (let* ((result (cl-telegram-bot2/term/back:result new-state))
+                 ;; Result can be an fbound symbol and in this case we
+                 ;; neet to call it while we didn't change the current state.
+                 ;; This way a custom code may be used to calculate
+                 ;; result before it will be passed to some previous state.
+                 (result (cond
+                           ((and (symbolp result)
+                                 (fboundp result))
+                            (funcall result))
+                           (t
+                            result))))
+
+            (multiple-value-bind (states-to-delete new-stack)
+                (split-stack new-state state-stack)
+               
+              (unless new-stack
+                (error "Unexpected behaviour - no states left in the stack."))
+
+              (loop for state-to-delete in states-to-delete
+                    do (let ((*current-state* state-to-delete))
+                         (cl-telegram-bot2/generics:on-state-deletion state-to-delete)))
+              
+              (let ((*current-state* (car new-stack))
+                    (*state* new-stack))
+                (log:debug "New state is ~A" *current-state*)
+                 
+                (let* ((on-result-return-value
+                         ;; We need to call ON-RESULT handler
+                         ;; when the state to which we have returned
+                         ;; is bound to current-state, because
+                         ;; handler can send new messages and
+                         ;; we need them to be saved inside the message
+                         ;; to which we've returned:
+                         (cl-telegram-bot2/generics:on-result *current-state*
+                                                              ;; Result might be empty
+                                                              result)))
+                  (probably-switch-to-new-state on-result-return-value
+                                                new-stack))))))
+         ((typep new-state 'base-state)
+          (log:debug "New state is ~A" new-state)
+           
+          (let ((*state* (list* new-state
+                                state-stack))
+                (*current-state* new-state))
+            (probably-switch-to-new-state
+             (on-state-activation new-state)
+             *state*)))
+         (t
+          (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
+                    new-state)
+          (values state-stack
+                  nil))))
+      (t
+       (values state-stack
+               nil)))))
+
+
+(defmethod process-update ((bot bot) (update cl-telegram-bot2/api:update))
   (handler-bind ((serious-condition #'invoke-debugger))
     (log:info "Processing chat update"
               update)
     (let* ((*current-state* (car *state*))
            (*current-chat* (get-chat update))
            (*current-user* (get-user update))
-           (new-state (process *current-state* update)))
+           (new-state (process-state bot *current-state* update)))
 
-      (labels ((probably-switch-to-new-state (new-state)
-                 (let ((*current-state* (car *state*)))
-                   (when (and new-state
-                              (not (eql *current-state* new-state)))
-                     
-                     (cond
-                       ;; If next state is a symbol, we need to instantiate it:
-                       ((symbolp new-state)
-                        (probably-switch-to-new-state
-                         (make-instance new-state)))
-                       ((typep new-state 'back)
-                        (let* ((result (cl-telegram-bot2/term/back:result new-state)))
-
-                          (multiple-value-bind (states-to-delete new-stack)
-                              (split-stack new-state *state*)
-                            
-                            (unless new-stack
-                              (error "Unexpected behaviour - no states left in the stack."))
-
-                            (let ((state-to-which-return (car new-stack)))
-                          
-                              (setf *state*
-                                    new-stack)
-
-                              (log:debug "New state is ~A" (car *state*))
-                          
-                              (loop for state-to-delete in states-to-delete
-                                    do (cl-telegram-bot2/generics:on-state-deletion state-to-delete))
-                          
-                              (let ((on-result-return-value
-                                      (cl-telegram-bot2/generics:on-result state-to-which-return
-                                                                           ;; Result might be empty
-                                                                           result)))
-                                (probably-switch-to-new-state on-result-return-value))))))
-                       ((typep new-state 'base-state)
-                        (setf *state*
-                              (list* new-state
-                                     *state*))
-
-                        (log:debug "New state is ~A" (car *state*))
-                        
-                        (probably-switch-to-new-state
-                         (on-state-activation new-state)))
-                       (t
-                        (log:warn "Object ~S is not of BASE-STATE class and can't be pushed to the states stack."
-                                  new-state)))))))
-        (probably-switch-to-new-state new-state)))
+      (setf *state*
+            (probably-switch-to-new-state new-state *state*)))
     (values)))
 

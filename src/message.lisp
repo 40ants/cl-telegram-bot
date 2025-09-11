@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot/message
   (:use #:cl)
-  (:import-from #:log4cl)
+  (:import-from #:log)
+  (:import-from #:arrows)
   (:import-from #:cl-telegram-bot/chat
                 #:get-chat-id
                 #:make-chat
@@ -15,6 +16,7 @@
   (:import-from #:cl-telegram-bot/bot
                 #:bot)
   (:import-from #:serapeum
+                #:->
                 #:defvar-unbound)
   (:import-from #:cl-telegram-bot/utils
                 #:split-by-lines
@@ -89,7 +91,8 @@
            #:voice
            #:voice-message
            #:get-sender-chat
-           #:get-current-bot))
+           #:get-current-bot
+           #:get-message-user-id))
 (in-package cl-telegram-bot/message)
 
 
@@ -839,3 +842,14 @@ https://core.telegram.org/bots/api#sendsticker"
     (error "Seems (get-current-chat) was called outside of processing pipeline, because no current message is available."))
 
   (get-chat *current-message*))
+
+
+(-> get-message-user-id (message)
+    (values integer &optional))
+
+(defun get-message-user-id (message)
+  "Returns id of the message's author."
+  (or (arrows:-> (get-raw-data message)
+          (getf :|from|)
+          (getf :|id|))
+      (error "Unable to get author's id from message.")))

@@ -2,7 +2,7 @@
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-state-deletion
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/state
                 #:base-state)
@@ -38,15 +38,30 @@
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
-  (:export #:ask-for-choice))
+  (:import-from #:cl-telegram-bot2/state
+                #:state)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot)
+  (:export #:ask-for-choice
+           #:prompt
+           #:var-name
+           #:buttons
+           #:on-success
+           #:on-wrong-user-message
+           #:delete-messages-p
+           #:delete-wrong-user-messages-p
+           #:message-ids-to-delete))
 (in-package #:cl-telegram-bot2/states/ask-for-choice)
 
 
 (defparameter *default-var-name* "result")
 
 
-
-(defclass ask-for-choice (base-state)
+;; To allow this state process global commands, we need
+;; to inherit it from state-with-commands-mixin.
+(defclass ask-for-choice (state)
   ((prompt :initarg :prompt
            :type (or string symbol)
            :reader prompt)
@@ -138,7 +153,7 @@
   (values))
 
 
-(defmethod process ((state ask-for-choice) (update update))
+(defmethod process-state ((bot t) (state ask-for-choice) (update update))
   (let* ((callback (cl-telegram-bot2/api:update-callback-query update))
          (callback-data
            (when callback
@@ -150,8 +165,9 @@
                         (var-name state))
              callback-data)
       
-       (prog1 (process (on-success state)
-                       update)
+       (prog1 (process-state bot
+                             (on-success state)
+                             update)
          (delete-created-messages state)))
       (t
        ;; Here we are saving user message to delete it later
@@ -163,8 +179,9 @@
        
        (multiple-value-bind (sent-messages result)
            (collect-sent-messages
-             (process (on-wrong-user-message state)
-                      update))
+             (process-state bot
+                            (on-wrong-user-message state)
+                            update))
          (when (delete-messages-p state)
            (loop for message in sent-messages
                  do (push (message-message-id message)
@@ -175,3 +192,14 @@
 (defmethod on-state-deletion ((state ask-for-choice))
   (delete-created-messages state)
   (values))
+
+
+(defmethod get-slots ((state ask-for-choice))
+  (append
+   (loop for slot-name in (list
+                           'on-success
+                           'on-wrong-user-message)
+         collect
+         (slot (string-downcase slot-name)
+               (slot-value state slot-name)))
+   (call-next-method)))

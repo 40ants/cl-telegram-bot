@@ -1,27 +1,13 @@
 (uiop:define-package #:cl-telegram-bot/commands
   (:use #:cl)
-  (:import-from #:log4cl)
-  (:import-from #:cl-telegram-bot/chat
-                #:get-chat-id
-                #:make-chat
-                #:chat)
-  (:import-from #:cl-telegram-bot/entities/core
-                #:make-entity)
+  (:import-from #:log)
   (:import-from #:cl-telegram-bot/network
                 #:make-request)
-  (:import-from #:cl-telegram-bot/pipeline
-                #:process)
   (:import-from #:cl-telegram-bot/bot
                 #:bot)
   (:import-from #:serapeum
                 #:soft-alist-of
-                #:defvar-unbound)
-  (:import-from #:cl-telegram-bot/utils
-                #:def-telegram-call)
-  (:import-from #:cl-telegram-bot/response-processing
-                #:process-response
-                #:interrupt-processing)
-  (:export))
+                #:defvar-unbound))
 (in-package #:cl-telegram-bot/commands)
 
 

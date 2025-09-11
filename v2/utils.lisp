@@ -15,36 +15,71 @@
            #:deep-copy
            #:arity
            #:from-json
-           #:to-json))
+           #:to-json
+           #:call-with-one-or-zero-args))
 (in-package #:cl-telegram-bot2/utils)
-
-
-(defun call-if-needed (value &rest args)
-  "If value is a fbound SYMBOL, then calls as a function and then returns a result."
-  (typecase value
-    (symbol
-     (if (fboundp value)
-         (apply value args)
-         value))
-    (t
-     value)))
-
 
 
 (-> arity ((or symbol function))
     (values non-negative-fixnum &optional))
+
+
 
 (defun arity (funcallable)
   (length (required-lambda-vars
            (arglist funcallable))))
 
 
-(-> to-json (t)
+(defun call-if-needed (value &rest args)
+  "If value is a fbound SYMBOL, then calls as a function and then returns a result."
+  (typecase value
+    (symbol
+       (if (fboundp value)
+         (apply value args)
+         value))
+    (t
+       value)))
+
+
+(defun call-with-one-or-zero-args (symbol arg)
+  "If value is a fbound SYMBOL, then calls as a function with given ARG or without it depending on function arity."
+  (cond
+    ((fboundp symbol)
+     (case (arity symbol)
+       (0
+          (funcall symbol))
+       (1
+          ;; If function accepts a single argument,
+          ;; then we call it with arg.
+          ;; This way args like web-app-data
+          ;; could be processed.
+          (funcall symbol arg))
+       (otherwise
+          (error "Unable to process ~A because function ~S requires ~A arguments."
+                 arg
+                 symbol
+                 (arity symbol)))))
+    (t
+     (error "Symbol ~S should be funcallble."
+            symbol))))
+
+
+(-> bool-value-to-symbol (t)
+    (values (member yason:true yason:false)
+            &optional))
+
+(defun bool-value-to-symbol (value)
+  (if value
+    yason:true
+    yason:false))
+
+
+(-> to-json (t &key (:indent (or null integer)))
     (values string &optional))
 
 
-(defun to-json (obj)
-  (with-output-to-string* ()
+(defun to-json (obj &key indent)
+  (with-output-to-string* (:indent indent)
     (yason:encode obj)))
 
 
@@ -52,7 +87,8 @@
     (values t &optional))
 
 (defun from-json (string)
-  (yason:parse string))
+  (yason:parse string
+               :json-arrays-as-vectors t))
 
 
 

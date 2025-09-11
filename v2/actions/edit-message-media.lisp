@@ -13,10 +13,8 @@
                 #:send-message)
   (:import-from #:cl-telegram-bot2/generics
                 #:on-result
-                #:process
+                #:process-state
                 #:on-state-activation)
-  (:import-from #:cl-telegram-bot2/high
-                #:reply)
   (:import-from #:serapeum
                 #:soft-list-of
                 #:->)
@@ -80,26 +78,31 @@
         (message-id (first (sent-message-ids *current-state*)))
         (chat-id (chat-id *current-chat*)))
     
-    (cl-telegram-bot2/api:edit-message-media
-     (make-instance 'cl-telegram-bot2/api:input-media-photo
-                    :type "photo"
-                    :media path
-                    ;; These options aren't supported yet
-                    ;; has_spoiler
-                    ;; show_caption_above_media
-                    ;; parse_mode
-                    ;; caption_entities
-                    :caption caption)
-     :chat-id chat-id
-     :message-id message-id
-     :reply-markup
-     (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
-                    :inline-keyboard
-                    (list
-                     (loop for button in buttons
-                           collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
-                                                  :text button
-                                                  :callback-data button)))))))
+    (cond
+      (message-id
+       (cl-telegram-bot2/api:edit-message-media
+        (make-instance 'cl-telegram-bot2/api:input-media-photo
+                       :type "photo"
+                       :media path
+                       ;; These options aren't supported yet
+                       ;; has_spoiler
+                       ;; show_caption_above_media
+                       ;; parse_mode
+                       ;; caption_entities
+                       :caption caption)
+        :chat-id chat-id
+        :message-id message-id
+        :reply-markup
+        (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
+                       :inline-keyboard
+                       (list
+                        (loop for button in buttons
+                              collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
+                                                     :text button
+                                                     :callback-data button))))))
+      (t
+       (log:warn "There is no message-ids to edit in the"
+                 *current-state*)))))
 
 
 (defmethod on-state-activation ((action edit-message-media))
@@ -107,7 +110,7 @@
   (values))
 
 
-(defmethod process ((action edit-message-media) update)
+(defmethod process-state ((bot t) (action edit-message-media) update)
   (send-reply action)
   (values))
 

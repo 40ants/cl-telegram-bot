@@ -15,9 +15,9 @@
   },
   "jobs": {
     "build-docs": {
-      "runs-on": "ubuntu-latest",
+      "runs-on": "ubuntu-24.04",
       "env": {
-        "OS": "ubuntu-latest",
+        "OS": "ubuntu-24.04",
         "QUICKLISP_DIST": "quicklisp",
         "LISP": "sbcl-bin"
       },
@@ -34,6 +34,16 @@
             "dynamic-space-size": "4gb",
             "cache": "true"
           }
+        },
+        {
+          "name": "Install PlantUML",
+          "run": "sudo apt-get install -y plantuml",
+          "shell": "bash"
+        },
+        {
+          "name": "Update PlantUML",
+          "run": "sudo curl --output /usr/share/plantuml/plantuml.jar -L https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-mit-1.2024.8.jar",
+          "shell": "bash"
         },
         {
           "name": "Build Docs",

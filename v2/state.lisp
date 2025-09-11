@@ -1,23 +1,24 @@
 (uiop:define-package #:cl-telegram-bot2/state
   (:use #:cl)
   (:import-from #:serapeum
+                #:fmt
                 #:->
                 #:pretty-print-hash-table
                 #:dict
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
+                #:call-if-action
                 #:action)
   (:import-from #:cl-telegram-bot2/generics
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back)
-  (:import-from #:sento.actor
-                #:*state*)
   (:import-from #:print-items
                 #:print-items
                 #:print-items-mixin)
   (:import-from #:cl-telegram-bot2/state-with-commands
+                #:state-commands
                 #:command
                 #:state-with-commands-mixin)
   (:import-from #:cl-telegram-bot2/states/base
@@ -26,23 +27,43 @@
                 #:workflow-block
                 #:workflow-blocks)
   (:import-from #:cl-telegram-bot2/utils
-                #:arity)
+                #:call-if-needed
+                #:call-with-one-or-zero-args)
+  (:import-from #:cl-telegram-bot2/callback
+                #:callback-matcher
+                #:callback-handlers
+                #:callback-data
+                #:callback)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:render-handlers
+                #:to-text
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/group
+                #:group-name
+                #:group-slots
+                #:sort-slots-and-groups
+                #:group)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot-handlers
+                #:slot-name
+                #:slot)
+  (:import-from #:cl-telegram-bot2/match
+                #:matchp)
   (:export #:state
            #:on-activation
            #:on-update
            #:on-result
            #:on-callback-query
            #:on-web-app-data
-           #:callback-query-handlers))
+           #:callback-query-handlers
+           #:validate-on-deletion-arg
+           #:on-deletion))
 (in-package #:cl-telegram-bot2/state)
 
 
 (deftype callback-query-handlers ()
   "Type of ON-CALLBACK-QUERY argument of the STATE class."
-  '(serapeum:soft-alist-of string
-    (or 
-     workflow-block
-     workflow-blocks)))
+  '(soft-list-of callback))
 
 
 (defclass state (state-with-commands-mixin base-state)
@@ -54,6 +75,14 @@
               :type workflow-blocks
               :initform nil
               :reader on-update)
+   (on-deletion :initarg :on-deletion
+                :type workflow-blocks
+                :initform nil
+                :reader on-deletion
+                :documentation "Result of these handlers is ignored, but they can be used for side-effects.
+
+                                Generic-function cl-telegram-bot2/generics:on-state-deletion will be
+                                called on these handlers.")
    (on-result :initarg :on-result
               :type workflow-blocks
               :initform nil
@@ -69,15 +98,37 @@
 
 
 (defmethod print-items append ((state state))
-  (append
-   (when (on-activation state)
-     (list (list :on-activation
-                 " on-activation = ~S"
-                 (on-activation state))))
-   (when (on-update state)
-     (list (list :on-update
-                 " on-update = ~S"
-                 (on-update state))))))
+  (macrolet ((handler (accessor-name)
+               `(when (,accessor-name state)
+                  (list (list (alexandria:make-keyword ',accessor-name)
+                              " ~A = ~S"
+                              (string-downcase ',accessor-name)
+                              (,accessor-name state))))))
+    (append
+     (handler on-activation)
+     (handler on-update)
+     (handler on-deletion)
+     (handler on-result)
+     (handler on-callback-query)
+     (handler on-web-app-data))))
+
+
+(-> validate-on-deletion-arg ((or null
+                                  workflow-block
+                                  workflow-blocks))
+    (values workflow-blocks &optional))
+
+(defun validate-on-deletion-arg (on-deletion)
+  "Validates if argument is valid for passing as :ON-DELETION argument to the state constructor.
+
+   It also normalizes an argument and return it as a list of workflow blocks."
+  (let ((on-deletion (uiop:ensure-list on-deletion)))
+    (loop for block in on-deletion
+          unless (typep block
+                        '(or action symbol))
+            do (error "Blocks of type ~S can't be used as handlers for state deletion."
+                      (type-of block)))
+    (values on-deletion)))
 
 
 (-> state ((or workflow-block
@@ -90,21 +141,25 @@
            (:on-update (or null
                            workflow-block
                            workflow-blocks))
+           (:on-deletion (or null
+                             workflow-block
+                             workflow-blocks))
            (:on-result (or null
                            workflow-block
                            workflow-blocks))
            (:on-callback-query callback-query-handlers)
            (:on-web-app-data (or null
-                                workflow-block
-                                workflow-blocks)))
+                                 workflow-block
+                                 workflow-blocks)))
     (values state &optional))
 
-(defun state (on-activation &key id commands on-update on-result on-callback-query on-web-app-data)
+(defun state (on-activation &key id commands on-update on-deletion on-result on-callback-query on-web-app-data)
   (make-instance 'state
                  :id id
                  :commands (uiop:ensure-list commands)
                  :on-activation (uiop:ensure-list on-activation)
                  :on-update (uiop:ensure-list on-update)
+                 :on-deletion (validate-on-deletion-arg on-deletion)
                  :on-result (uiop:ensure-list on-result)
                  :on-callback-query on-callback-query
                  :on-web-app-data (uiop:ensure-list on-web-app-data)))
@@ -113,13 +168,16 @@
 (defmethod on-state-activation ((state state))
   (loop for obj in (on-activation state)
         thereis (typecase obj
+                  (symbol
+                     (on-state-activation
+                      (call-if-needed obj)))
                   (action
-                   (on-state-activation obj))
+                     (on-state-activation obj))
                   (t
-                   obj))))
+                     obj))))
 
 
-(defmethod process ((state state) update)
+(defmethod process-state (bot (state state) update)
   (let* ((callback (cl-telegram-bot2/api:update-callback-query update))
          (callback-data
            (when callback
@@ -128,51 +186,71 @@
       ;; If user pushed an inline keyboard button, then we'll try to
       ;; find a handler for it:
       (callback-data
-       (loop for (expected-value . workflow-blocks) in (on-callback-query state)
-             when (string= callback-data expected-value)
-               do (return (process workflow-blocks update))))
+       (loop for callback in (on-callback-query state)
+             for matcher = (callback-matcher callback)
+             for workflow-blocks = (callback-handlers callback)
+             when (matchp matcher callback-data)
+               do (return
+                    ;; PROCESS should be repeated for actions and states
+                    ;; from this list until we'll find a final action like BACK
+                    ;; or a state to switch to.
+
+                    ;; NOTE:
+                    ;; PROCESS works differently when it is processing
+                    ;; a list - it only executes actions and returns states as is.
+                    ;; So here we should ensure a list is passed:
+                    (process-state bot
+                                   (uiop:ensure-list workflow-blocks)
+                                   update))))
       ;; Otherwise call an ON-UPDATE action.
       (t
-       (let* ((message (cl-telegram-bot2/api:update-message update))
-              (web-app-data (cl-telegram-bot2/api:message-web-app-data message)))
+       (let* ((message (or
+                        (cl-telegram-bot2/api:update-message update)
+                        (cl-telegram-bot2/api:update-edited-message update)
+                        (cl-telegram-bot2/api:update-channel-post update)
+                        (cl-telegram-bot2/api:update-edited-channel-post update)))
+              (web-app-data (when message
+                              (cl-telegram-bot2/api:message-web-app-data message))))
          (cond
            (web-app-data
-            (process (on-web-app-data state)
-                     web-app-data))
+            (process-state bot
+                           (on-web-app-data state)
+                           web-app-data))
            (t
-            (process (on-update state)
-                     update))))))))
+            (process-state bot
+                           (on-update state)
+                           update))))))))
 
 
-(defmethod process ((items list) update)
+(defmethod process-state ((bot t) (items list) update)
   (loop for obj in items
         thereis (etypecase obj
                   (symbol
                      (let ((maybe-other-action
-                             (cond
-                               ((fboundp obj)
-                                (case (arity obj)
-                                  (0
-                                     (funcall obj))
-                                  (1
-                                     ;; If function accepts a single argument,
-                                     ;; then we call it with update object.
-                                     ;; This way objects like web-app-data
-                                     ;; could be processed.
-                                     (funcall obj update))
-                                  (otherwise
-                                     (error "Unable to process ~A because function ~S requires ~A arguments."
-                                            update
-                                            obj
-                                            (arity obj)))))
-                               (t
-                                (error "Symbol ~S should be funcallble."
-                                       obj)))))
+                             (call-with-one-or-zero-args obj update)))
                        (when maybe-other-action
-                         (process maybe-other-action
-                                  update))))
+                         ;; An action might return a new state
+                         ;; or a final action BACK. In this case
+                         ;; we should not call another PROCESS-STATE on them.
+                         (typecase maybe-other-action
+                           (base-state maybe-other-action)
+                           (back maybe-other-action)
+                           (t
+                            (process-state bot
+                                           maybe-other-action
+                                           update))))))
                   (action
-                     (process obj update))
+                     (process-state bot obj update))
+                  ;; Here is a little kludge,
+                  ;; PROCESS-STATE is only called once on the current action
+                  ;; and if it returns a list, then we don't need
+                  ;; to call PROCESS-STATE on the state in the list again,
+                  ;; because this is the state to switch to, not to
+                  ;; process the UPDATE.
+                  ;;
+                  ;; QUESTION:
+                  ;; Probably these should be separate functions
+                  ;; like PROCESS-UPDATE and PROCESS-ACTIONS?
                   (base-state
                      obj)
                   (back
@@ -180,7 +258,7 @@
 
 
 
-(defmethod process ((item symbol) update)
+(defmethod process-state (bot (item symbol) update)
   (cond
     ((null item)
      ;; We don't need to do anything to process NIL items.
@@ -191,11 +269,33 @@
      ;; using some dynamic variable, because
      ;; some callbacks might be called when update is not available
      ;; yet, for example, on state activation.
-     (process (funcall item)
-              update))
+     (process-state bot
+                    (funcall item)
+                    update))
     (t
      (error "Symbol ~S should be funcallable to process update."
             item))))
+
+
+(defmethod cl-telegram-bot2/generics:on-state-deletion ((state state))
+  (cl-telegram-bot2/generics:on-state-deletion (on-deletion state)))
+
+
+(defmethod cl-telegram-bot2/generics:on-state-deletion ((workflow-blocks list))
+  "Processing list of actions."
+  ;; Only actions and symbols are accepted as handlers for state deletion.
+  (loop for block in workflow-blocks
+        do (typecase block
+             (action
+                (cl-telegram-bot2/generics:on-state-deletion block))
+             (symbol
+                (funcall block))
+             ;; There should be a check in the constructor,
+             ;; but I'll leave this additional check here:
+             (t
+                (error "Blocks of type ~S can't be used as handlers for state deletion."
+                       (type-of block)))))
+  (values))
 
 
 (defmethod cl-telegram-bot2/generics:on-result ((state state) result)
@@ -212,25 +312,27 @@
                      ;; another action which should be processed
                      ;; in it's turn
                      (let ((maybe-other-action
-                             (cond
-                               ((fboundp obj)
-                                (case (arity obj)
-                                  (0
-                                     (funcall obj))
-                                  (1
-                                     ;; If function accepts a single argument,
-                                     ;; then we call it with update object.
-                                     ;; This way objects like web-app-data
-                                     ;; could be processed.
-                                     (funcall obj result))
-                                  (otherwise
-                                     (error "Unable to process ~A because function ~S requires ~A arguments."
-                                            result
-                                            obj
-                                            (arity obj)))))
-                               (t
-                                (error "Symbol ~S should be funcallble."
-                                       obj)))))
+                             (call-with-one-or-zero-args obj result)
+                             ;; (cond
+                             ;;   ((fboundp obj)
+                             ;;    (case (arity obj)
+                             ;;      (0
+                             ;;         (funcall obj))
+                             ;;      (1
+                             ;;         ;; If function accepts a single argument,
+                             ;;         ;; then we call it with update object.
+                             ;;         ;; This way objects like web-app-data
+                             ;;         ;; could be processed.
+                             ;;         (funcall obj result))
+                             ;;      (otherwise
+                             ;;         (error "Unable to process ~A because function ~S requires ~A arguments."
+                             ;;                result
+                             ;;                obj
+                             ;;                (arity obj)))))
+                             ;;   (t
+                             ;;    (error "Symbol ~S should be funcallble."
+                             ;;           obj)))
+                             ))
                        (when maybe-other-action
                          (cl-telegram-bot2/generics:on-result
                           maybe-other-action
@@ -241,3 +343,21 @@
                      obj)
                   (back
                      obj))))
+
+
+(defmethod get-slots ((state state))
+    (list*
+     (group "Commands"
+            (state-commands state))
+     (group "Callbacks"
+            (on-callback-query state))
+     (loop for slot-name in (list
+                             'on-activation
+                             'on-update
+                             'on-deletion
+                             'on-result
+                             'on-web-app-data)
+           collect
+           (slot (string-downcase slot-name)
+                 (slot-value state slot-name)))))
+

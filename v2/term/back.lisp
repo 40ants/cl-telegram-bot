@@ -5,7 +5,12 @@
   (:import-from #:serapeum
                 #:->)
   (:import-from #:cl-telegram-bot2/generics
-                #:process)
+                #:process-state)
+  (:import-from #:cl-telegram-bot2/debug/diagram/utils
+                #:find-state-by-id)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:to-text
+                #:render-handler-link)
   (:export #:back
            #:back-to
            #:back-to-nth-parent
@@ -81,8 +86,29 @@
                  :result result))
 
 
-(defmethod process ((item back) update)
+(defmethod print-object ((obj back-to-id) stream)
+  (print-unreadable-object (obj stream :type t :identity t)
+    (format stream "~S"
+            (parent-id obj))))
+
+
+(defmethod process-state (bot (item back) update)
   ;; If a some action returns a BACK object when processing a list of actions,
-  ;; then PROCESS generic-function will be called on it again
+  ;; then PROCESS-STATE generic-function will be called on it again
   ;; and in this case we should return the same BACK object to interrupt the list processing
   (values item))
+
+
+(defmethod render-handler-link ((action back-to-id))
+
+    (let* ((parent-id (parent-id action))
+           (state (or (find-state-by-id parent-id)
+                      (error "Unable to find state with id ~S."
+                             parent-id))))
+      (render-handler-link state)))
+
+
+(defmethod to-text ((action back))
+  ;; We don't render back blocks explicintly, replacing the
+  ;; with a link between handler in the map and the state\
+  (values))

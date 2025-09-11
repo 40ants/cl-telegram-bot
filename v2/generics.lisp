@@ -3,35 +3,44 @@
   (:import-from #:cl-telegram-bot2/api
                 #:pre-checkout-query)
   (:import-from #:log)
-  (:export
-   #:process
-   #:on-state-activation
-   #:on-state-deletion
-   #:on-result
-   #:on-pre-checkout-query))
+  (:export #:process-update
+           #:process-state
+           #:on-state-activation
+           #:on-state-deletion
+           #:on-result
+           #:on-pre-checkout-query))
 (in-package #:cl-telegram-bot2/generics)
 
 
-(defgeneric process (bot-or-state object)
+(defgeneric process-update (bot update)
+  (:documentation "This generic-function will be called inside an actor.
+
+                   Default method resposible for extracting the current state from the stack
+                   and calling PROCESS-STATE generic-function to get a new state."))
+
+(defgeneric process-state (bot state object)
   (:documentation "This method is called by when processing a single update.
                    It is called multiple times on different parts of an update.
                    Whole pipeline looks like that:
 
                    For each update we call:
-                     process(bot, update)
-                     process(actor-state, update)
+
+                   ```
+                   process-update(bot, update)
+                   new_state = process-state(bot, current_state, update)
+                   ```
                    "))
 
 
-(defmethod process (bot-or-state object)
+(defmethod process-state (bot state object)
   "By default, processing does nothing"
-  (log:warn "No PROCESS method for processing objects like ~A by ~A."
+  (log:warn "No PROCESS-STATE method for processing objects like ~A by ~A."
             object
-            (type-of bot-or-state))
+            (type-of state))
   (values))
 
 
-(defmethod process :around (bot-or-state object)
+(defmethod process-state :around (bot bot-or-state object)
   "By default, processing does nothing"
   (log:debug "Calling PROCESS method for processing objects of ~A type by ~A: ~S"
              (type-of object)

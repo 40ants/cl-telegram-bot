@@ -23,7 +23,8 @@
            #:raw-data
            #:get-me
            #:last-name
-           #:get-user-info))
+           #:get-user-info
+           #:has-main-web-app-p))
 (in-package #:cl-telegram-bot/user)
 
 
@@ -69,6 +70,10 @@
                     :type boolean
                     :initform nil
                     :reader can-join-groups-p)
+   (has-main-web-app :initarg :has-main-web-app
+                     :type boolean
+                     :initform nil
+                     :reader has-main-web-app-p)
    (raw-data :initarg :raw-data
              :reader raw-data)))
 

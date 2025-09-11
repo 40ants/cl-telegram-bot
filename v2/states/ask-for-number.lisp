@@ -1,9 +1,10 @@
 (uiop:define-package #:cl-telegram-bot2/states/ask-for-number
   (:use #:cl)
   (:import-from #:cl-telegram-bot2/generics
-                #:process
+                #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/state
+                #:validate-on-deletion-arg
                 #:base-state)
   (:import-from #:cl-telegram-bot2/states/base
                 #:state-var)
@@ -20,14 +21,26 @@
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
-  (:export #:ask-for-number))
+  (:import-from #:cl-telegram-bot2/state
+                #:state)
+  (:import-from #:cl-telegram-bot2/debug/diagram/generics
+                #:get-slots)
+  (:import-from #:cl-telegram-bot2/debug/diagram/slot
+                #:slot)
+  (:export #:ask-for-number
+           #:prompt
+           #:var-name
+           #:on-success
+           #:on-validation-error))
 (in-package #:cl-telegram-bot2/states/ask-for-number)
 
 
 (defparameter *default-var-name* "result")
 
 
-(defclass ask-for-number (base-state)
+;; To allow this state process global commands, we need
+;; to inherit it from state-with-commands-mixin.
+(defclass ask-for-number (state)
   ((prompt :initarg :prompt
            :type string
            :reader prompt)
@@ -51,16 +64,20 @@
                         :reader on-validation-error)))
 
 
-(defun ask-for-number (prompt &key (to *default-var-name*)
-                                   on-success
-                                   on-validation-error)
+(defun ask-for-number (prompt &key
+                              (to *default-var-name*)
+                              on-success
+                              on-validation-error
+                              on-deletion)
+
   (make-instance 'ask-for-number
                  :prompt prompt
                  :to to
                  :on-success (uiop:ensure-list
                               on-success)
                  :on-validation-error (uiop:ensure-list
-                              on-validation-error)))
+                                       on-validation-error)
+                 :on-deletion (validate-on-deletion-arg on-deletion)))
 
 
 (defmethod on-state-activation ((state ask-for-number))
@@ -68,7 +85,7 @@
   (values))
 
 
-(defmethod process ((state ask-for-number) update)
+(defmethod process-state ((bot t) (state ask-for-number) update)
   (let* ((message
            (update-message
             update))
@@ -86,10 +103,23 @@
                              (var-name state))
                   parsed)
             
-            (process (on-success state)
-                     update))
+            (process-state bot
+                           (on-success state)
+                           update))
            (t
-            (process (on-validation-error state)
-                     update)))))
+            (process-state bot
+                           (on-validation-error state)
+                           update)))))
       (t
        (values)))))
+
+
+(defmethod get-slots ((state ask-for-number))
+  (append
+   (loop for slot-name in (list
+                           'on-success
+                           'on-validation-error)
+         collect
+         (slot (string-downcase slot-name)
+               (slot-value state slot-name)))
+   (call-next-method)))

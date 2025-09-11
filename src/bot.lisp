@@ -1,8 +1,7 @@
 (uiop:define-package :cl-telegram-bot/bot
   (:use #:cl)
-  (:import-from #:log4cl)
-  (:import-from #:dexador)
-  (:import-from #:jonathan)
+  (:import-from #:alexandria
+                #:symbolicate)
   (:export #:api-uri
            #:bot
            #:debug-mode
@@ -62,7 +61,7 @@
        ,slots
        ,@options)
 
-     (defun ,(alexandria:symbolicate 'make- name) (token &rest args)
+     (defun ,(symbolicate 'make- name) (token &rest args)
        (apply 'make-instance
               ',name
               :token token

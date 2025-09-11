@@ -19,6 +19,8 @@
                 #:defautodoc)
   (:import-from #:cl-telegram-bot-docs/tutorial
                 #:@first-bot)
+  (:import-from #:cl-telegram-bot-docs/examples
+                #:@examples)
   (:export #:@index
            #:@readme
            #:@changelog))
@@ -43,6 +45,7 @@
         :root-sections '(@index
                          @first-bot
                          @states-and-actions
+                         @examples
                          @api-v2
                          @v1)))
 
@@ -190,6 +193,10 @@ And start communicating with him:
 
 (defautodoc @api-v2 (:title "API v2"
                      :system :cl-telegram-bot2
-                     :ignore-words ("CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
+                     :ignore-words (
+                                    ;; "CL-TELEGRAM-BOT2/API:PRE-CHECKOUT-QUERY-INVOICE-PAYLOAD"
+                                    ;; "CL-TELEGRAM-BOT2/API:INLINE-KEYBOARD-MARKUP"
+                                    ;; "CL-TELEGRAM-BOT2/API:REPLY-KEYBOARD-MARKUP"
+                                    "HTTPS"
                                     "API")
-                     :ignore-packages ("cl-telegram-bot2/api")))
+                     :ignore-packages ("CL-TELEGRAM-BOT2/API")))

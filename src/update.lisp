@@ -1,6 +1,6 @@
 (uiop:define-package #:cl-telegram-bot/update
   (:use #:cl)
-  (:import-from #:log4cl)
+  (:import-from #:log)
   (:import-from #:cl-telegram-bot/message
                 #:*current-bot*
                 #:make-message)

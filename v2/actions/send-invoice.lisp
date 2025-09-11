@@ -3,8 +3,8 @@
   (:import-from #:cl-telegram-bot2/action
                 #:action)
   (:import-from #:cl-telegram-bot2/generics
+                #:process-state
                 #:on-result
-                #:process
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
@@ -120,15 +120,15 @@
    ;; payload
    (call-if-needed
     (payload action))
-   ;; provider token
-   (call-if-needed
-    (provider-token action))
    ;; currency
    (call-if-needed
     (currency action))
    ;; prices
    (call-if-needed
-    (prices action)))
+    (prices action))
+   
+   :provider-token (call-if-needed
+                    (provider-token action)))
 
   (wait-for-payment :on-success (on-success action)
                     :commands (commands action)))
@@ -138,7 +138,7 @@
   (perform-action action))
 
 
-(defmethod process ((action send-invoice) update)
+(defmethod process-state ((bot t) (action send-invoice) update)
   (perform-action action))
 
 
