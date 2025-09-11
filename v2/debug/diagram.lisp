@@ -129,7 +129,7 @@
   (make-instance 'render-workflow-diagram))
 
 
-(defmethod process-state ((action render-workflow-diagram) (update t))
+(defmethod process-state ((bot t) (action render-workflow-diagram) (update t))
   (handler-case
       (let ((workflow (workflow-to-text *current-bot*)))
         (uiop:with-temporary-file (:pathname temp-file :keep t)
