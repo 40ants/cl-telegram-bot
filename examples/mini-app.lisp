@@ -55,8 +55,8 @@
 (defun get-mini-app-url ()
   (or (uiop:getenv "MINI_APP_URL")
       (fmt "http://~A:~A/"
-           (get-miniapp-interface)
-           (get-miniapp-port))))
+           (get-mini-app-interface)
+           (get-mini-app-port))))
 
 
 (defun is-mini-app-in-debug-mode-p ()
