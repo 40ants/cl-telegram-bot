@@ -16,9 +16,6 @@
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/high
                 #:collect-sent-messages)
-  (:import-from #:cl-telegram-bot2/debug/diagram/utils
-                #:obj-id
-                #:render-mapslot-value-with-link)
   (:import-from #:cl-telegram-bot2/bot
                 #:bot)
   (:import-from #:cl-telegram-bot2/states/base

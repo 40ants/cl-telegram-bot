@@ -3,8 +3,6 @@
   (:import-from #:cl-telegram-bot2/generics
                 #:process-state
                 #:on-state-activation)
-  (:import-from #:cl-telegram-bot2/states/base
-                #:state-var)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
   (:import-from #:cl-telegram-bot2/api
