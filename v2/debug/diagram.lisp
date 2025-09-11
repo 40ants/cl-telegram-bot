@@ -32,6 +32,7 @@
                 #:pre-checkout-query-id
                 #:answer-pre-checkout-query)
   (:import-from #:cl-telegram-bot2/generics
+                #:process-update
                 #:on-pre-checkout-query)
   (:import-from #:cl-telegram-bot2/actions/send-photo
                 #:send-photo)
@@ -128,7 +129,7 @@
   (make-instance 'render-workflow-diagram))
 
 
-(defmethod cl-telegram-bot2/generics:process ((action render-workflow-diagram) (update t))
+(defmethod process-update ((action render-workflow-diagram) (update t))
   (handler-case
       (let ((workflow (workflow-to-text *current-bot*)))
         (uiop:with-temporary-file (:pathname temp-file :keep t)

@@ -76,8 +76,8 @@ Also, a function bound symbol can be used instead an action object. Why do we re
   "
 When some event occur, a corresponding generic function is called first on state object then on an action specified for this kind.
 
-For example, if new update was received, then CL-TELEGRAM-BOT2/GENERICS:PROCESS generic-function will be called with current state as the first argument
-and update object as the second argument. Then the method specified on state class will call the same CL-TELEGRAM-BOT2/GENERICS:PROCESS generic-function
+For example, if new update was received, then CL-TELEGRAM-BOT2/GENERICS:PROCESS-UPDATE generic-function will be called with current state as the first argument
+and update object as the second argument. Then the method specified on state class will call the same CL-TELEGRAM-BOT2/GENERICS:PROCESS-UPDATE generic-function
 on the object specified as :ON-UPDATE argument for the action. If action is a symbol, then it's function will be called with update object as a single argument in case if this function accepts one argument and without any arguments otherwise.
 
 Action's method should return should return a new state object if it wants to change the current bot's state or NIL otherwise. If new state was returned, then `on-activate` event will be processed afterwards.
