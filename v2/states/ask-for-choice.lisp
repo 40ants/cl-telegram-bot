@@ -98,6 +98,7 @@
 (-> ask-for-choice ((or string symbol) (soft-list-of string)
                     &key
                     (:to string)
+                    (:vars (or null hash-table))
                     (:delete-messages boolean)
                     (:delete-wrong-user-messages boolean)
                     (:on-success (or workflow-block
@@ -107,12 +108,15 @@
     (values ask-for-choice &optional))
 
 
-(defun ask-for-choice (prompt buttons &key (to *default-var-name*)
-                                           (delete-messages t)
-                                           (delete-wrong-user-messages t)
-                                           on-success
-                                           (on-wrong-user-message
-                                            (send-text "Please push one of the buttons.")))
+(defun ask-for-choice (prompt buttons
+                       &key
+                         (to *default-var-name*)
+                         vars
+                         (delete-messages t)
+                         (delete-wrong-user-messages t)
+                         on-success
+                         (on-wrong-user-message
+                          (send-text "Please push one of the buttons.")))
   (unless buttons
     (error "Please, specify at least one button."))
   
@@ -120,6 +124,7 @@
                  :prompt prompt
                  :buttons buttons
                  :to to
+                 :vars vars
                  :delete-messages delete-messages
                  :delete-wrong-user-messages delete-wrong-user-messages
                  :on-success (uiop:ensure-list
@@ -132,6 +137,8 @@
   (let ((message
           (reply (call-if-needed (prompt state))
                  :reply-markup (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
+                                              ;; TODO: сделать функцию, которая бы превращала buttons
+                                              ;; При этом buttons могут быть как функцией, которая возвращает набор кнопок, так и непосредственно списком кнопок в виде таплов, названия данные, или списком объектов Inline Keyboard Button. То есть может быть любая комбинация этих штук. А в результате всегда должен получаться Inline Keyboard Markup. Такой хелпер будет полезен не только в этом стейте, но и в остальных. 
                                               :inline-keyboard
                                               (list
                                                (loop for choice in (buttons state)
