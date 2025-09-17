@@ -20,13 +20,9 @@
                 #:update
                 #:message-text
                 #:update-message)
-  (:import-from #:str
-                #:trim)
   (:import-from #:serapeum
                 #:->
                 #:soft-list-of)
-  (:import-from #:cl-telegram-bot2/action
-                #:action)
   (:import-from #:cl-telegram-bot2/utils
                 #:fbound-symbol
                 #:call-if-needed)
@@ -34,8 +30,6 @@
                 #:*current-chat*)
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
-  (:import-from #:log4cl-extras/error
-                #:with-log-unhandled)
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
