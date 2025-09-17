@@ -28,6 +28,7 @@
   (:import-from #:cl-telegram-bot2/action
                 #:action)
   (:import-from #:cl-telegram-bot2/utils
+                #:fbound-symbol
                 #:call-if-needed)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-chat*)
@@ -59,11 +60,52 @@
 (defparameter *default-var-name* "result")
 
 
+(deftype choice-button-type ()
+  '(cons string string))
+
+
+(deftype choice-buttons-row ()
+  '(soft-list-of choice-button-type))
+
+
+(deftype choice-buttons-rows ()
+  '(soft-list-of choice-buttons-row))
+
+
+(deftype choice-buttons-descriptor ()
+  '(or
+    fbound-symbol
+    string
+    choice-button-type
+    choice-buttons-row
+    choice-buttons-rows))
+
+
+(-> ensure-choice-buttons-rows (choice-buttons-descriptor)
+    (values (or fbound-symbol
+                choice-buttons-rows)
+            &optional))
+
+(defun ensure-choice-buttons-rows (value)
+  (etypecase value
+    (fbound-symbol
+     value)
+    (string
+     (list (list (cons value value))))
+    (choice-button-type
+     (list (list value)))
+    (choice-buttons-row
+     (list value))
+    (choice-buttons-rows
+     value)))
+
+
 ;; To allow this state process global commands, we need
 ;; to inherit it from state-with-commands-mixin.
 (defclass ask-for-choice (state)
   ((prompt :initarg :prompt
-           :type (or string symbol)
+           :type (or fbound-symbol
+                     string)
            :reader prompt)
    (var-name :initarg :to
              :initform *default-var-name*
@@ -71,7 +113,8 @@
              :reader var-name)
    (buttons :initarg :buttons
             :initform nil
-            :type list
+            :type (or fbound-symbol
+                      choice-buttons-rows)
             :reader buttons)
    (on-success :initarg :on-success
                :initform nil
@@ -90,12 +133,13 @@
                                :initform t
                                :type boolean
                                :documentation "Delete usual user messages which he might send by a mistake."
-                    :reader delete-wrong-user-messages-p)
+                               :reader delete-wrong-user-messages-p)
    (message-ids-to-delete :initform nil
                           :accessor message-ids-to-delete)))
 
 
-(-> ask-for-choice ((or string symbol) (soft-list-of string)
+(-> ask-for-choice ((or string symbol)
+                    choice-buttons-descriptor
                     &key
                     (:to string)
                     (:vars (or null hash-table))
@@ -122,7 +166,7 @@
   
   (make-instance 'ask-for-choice
                  :prompt prompt
-                 :buttons buttons
+                 :buttons (ensure-choice-buttons-rows buttons)
                  :to to
                  :vars vars
                  :delete-messages delete-messages
@@ -134,17 +178,23 @@
 
 
 (defmethod on-state-activation ((state ask-for-choice))
-  (let ((message
-          (reply (call-if-needed (prompt state))
-                 :reply-markup (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
-                                              ;; TODO: сделать функцию, которая бы превращала buttons
-                                              ;; При этом buttons могут быть как функцией, которая возвращает набор кнопок, так и непосредственно списком кнопок в виде таплов, названия данные, или списком объектов Inline Keyboard Button. То есть может быть любая комбинация этих штук. А в результате всегда должен получаться Inline Keyboard Markup. Такой хелпер будет полезен не только в этом стейте, но и в остальных. 
-                                              :inline-keyboard
-                                              (list
-                                               (loop for choice in (buttons state)
-                                                     collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
-                                                                            :text choice
-                                                                            :callback-data choice)))))))
+  (let* ((buttons (call-if-needed (buttons state)))
+         (buttons (if (typep buttons 'choice-buttons-rows)
+                      buttons
+                      (error "Buttons for choice state have wrong structure: ~A" buttons)))
+         (buttons
+           (loop for row in buttons
+                 collect
+                 (loop for (title . data) in row
+                       collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
+                                              :text title
+                                              :callback-data data))))
+         (keyboard
+           (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
+                          :inline-keyboard buttons))
+         (message
+           (reply (call-if-needed (prompt state))
+                  :reply-markup keyboard)))
     (when (delete-messages-p state)
       (push (message-message-id message)
             (message-ids-to-delete state))))

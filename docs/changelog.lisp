@@ -11,7 +11,14 @@
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
-  (0.8.0 2025-01-02
+
+  (0.9.0 2025-09-17
+         "
+Changed
+=======
+
+* Ask-for-choice state now can accept a list or list of list of buttons and each button should be a `(cons title data)`")
+  (0.8.0 2025-09-14
          "
 Changed
 =======
