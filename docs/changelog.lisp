@@ -17,7 +17,12 @@
 Changed
 =======
 
-* Ask-for-choice state now can accept a list or list of list of buttons and each button should be a `(cons title data)`")
+* Ask-for-choice state now can accept a list or list of list of buttons and each button should be a `(cons title data)`.
+
+Fixed
+=====
+
+* Fixed on-state-activation method for ask-for-text state. Previously it was broken in case if keyboard was not provided to the state.")
   (0.8.0 2025-09-14
          "
 Changed

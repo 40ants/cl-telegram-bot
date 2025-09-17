@@ -112,8 +112,13 @@
 
 
 (defmethod on-state-activation ((state ask-for-text))
-  (reply (prompt state)
-         :reply-markup (prompt-keyboard state))
+  (let ((keyboard (prompt-keyboard state))
+        (args (list (prompt state))))
+    (when keyboard
+      (setf args
+            (append args
+                    (list :reply-markup keyboard))))
+    (apply #'reply args))
   (values))
 
 
