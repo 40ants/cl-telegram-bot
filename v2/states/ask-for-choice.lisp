@@ -38,8 +38,8 @@
                 #:state)
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
                 #:get-slots)
-  (:import-from #:cl-telegram-bot2/debug/diagram/slot
-                #:slot)
+  ;; (:import-from #:cl-telegram-bot2/debug/diagram/slot
+  ;;               #:slot)
   (:export #:ask-for-choice
            #:prompt
            #:var-name
