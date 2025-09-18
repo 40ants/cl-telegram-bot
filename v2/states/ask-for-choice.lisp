@@ -21,6 +21,7 @@
                 #:message-text
                 #:update-message)
   (:import-from #:serapeum
+                #:dict
                 #:->
                 #:soft-list-of)
   (:import-from #:cl-telegram-bot2/utils
@@ -162,7 +163,8 @@
                  :prompt prompt
                  :buttons (ensure-choice-buttons-rows buttons)
                  :to to
-                 :vars vars
+                 :vars (or vars
+                           (dict))
                  :delete-messages delete-messages
                  :delete-wrong-user-messages delete-wrong-user-messages
                  :on-success (uiop:ensure-list
@@ -246,11 +248,13 @@
 
 
 (defmethod get-slots ((state ask-for-choice))
-  (append
-   (loop for slot-name in (list
-                           'on-success
-                           'on-wrong-user-message)
-         collect
-         (slot (string-downcase slot-name)
-               (slot-value state slot-name)))
-   (call-next-method)))
+  (call-next-method)
+  ;; (append
+  ;;  (loop for slot-name in (list
+  ;;                          'on-success
+  ;;                          'on-wrong-user-message)
+  ;;        collect
+  ;;        (slot (string-downcase slot-name)
+  ;;              (slot-value state slot-name)))
+  ;;  (call-next-method))
+  )
