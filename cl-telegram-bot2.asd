@@ -20,7 +20,10 @@
                "cl-telegram-bot2/actions/send-text"
                "cl-telegram-bot2/matchers/string"
                "cl-telegram-bot2/matchers/regex"
-               "cl-telegram-bot2/states/ask-for-text")
+               "cl-telegram-bot2/states/ask-for-text"
+               "cl-telegram-bot2/states/ask-for-choice"
+               "cl-telegram-bot2/high/keyboard"
+               "cl-telegram-bot2/high/callbacks")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 

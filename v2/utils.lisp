@@ -16,7 +16,8 @@
            #:arity
            #:from-json
            #:to-json
-           #:call-with-one-or-zero-args))
+           #:call-with-one-or-zero-args
+           #:fbound-symbol))
 (in-package #:cl-telegram-bot2/utils)
 
 
@@ -135,3 +136,9 @@ It merely returns its results."
   "A deep copy of a structure-object is (copy-structure object)."
   (copy-structure object))
 
+
+(deftype fbound-symbol ()
+  "This type denotes symbols bound to the functions. Such symbol could be funcalled."
+  '(and
+    symbol
+    (satisfies fboundp)))

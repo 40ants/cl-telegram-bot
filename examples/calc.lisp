@@ -33,10 +33,10 @@
          (num2 (var "second-num"))
          (op-name (var "operation-name"))
          (op (gethash op-name
-                      (dict "+" #'+
-                            "-" #'-
-                            "*" #'*
-                            "/" #'/))))
+                      (dict "plus" #'+
+                            "minus" #'-
+                            "mul" #'*
+                            "div" #'/))))
     (funcall op num1
              num2)))
 
@@ -69,7 +69,10 @@
                                 :on-deletion (delete-messages)
                                 :on-success (ask-for-choice
                                              'make-prompt-for-op-choice
-                                             '("+" "-" "*" "/")
+                                             '(("+" . "plus")
+                                               ("-" . "minus")
+                                               ("*" . "mul")
+                                               ("/" . "div"))
                                              :to "operation-name"
                                              :on-success (list ;; Here we just calculate result
                                                                ;; and return back to "start" state

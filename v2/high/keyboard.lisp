@@ -59,7 +59,8 @@
            #:bot-username
            #:request-write-access-p
            #:text-to-copy
-           #:web-app-url))
+           #:web-app-url
+           #:ensure-call-callback))
 (in-package #:cl-telegram-bot2/high/keyboard)
 
 
@@ -444,6 +445,23 @@
   (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
                  :text (button-title button)
                  :callback-data (callback-data button)))
+
+
+(-> ensure-call-callback ((or cons call-callback))
+    (values call-callback &optional))
+
+(defun ensure-call-callback (obj)
+  "Makes a CALL-CALLBACK button from a (title . data) cons."
+  (etypecase obj
+    (call-callback
+     (values obj))
+    (cons
+     (unless (typep (car obj) 'string)
+       (error "~A is not of type string" (car obj)))
+     (unless (typep (cdr obj) 'string)
+       (error "~A is not of type string" (cdr obj)))
+     (values
+      (call-callback (car obj) (cdr obj))))))
 
 
 (defclass open-login-url (inline-keyboard-button-mixin button)

@@ -20,21 +20,17 @@
                 #:update
                 #:message-text
                 #:update-message)
-  (:import-from #:str
-                #:trim)
   (:import-from #:serapeum
+                #:dict
                 #:->
                 #:soft-list-of)
-  (:import-from #:cl-telegram-bot2/action
-                #:action)
   (:import-from #:cl-telegram-bot2/utils
+                #:fbound-symbol
                 #:call-if-needed)
   (:import-from #:cl-telegram-bot2/vars
                 #:*current-chat*)
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
-  (:import-from #:log4cl-extras/error
-                #:with-log-unhandled)
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
@@ -42,8 +38,8 @@
                 #:state)
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
                 #:get-slots)
-  (:import-from #:cl-telegram-bot2/debug/diagram/slot
-                #:slot)
+  ;; (:import-from #:cl-telegram-bot2/debug/diagram/slot
+  ;;               #:slot)
   (:export #:ask-for-choice
            #:prompt
            #:var-name
@@ -59,11 +55,52 @@
 (defparameter *default-var-name* "result")
 
 
+(deftype choice-button-type ()
+  '(cons string string))
+
+
+(deftype choice-buttons-row ()
+  '(soft-list-of choice-button-type))
+
+
+(deftype choice-buttons-rows ()
+  '(soft-list-of choice-buttons-row))
+
+
+(deftype choice-buttons-descriptor ()
+  '(or
+    fbound-symbol
+    string
+    choice-button-type
+    choice-buttons-row
+    choice-buttons-rows))
+
+
+(-> ensure-choice-buttons-rows (choice-buttons-descriptor)
+    (values (or fbound-symbol
+                choice-buttons-rows)
+            &optional))
+
+(defun ensure-choice-buttons-rows (value)
+  (etypecase value
+    (fbound-symbol
+     value)
+    (string
+     (list (list (cons value value))))
+    (choice-button-type
+     (list (list value)))
+    (choice-buttons-row
+     (list value))
+    (choice-buttons-rows
+     value)))
+
+
 ;; To allow this state process global commands, we need
 ;; to inherit it from state-with-commands-mixin.
 (defclass ask-for-choice (state)
   ((prompt :initarg :prompt
-           :type (or string symbol)
+           :type (or fbound-symbol
+                     string)
            :reader prompt)
    (var-name :initarg :to
              :initform *default-var-name*
@@ -71,7 +108,8 @@
              :reader var-name)
    (buttons :initarg :buttons
             :initform nil
-            :type list
+            :type (or fbound-symbol
+                      choice-buttons-rows)
             :reader buttons)
    (on-success :initarg :on-success
                :initform nil
@@ -90,14 +128,16 @@
                                :initform t
                                :type boolean
                                :documentation "Delete usual user messages which he might send by a mistake."
-                    :reader delete-wrong-user-messages-p)
+                               :reader delete-wrong-user-messages-p)
    (message-ids-to-delete :initform nil
                           :accessor message-ids-to-delete)))
 
 
-(-> ask-for-choice ((or string symbol) (soft-list-of string)
+(-> ask-for-choice ((or string symbol)
+                    choice-buttons-descriptor
                     &key
                     (:to string)
+                    (:vars (or null hash-table))
                     (:delete-messages boolean)
                     (:delete-wrong-user-messages boolean)
                     (:on-success (or workflow-block
@@ -107,19 +147,24 @@
     (values ask-for-choice &optional))
 
 
-(defun ask-for-choice (prompt buttons &key (to *default-var-name*)
-                                           (delete-messages t)
-                                           (delete-wrong-user-messages t)
-                                           on-success
-                                           (on-wrong-user-message
-                                            (send-text "Please push one of the buttons.")))
+(defun ask-for-choice (prompt buttons
+                       &key
+                         (to *default-var-name*)
+                         vars
+                         (delete-messages t)
+                         (delete-wrong-user-messages t)
+                         on-success
+                         (on-wrong-user-message
+                          (send-text "Please push one of the buttons.")))
   (unless buttons
     (error "Please, specify at least one button."))
   
   (make-instance 'ask-for-choice
                  :prompt prompt
-                 :buttons buttons
+                 :buttons (ensure-choice-buttons-rows buttons)
                  :to to
+                 :vars (or vars
+                           (dict))
                  :delete-messages delete-messages
                  :delete-wrong-user-messages delete-wrong-user-messages
                  :on-success (uiop:ensure-list
@@ -129,15 +174,23 @@
 
 
 (defmethod on-state-activation ((state ask-for-choice))
-  (let ((message
-          (reply (call-if-needed (prompt state))
-                 :reply-markup (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
-                                              :inline-keyboard
-                                              (list
-                                               (loop for choice in (buttons state)
-                                                     collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
-                                                                            :text choice
-                                                                            :callback-data choice)))))))
+  (let* ((buttons (call-if-needed (buttons state)))
+         (buttons (if (typep buttons 'choice-buttons-rows)
+                      buttons
+                      (error "Buttons for choice state have wrong structure: ~A" buttons)))
+         (buttons
+           (loop for row in buttons
+                 collect
+                 (loop for (title . data) in row
+                       collect (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
+                                              :text title
+                                              :callback-data data))))
+         (keyboard
+           (make-instance 'cl-telegram-bot2/api:inline-keyboard-markup
+                          :inline-keyboard buttons))
+         (message
+           (reply (call-if-needed (prompt state))
+                  :reply-markup keyboard)))
     (when (delete-messages-p state)
       (push (message-message-id message)
             (message-ids-to-delete state))))
@@ -195,11 +248,13 @@
 
 
 (defmethod get-slots ((state ask-for-choice))
-  (append
-   (loop for slot-name in (list
-                           'on-success
-                           'on-wrong-user-message)
-         collect
-         (slot (string-downcase slot-name)
-               (slot-value state slot-name)))
-   (call-next-method)))
+  (call-next-method)
+  ;; (append
+  ;;  (loop for slot-name in (list
+  ;;                          'on-success
+  ;;                          'on-wrong-user-message)
+  ;;        collect
+  ;;        (slot (string-downcase slot-name)
+  ;;              (slot-value state slot-name)))
+  ;;  (call-next-method))
+  )
