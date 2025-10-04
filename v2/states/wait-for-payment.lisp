@@ -5,6 +5,8 @@
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:base-state)
   (:import-from #:cl-telegram-bot2/api
                 #:pre-checkout-query
                 #:pre-checkout-query-id

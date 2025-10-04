@@ -12,6 +12,12 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.9.1 2025-10-05
+         "
+Fixed
+=====
+
+* CL-TELEGRAM-BOT2/STATES/WAIT-FOR-PAYMENT:WAIT-FOR-PAYMENT class definition was fixed.")
   (0.9.0 2025-09-17
          "
 Changed
