@@ -12,6 +12,15 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.10.0 2025-11-11
+          "
+Changed
+=======
+
+* Invoke debugger was moved from process-update method to the outer scope allowing to catch errors even if it occurs in any :around process-update method.
+* Also, now debugger is invoked only when there is an active SLY connection.
+
+")
   (0.9.1 2025-10-05
          "
 Fixed
