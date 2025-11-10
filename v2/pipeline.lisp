@@ -1,6 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/pipeline
   (:use #:cl)
   (:import-from #:log)
+  (:import-from #:40ants-slynk)
   (:import-from #:log4cl-extras/error
                 #:with-log-unhandled)
   (:import-from #:cl-telegram-bot2/api)
@@ -231,13 +232,16 @@ FUNCTION."
 (defun get-or-create-chat-actor (bot chat-id)
   (flet ((local-process-update (update)
            (with-log-unhandled ()
-             (let ((*current-bot* bot)
-                   (*token* (cl-telegram-bot2/bot::token bot))
-                   (*print-readably*
-                     ;; bordeaux-threads sets this var to T and this breaks logging
-                     ;; our objects. So we have to turn this off.
-                     nil))
-               (process-update bot update)))))
+             (handler-bind ((serious-condition (lambda (condition)
+                                                 (when 40ants-slynk:*connections*
+                                                   (invoke-debugger condition)))))
+               (let ((*current-bot* bot)
+                     (*token* (cl-telegram-bot2/bot::token bot))
+                     (*print-readably*
+                       ;; bordeaux-threads sets this var to T and this breaks logging
+                       ;; our objects. So we have to turn this off.
+                       nil))
+                 (process-update bot update))))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
@@ -349,15 +353,14 @@ FUNCTION."
 
 
 (defmethod process-update ((bot bot) (update cl-telegram-bot2/api:update))
-  (handler-bind ((serious-condition #'invoke-debugger))
-    (log:info "Processing chat update"
-              update)
-    (let* ((*current-state* (car *state*))
-           (*current-chat* (get-chat update))
-           (*current-user* (get-user update))
-           (new-state (process-state bot *current-state* update)))
+  (log:info "Processing chat update"
+            update)
+  (let* ((*current-state* (car *state*))
+         (*current-chat* (get-chat update))
+         (*current-user* (get-user update))
+         (new-state (process-state bot *current-state* update)))
 
-      (setf *state*
-            (probably-switch-to-new-state new-state *state*)))
-    (values)))
+    (setf *state*
+          (probably-switch-to-new-state new-state *state*)))
+  (values))
 
