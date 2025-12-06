@@ -12,6 +12,13 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.11.0 2025-12-06
+          "
+Added
+=====
+
+New macro CL-TELEGRAM-BOT2/ACTIONS/DELAY:DELAY and function CL-TELEGRAM-BOT2/ACTIONS/DELAY:CANCEL-DELAYED-EXECUTION were added. They allow a delayed response to the user.")
+
   (0.10.0 2025-11-11
           "
 Changed

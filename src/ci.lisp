@@ -18,6 +18,7 @@
   :on-pull-request t
   :cache t
   :jobs ((40ants-ci/jobs/linter:linter
+          :lisp "sbcl-bin/2.5.10"
           :asdf-systems ("cl-telegram-bot"
                          "cl-telegram-bot2"
                          "cl-telegram-bot2-examples"
@@ -37,6 +38,7 @@
   :on-pull-request t
   :cache t
   :jobs ((build-docs
+          :lisp "sbcl-bin/2.5.10"
           :os "ubuntu-24.04"
           :asdf-system "cl-telegram-bot-docs"
           :dynamic-space-size "4gb"
@@ -55,6 +57,6 @@
   :cache t
   :jobs ((run-tests
           :asdf-system "cl-telegram-bot"
-          :lisp ("sbcl-bin"
+          :lisp ("sbcl-bin/2.5.10"
                  "ccl-bin")
           :coverage t)))
