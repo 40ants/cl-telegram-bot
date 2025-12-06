@@ -19,7 +19,7 @@
       "env": {
         "OS": "ubuntu-24.04",
         "QUICKLISP_DIST": "quicklisp",
-        "LISP": "sbcl-bin"
+        "LISP": "sbcl-bin/2.5.10"
       },
       "steps": [
         {

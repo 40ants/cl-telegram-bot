@@ -19,7 +19,7 @@
         "fail-fast": false,
         "matrix": {
           "lisp": [
-            "sbcl-bin",
+            "sbcl-bin/2.5.10",
             "ccl-bin"
           ]
         }
