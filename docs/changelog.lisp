@@ -12,6 +12,12 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.12.0 2025-12-16
+          "
+Changed
+=======
+
+Move API spec from 0.8.0 to 0.9.0.")
   (0.11.0 2025-12-06
           "
 Added
