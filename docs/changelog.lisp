@@ -12,6 +12,15 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.13.0 2025-12-20
+          "
+Added
+=====
+
+Now it is possible to limit \"allowed updates\" types by providing ALLOWED-UPDATES argument to the bot's constructor.
+This will override the default list. Also you can extend the default allowed updates list by using ADDITIONAL-ALLOWED-UPDATES argument. 
+
+")
   (0.12.0 2025-12-16
           "
 Changed
