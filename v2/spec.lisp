@@ -80,6 +80,13 @@ Bot token and method name is appended to it")
    "channel" "message-origin-channel"))
 
 
+(defparameter *chat-boost-source-to-class*
+  (dict
+   "premium" "chat-boost-source-premium"
+   "gift_code" "chat-boost-source-gift-code"
+   "giveaway" "chat-boost-source-giveaway"))
+
+
 (-> guess-generic-subclass (symbol hash-table)
     (values (or null symbol) &optional))
 
@@ -107,7 +114,14 @@ Bot token and method name is appended to it")
                               *message-origin-type-to-class*)))
                (or real-class
                    (error "Unable to parse generic MESSAGE-ORIGIN with type \"~A\"."
-                          (gethash "type" object))))))))
+                          (gethash "type" object)))))
+            ((string-equal generic-class "chat-boost-source")
+             (let ((real-class
+                     (gethash (gethash "source" object)
+                              *chat-boost-source-to-class*)))
+               (or real-class
+                   (error "Unable to parse generic CHAT-BOOST-SOURCE with source \"~A\"."
+                          (gethash "source" object))))))))
     (when result
       (values (intern (string-upcase result)
                       (symbol-package generic-class))))))

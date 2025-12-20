@@ -714,6 +714,14 @@
           "name": "permissions"
         },
         {
+          "optional": false,
+          "description": "Information about types of gifts that are accepted by the chat or by the corresponding user for private chats",
+          "type": [
+            "AcceptedGiftTypes"
+          ],
+          "name": "accepted_gift_types"
+        },
+        {
           "optional": true,
           "description": "Optional. True, if paid media messages can be sent or forwarded to the channel chat. The field is available only for channel chats.",
           "type": [
@@ -998,6 +1006,14 @@
             "str"
           ],
           "name": "author_signature"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The number of Telegram Stars that were paid by the sender of the message to send it",
+          "type": [
+            "int"
+          ],
+          "name": "paid_star_count"
         },
         {
           "optional": true,
@@ -1354,6 +1370,22 @@
         },
         {
           "optional": true,
+          "description": "Optional. Service message: a regular gift was sent or received",
+          "type": [
+            "GiftInfo"
+          ],
+          "name": "gift"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Service message: a unique gift was sent or received",
+          "type": [
+            "UniqueGiftInfo"
+          ],
+          "name": "unique_gift"
+        },
+        {
+          "optional": true,
           "description": "Optional. The domain name of the website on which the user has logged in. More about Telegram Login »",
           "type": [
             "str"
@@ -1479,6 +1511,14 @@
             "GiveawayCompleted"
           ],
           "name": "giveaway_completed"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Service message: the price for paid messages has changed in the chat",
+          "type": [
+            "PaidMessagePriceChanged"
+          ],
+          "name": "paid_message_price_changed"
         },
         {
           "optional": true,
@@ -2423,6 +2463,27 @@
             "PhotoSize"
           ],
           "name": "thumbnail"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Available sizes of the cover of the video in the message",
+          "type": [
+            [
+              "array",
+              [
+                "PhotoSize"
+              ]
+            ]
+          ],
+          "name": "cover"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Timestamp in seconds from which the video will play in the message",
+          "type": [
+            "int"
+          ],
+          "name": "start_timestamp"
         },
         {
           "optional": true,
@@ -3390,7 +3451,7 @@
           "name": "is_moving"
         }
       ],
-      "description": "The background is a PNG or TGV (gzipped subset of SVG with MIME type “application/x-tgwallpattern”) pattern to be combined with the background fill chosen by the user.",
+      "description": "The background is a .PNG or .TGV (gzipped subset of SVG with MIME type “application/x-tgwallpattern”) pattern to be combined with the background fill chosen by the user.",
       "name": "BackgroundTypePattern"
     },
     {
@@ -3711,6 +3772,20 @@
       ],
       "description": "This object represents a service message about new members invited to a video chat.",
       "name": "VideoChatParticipantsInvited"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "The new number of Telegram Stars that must be paid by non-administrator users of the supergroup chat for each sent message",
+          "type": [
+            "int"
+          ],
+          "name": "paid_message_star_count"
+        }
+      ],
+      "description": "Describes a service message about a change in the price of paid messages within a chat.",
+      "name": "PaidMessagePriceChanged"
     },
     {
       "params": [
@@ -5778,6 +5853,316 @@
       "params": [
         {
           "optional": false,
+          "description": "The abscissa of the area's center, as a percentage of the media width",
+          "type": [
+            "float"
+          ],
+          "name": "x_percentage"
+        },
+        {
+          "optional": false,
+          "description": "The ordinate of the area's center, as a percentage of the media height",
+          "type": [
+            "float"
+          ],
+          "name": "y_percentage"
+        },
+        {
+          "optional": false,
+          "description": "The width of the area's rectangle, as a percentage of the media width",
+          "type": [
+            "float"
+          ],
+          "name": "width_percentage"
+        },
+        {
+          "optional": false,
+          "description": "The height of the area's rectangle, as a percentage of the media height",
+          "type": [
+            "float"
+          ],
+          "name": "height_percentage"
+        },
+        {
+          "optional": false,
+          "description": "The clockwise rotation angle of the rectangle, in degrees; 0-360",
+          "type": [
+            "float"
+          ],
+          "name": "rotation_angle"
+        },
+        {
+          "optional": false,
+          "description": "The radius of the rectangle corner rounding, as a percentage of the media width",
+          "type": [
+            "float"
+          ],
+          "name": "corner_radius_percentage"
+        }
+      ],
+      "description": "Describes the position of a clickable area within a story.",
+      "name": "StoryAreaPosition"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "The two-letter ISO 3166-1 alpha-2 country code of the country where the location is located",
+          "type": [
+            "str"
+          ],
+          "name": "country_code"
+        },
+        {
+          "optional": true,
+          "description": "Optional. State of the location",
+          "type": [
+            "str"
+          ],
+          "name": "state"
+        },
+        {
+          "optional": true,
+          "description": "Optional. City of the location",
+          "type": [
+            "str"
+          ],
+          "name": "city"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Street address of the location",
+          "type": [
+            "str"
+          ],
+          "name": "street"
+        }
+      ],
+      "description": "Describes the physical address of a location.",
+      "name": "LocationAddress"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the area, always “location”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Location latitude in degrees",
+          "type": [
+            "float"
+          ],
+          "name": "latitude"
+        },
+        {
+          "optional": false,
+          "description": "Location longitude in degrees",
+          "type": [
+            "float"
+          ],
+          "name": "longitude"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Address of the location",
+          "type": [
+            "LocationAddress"
+          ],
+          "name": "address"
+        }
+      ],
+      "description": "Describes the type of a clickable area on a story. Currently, it can be one of",
+      "name": "StoryAreaType"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the area, always “location”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Location latitude in degrees",
+          "type": [
+            "float"
+          ],
+          "name": "latitude"
+        },
+        {
+          "optional": false,
+          "description": "Location longitude in degrees",
+          "type": [
+            "float"
+          ],
+          "name": "longitude"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Address of the location",
+          "type": [
+            "LocationAddress"
+          ],
+          "name": "address"
+        }
+      ],
+      "description": "Describes a story area pointing to a location. Currently, a story can have up to 10 location areas.",
+      "name": "StoryAreaTypeLocation"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the area, always “suggested_reaction”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Type of the reaction",
+          "type": [
+            "ReactionType"
+          ],
+          "name": "reaction_type"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Pass True if the reaction area has a dark background",
+          "type": [
+            "bool"
+          ],
+          "name": "is_dark"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Pass True if reaction area corner is flipped",
+          "type": [
+            "bool"
+          ],
+          "name": "is_flipped"
+        }
+      ],
+      "description": "Describes a story area pointing to a suggested reaction. Currently, a story can have up to 5 suggested reaction areas.",
+      "name": "StoryAreaTypeSuggestedReaction"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the area, always “link”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "HTTP or tg:// URL to be opened when the area is clicked",
+          "type": [
+            "str"
+          ],
+          "name": "url"
+        }
+      ],
+      "description": "Describes a story area pointing to an HTTP or tg:// link. Currently, a story can have up to 3 link areas.",
+      "name": "StoryAreaTypeLink"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the area, always “weather”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Temperature, in degree Celsius",
+          "type": [
+            "float"
+          ],
+          "name": "temperature"
+        },
+        {
+          "optional": false,
+          "description": "Emoji representing the weather",
+          "type": [
+            "str"
+          ],
+          "name": "emoji"
+        },
+        {
+          "optional": false,
+          "description": "A color of the area background in the ARGB format",
+          "type": [
+            "int"
+          ],
+          "name": "background_color"
+        }
+      ],
+      "description": "Describes a story area containing weather information. Currently, a story can have up to 3 weather areas.",
+      "name": "StoryAreaTypeWeather"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the area, always “unique_gift”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Unique name of the gift",
+          "type": [
+            "str"
+          ],
+          "name": "name"
+        }
+      ],
+      "description": "Describes a story area pointing to a unique gift. Currently, a story can have at most 1 unique gift area.",
+      "name": "StoryAreaTypeUniqueGift"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Position of the area",
+          "type": [
+            "StoryAreaPosition"
+          ],
+          "name": "position"
+        },
+        {
+          "optional": false,
+          "description": "Type of the area",
+          "type": [
+            "StoryAreaType"
+          ],
+          "name": "type"
+        }
+      ],
+      "description": "Describes a clickable area on a story media.",
+      "name": "StoryArea"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
           "description": "The location to which the supergroup is connected. Can't be a live location.",
           "type": [
             "Location"
@@ -6028,6 +6413,769 @@
       ],
       "description": "This object represents a forum topic.",
       "name": "ForumTopic"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the gift",
+          "type": [
+            "str"
+          ],
+          "name": "id"
+        },
+        {
+          "optional": false,
+          "description": "The sticker that represents the gift",
+          "type": [
+            "Sticker"
+          ],
+          "name": "sticker"
+        },
+        {
+          "optional": false,
+          "description": "The number of Telegram Stars that must be paid to send the sticker",
+          "type": [
+            "int"
+          ],
+          "name": "star_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The number of Telegram Stars that must be paid to upgrade the gift to a unique one",
+          "type": [
+            "int"
+          ],
+          "name": "upgrade_star_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The total number of the gifts of this type that can be sent; for limited gifts only",
+          "type": [
+            "int"
+          ],
+          "name": "total_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The number of remaining gifts of this type that can be sent; for limited gifts only",
+          "type": [
+            "int"
+          ],
+          "name": "remaining_count"
+        }
+      ],
+      "description": "This object represents a gift that can be sent by the bot.",
+      "name": "Gift"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "The list of gifts",
+          "type": [
+            [
+              "array",
+              [
+                "Gift"
+              ]
+            ]
+          ],
+          "name": "gifts"
+        }
+      ],
+      "description": "This object represent a list of gifts.",
+      "name": "Gifts"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Name of the model",
+          "type": [
+            "str"
+          ],
+          "name": "name"
+        },
+        {
+          "optional": false,
+          "description": "The sticker that represents the unique gift",
+          "type": [
+            "Sticker"
+          ],
+          "name": "sticker"
+        },
+        {
+          "optional": false,
+          "description": "The number of unique gifts that receive this model for every 1000 gifts upgraded",
+          "type": [
+            "int"
+          ],
+          "name": "rarity_per_mille"
+        }
+      ],
+      "description": "This object describes the model of a unique gift.",
+      "name": "UniqueGiftModel"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Name of the symbol",
+          "type": [
+            "str"
+          ],
+          "name": "name"
+        },
+        {
+          "optional": false,
+          "description": "The sticker that represents the unique gift",
+          "type": [
+            "Sticker"
+          ],
+          "name": "sticker"
+        },
+        {
+          "optional": false,
+          "description": "The number of unique gifts that receive this model for every 1000 gifts upgraded",
+          "type": [
+            "int"
+          ],
+          "name": "rarity_per_mille"
+        }
+      ],
+      "description": "This object describes the symbol shown on the pattern of a unique gift.",
+      "name": "UniqueGiftSymbol"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "The color in the center of the backdrop in RGB format",
+          "type": [
+            "int"
+          ],
+          "name": "center_color"
+        },
+        {
+          "optional": false,
+          "description": "The color on the edges of the backdrop in RGB format",
+          "type": [
+            "int"
+          ],
+          "name": "edge_color"
+        },
+        {
+          "optional": false,
+          "description": "The color to be applied to the symbol in RGB format",
+          "type": [
+            "int"
+          ],
+          "name": "symbol_color"
+        },
+        {
+          "optional": false,
+          "description": "The color for the text on the backdrop in RGB format",
+          "type": [
+            "int"
+          ],
+          "name": "text_color"
+        }
+      ],
+      "description": "This object describes the colors of the backdrop of a unique gift.",
+      "name": "UniqueGiftBackdropColors"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Name of the backdrop",
+          "type": [
+            "str"
+          ],
+          "name": "name"
+        },
+        {
+          "optional": false,
+          "description": "Colors of the backdrop",
+          "type": [
+            "UniqueGiftBackdropColors"
+          ],
+          "name": "colors"
+        },
+        {
+          "optional": false,
+          "description": "The number of unique gifts that receive this backdrop for every 1000 gifts upgraded",
+          "type": [
+            "int"
+          ],
+          "name": "rarity_per_mille"
+        }
+      ],
+      "description": "This object describes the backdrop of a unique gift.",
+      "name": "UniqueGiftBackdrop"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Human-readable name of the regular gift from which this unique gift was upgraded",
+          "type": [
+            "str"
+          ],
+          "name": "base_name"
+        },
+        {
+          "optional": false,
+          "description": "Unique name of the gift. This name can be used in https://t.me/nft/... links and story areas",
+          "type": [
+            "str"
+          ],
+          "name": "name"
+        },
+        {
+          "optional": false,
+          "description": "Unique number of the upgraded gift among gifts upgraded from the same regular gift",
+          "type": [
+            "int"
+          ],
+          "name": "number"
+        },
+        {
+          "optional": false,
+          "description": "Model of the gift",
+          "type": [
+            "UniqueGiftModel"
+          ],
+          "name": "model"
+        },
+        {
+          "optional": false,
+          "description": "Symbol of the gift",
+          "type": [
+            "UniqueGiftSymbol"
+          ],
+          "name": "symbol"
+        },
+        {
+          "optional": false,
+          "description": "Backdrop of the gift",
+          "type": [
+            "UniqueGiftBackdrop"
+          ],
+          "name": "backdrop"
+        }
+      ],
+      "description": "This object describes a unique gift that was upgraded from a regular gift.",
+      "name": "UniqueGift"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Information about the gift",
+          "type": [
+            "Gift"
+          ],
+          "name": "gift"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Unique identifier of the received gift for the bot; only present for gifts received on behalf of business accounts",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that can be claimed by the receiver by converting the gift; omitted if conversion to Telegram Stars is impossible",
+          "type": [
+            "int"
+          ],
+          "name": "convert_star_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that were prepaid by the sender for the ability to upgrade the gift",
+          "type": [
+            "int"
+          ],
+          "name": "prepaid_upgrade_star_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift can be upgraded to a unique gift",
+          "type": [
+            "bool"
+          ],
+          "name": "can_be_upgraded"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Text of the message that was added to the gift",
+          "type": [
+            "str"
+          ],
+          "name": "text"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Special entities that appear in the text",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "entities"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will be able to see them",
+          "type": [
+            "bool"
+          ],
+          "name": "is_private"
+        }
+      ],
+      "description": "Describes a service message about a regular gift that was sent or received.",
+      "name": "GiftInfo"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Information about the gift",
+          "type": [
+            "UniqueGift"
+          ],
+          "name": "gift"
+        },
+        {
+          "optional": false,
+          "description": "Origin of the gift. Currently, either “upgrade” or “transfer”",
+          "type": [
+            "str"
+          ],
+          "name": "origin"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Unique identifier of the received gift for the bot; only present for gifts received on behalf of business accounts",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that must be paid to transfer the gift; omitted if the bot cannot transfer the gift",
+          "type": [
+            "int"
+          ],
+          "name": "transfer_star_count"
+        }
+      ],
+      "description": "Describes a service message about a unique gift that was sent or received.",
+      "name": "UniqueGiftInfo"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the gift, always “regular”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Information about the regular gift",
+          "type": [
+            "Gift"
+          ],
+          "name": "gift"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Unique identifier of the gift for the bot; for gifts received on behalf of business accounts only",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Sender of the gift if it is a known user",
+          "type": [
+            "User"
+          ],
+          "name": "sender_user"
+        },
+        {
+          "optional": false,
+          "description": "Date the gift was sent in Unix time",
+          "type": [
+            "int"
+          ],
+          "name": "send_date"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Text of the message that was added to the gift",
+          "type": [
+            "str"
+          ],
+          "name": "text"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Special entities that appear in the text",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "entities"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will be able to see them",
+          "type": [
+            "bool"
+          ],
+          "name": "is_private"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift is displayed on the account's profile page; for gifts received on behalf of business accounts only",
+          "type": [
+            "bool"
+          ],
+          "name": "is_saved"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift can be upgraded to a unique gift; for gifts received on behalf of business accounts only",
+          "type": [
+            "bool"
+          ],
+          "name": "can_be_upgraded"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift was refunded and isn't available anymore",
+          "type": [
+            "bool"
+          ],
+          "name": "was_refunded"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that can be claimed by the receiver instead of the gift; omitted if the gift cannot be converted to Telegram Stars",
+          "type": [
+            "int"
+          ],
+          "name": "convert_star_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that were paid by the sender for the ability to upgrade the gift",
+          "type": [
+            "int"
+          ],
+          "name": "prepaid_upgrade_star_count"
+        }
+      ],
+      "description": "This object describes a gift received and owned by a user or a chat. Currently, it can be one of",
+      "name": "OwnedGift"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the gift, always “regular”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Information about the regular gift",
+          "type": [
+            "Gift"
+          ],
+          "name": "gift"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Unique identifier of the gift for the bot; for gifts received on behalf of business accounts only",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Sender of the gift if it is a known user",
+          "type": [
+            "User"
+          ],
+          "name": "sender_user"
+        },
+        {
+          "optional": false,
+          "description": "Date the gift was sent in Unix time",
+          "type": [
+            "int"
+          ],
+          "name": "send_date"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Text of the message that was added to the gift",
+          "type": [
+            "str"
+          ],
+          "name": "text"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Special entities that appear in the text",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "entities"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will be able to see them",
+          "type": [
+            "bool"
+          ],
+          "name": "is_private"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift is displayed on the account's profile page; for gifts received on behalf of business accounts only",
+          "type": [
+            "bool"
+          ],
+          "name": "is_saved"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift can be upgraded to a unique gift; for gifts received on behalf of business accounts only",
+          "type": [
+            "bool"
+          ],
+          "name": "can_be_upgraded"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift was refunded and isn't available anymore",
+          "type": [
+            "bool"
+          ],
+          "name": "was_refunded"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that can be claimed by the receiver instead of the gift; omitted if the gift cannot be converted to Telegram Stars",
+          "type": [
+            "int"
+          ],
+          "name": "convert_star_count"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that were paid by the sender for the ability to upgrade the gift",
+          "type": [
+            "int"
+          ],
+          "name": "prepaid_upgrade_star_count"
+        }
+      ],
+      "description": "Describes a regular gift owned by a user or a chat.",
+      "name": "OwnedGiftRegular"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the gift, always “unique”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Information about the unique gift",
+          "type": [
+            "UniqueGift"
+          ],
+          "name": "gift"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Unique identifier of the received gift for the bot; for gifts received on behalf of business accounts only",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Sender of the gift if it is a known user",
+          "type": [
+            "User"
+          ],
+          "name": "sender_user"
+        },
+        {
+          "optional": false,
+          "description": "Date the gift was sent in Unix time",
+          "type": [
+            "int"
+          ],
+          "name": "send_date"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift is displayed on the account's profile page; for gifts received on behalf of business accounts only",
+          "type": [
+            "bool"
+          ],
+          "name": "is_saved"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the gift can be transferred to another owner; for gifts received on behalf of business accounts only",
+          "type": [
+            "bool"
+          ],
+          "name": "can_be_transferred"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of Telegram Stars that must be paid to transfer the gift; omitted if the bot cannot transfer the gift",
+          "type": [
+            "int"
+          ],
+          "name": "transfer_star_count"
+        }
+      ],
+      "description": "Describes a unique gift received and owned by a user or a chat.",
+      "name": "OwnedGiftUnique"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "The total number of gifts owned by the user or the chat",
+          "type": [
+            "int"
+          ],
+          "name": "total_count"
+        },
+        {
+          "optional": false,
+          "description": "The list of gifts",
+          "type": [
+            [
+              "array",
+              [
+                "OwnedGift"
+              ]
+            ]
+          ],
+          "name": "gifts"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Offset for the next request. If empty, then there are no more results",
+          "type": [
+            "str"
+          ],
+          "name": "next_offset"
+        }
+      ],
+      "description": "Contains the list of gifts received and owned by a user or a chat.",
+      "name": "OwnedGifts"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "True, if unlimited regular gifts are accepted",
+          "type": [
+            "bool"
+          ],
+          "name": "unlimited_gifts"
+        },
+        {
+          "optional": false,
+          "description": "True, if limited regular gifts are accepted",
+          "type": [
+            "bool"
+          ],
+          "name": "limited_gifts"
+        },
+        {
+          "optional": false,
+          "description": "True, if unique gifts or gifts that can be upgraded to unique for free are accepted",
+          "type": [
+            "bool"
+          ],
+          "name": "unique_gifts"
+        },
+        {
+          "optional": false,
+          "description": "True, if a Telegram Premium subscription is accepted",
+          "type": [
+            "bool"
+          ],
+          "name": "premium_subscription"
+        }
+      ],
+      "description": "This object describes the types of gifts that can be gifted to a user or a chat.",
+      "name": "AcceptedGiftTypes"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Integer amount of Telegram Stars, rounded to 0; can be negative",
+          "type": [
+            "int"
+          ],
+          "name": "amount"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The number of 1/1000000000 shares of Telegram Stars; from -999999999 to 999999999; can be negative if and only if amount is non-positive",
+          "type": [
+            "int"
+          ],
+          "name": "nanostar_amount"
+        }
+      ],
+      "description": "Describes an amount of Telegram Stars.",
+      "name": "StarAmount"
     },
     {
       "params": [
@@ -6494,6 +7642,124 @@
     {
       "params": [
         {
+          "optional": true,
+          "description": "Optional. True, if the bot can send and edit messages in the private chats that had incoming messages in the last 24 hours",
+          "type": [
+            "bool"
+          ],
+          "name": "can_reply"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can mark incoming private messages as read",
+          "type": [
+            "bool"
+          ],
+          "name": "can_read_messages"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can delete messages sent by the bot",
+          "type": [
+            "bool"
+          ],
+          "name": "can_delete_sent_messages"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can delete all private messages in managed chats",
+          "type": [
+            "bool"
+          ],
+          "name": "can_delete_all_messages"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can edit the first and last name of the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_edit_name"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can edit the bio of the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_edit_bio"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can edit the profile photo of the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_edit_profile_photo"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can edit the username of the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_edit_username"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can change the privacy settings pertaining to gifts for the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_change_gift_settings"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can view gifts and the amount of Telegram Stars owned by the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_view_gifts_and_stars"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can convert regular gifts owned by the business account to Telegram Stars",
+          "type": [
+            "bool"
+          ],
+          "name": "can_convert_gifts_to_stars"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can transfer and upgrade gifts owned by the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_transfer_and_upgrade_gifts"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can transfer Telegram Stars received by the business account to its own account, or use them to upgrade and transfer gifts",
+          "type": [
+            "bool"
+          ],
+          "name": "can_transfer_stars"
+        },
+        {
+          "optional": true,
+          "description": "Optional. True, if the bot can post, edit and delete stories on behalf of the business account",
+          "type": [
+            "bool"
+          ],
+          "name": "can_manage_stories"
+        }
+      ],
+      "description": "Represents the rights of a business bot.",
+      "name": "BusinessBotRights"
+    },
+    {
+      "params": [
+        {
           "optional": false,
           "description": "Unique identifier of the business connection",
           "type": [
@@ -6526,12 +7792,12 @@
           "name": "date"
         },
         {
-          "optional": false,
-          "description": "True, if the bot can act on behalf of the business account in chats that were active in the last 24 hours",
+          "optional": true,
+          "description": "Optional. Rights of the business bot",
           "type": [
-            "bool"
+            "BusinessBotRights"
           ],
-          "name": "can_reply"
+          "name": "rights"
         },
         {
           "optional": false,
@@ -6691,10 +7957,25 @@
           "optional": true,
           "description": "Optional. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
           "type": [
-            "file",
             "str"
           ],
           "name": "thumbnail"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Cover for the video in the message. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://<file_attach_name>” to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files »",
+          "type": [
+            "str"
+          ],
+          "name": "cover"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Start timestamp for the video in the message",
+          "type": [
+            "int"
+          ],
+          "name": "start_timestamp"
         },
         {
           "optional": true,
@@ -6799,7 +8080,6 @@
           "optional": true,
           "description": "Optional. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
           "type": [
-            "file",
             "str"
           ],
           "name": "thumbnail"
@@ -6899,7 +8179,6 @@
           "optional": true,
           "description": "Optional. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
           "type": [
-            "file",
             "str"
           ],
           "name": "thumbnail"
@@ -6983,7 +8262,6 @@
           "optional": true,
           "description": "Optional. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
           "type": [
-            "file",
             "str"
           ],
           "name": "thumbnail"
@@ -7073,10 +8351,25 @@
           "optional": true,
           "description": "Optional. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
           "type": [
-            "file",
             "str"
           ],
           "name": "thumbnail"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Cover for the video in the message. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://<file_attach_name>” to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files »",
+          "type": [
+            "str"
+          ],
+          "name": "cover"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Start timestamp for the video in the message",
+          "type": [
+            "int"
+          ],
+          "name": "start_timestamp"
         },
         {
           "optional": true,
@@ -7113,6 +8406,126 @@
       ],
       "description": "The paid media to send is a video.",
       "name": "InputPaidMediaVideo"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the profile photo, must be static",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "The static profile photo. Profile photos can't be reused and can only be uploaded as a new file, so you can pass “attach://<file_attach_name>” if the photo was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
+          "type": [
+            "str"
+          ],
+          "name": "photo"
+        }
+      ],
+      "description": "A static profile photo in the .JPG format.",
+      "name": "InputProfilePhotoStatic"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the profile photo, must be animated",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "The animated profile photo. Profile photos can't be reused and can only be uploaded as a new file, so you can pass “attach://<file_attach_name>” if the photo was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
+          "type": [
+            "str"
+          ],
+          "name": "animation"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Timestamp in seconds of the frame that will be used as the static profile photo. Defaults to 0.0.",
+          "type": [
+            "float"
+          ],
+          "name": "main_frame_timestamp"
+        }
+      ],
+      "description": "An animated profile photo in the MPEG4 format.",
+      "name": "InputProfilePhotoAnimated"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the content, must be photo",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "The photo to post as a story. The photo must be of the size 1080x1920 and must not exceed 10 MB. The photo can't be reused and can only be uploaded as a new file, so you can pass “attach://<file_attach_name>” if the photo was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
+          "type": [
+            "str"
+          ],
+          "name": "photo"
+        }
+      ],
+      "description": "Describes a photo to post as a story.",
+      "name": "InputStoryContentPhoto"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the content, must be video",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "The video to post as a story. The video must be of the size 720x1280, streamable, encoded with H.265 codec, with key frames added each second in the MPEG4 format, and must not exceed 30 MB. The video can't be reused and can only be uploaded as a new file, so you can pass “attach://<file_attach_name>” if the video was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files »",
+          "type": [
+            "str"
+          ],
+          "name": "video"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Precise duration of the video in seconds; 0-60",
+          "type": [
+            "float"
+          ],
+          "name": "duration"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Timestamp in seconds of the frame that will be used as the static cover for the story. Defaults to 0.0.",
+          "type": [
+            "float"
+          ],
+          "name": "cover_frame_timestamp"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Pass True if the video has no sound",
+          "type": [
+            "bool"
+          ],
+          "name": "is_animation"
+        }
+      ],
+      "description": "Describes a video to post as a story.",
+      "name": "InputStoryContentVideo"
     },
     {
       "params": [
@@ -7333,16 +8746,15 @@
       "params": [
         {
           "optional": false,
-          "description": "The added sticker. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, upload a new one using multipart/form-data, or pass “attach://<file_attach_name>” to upload a new one using multipart/form-data under <file_attach_name> name. Animated and video stickers can't be uploaded via HTTP URL. More information on Sending Files »",
+          "description": "The added sticker. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or pass “attach://<file_attach_name>” to upload a new file using multipart/form-data under <file_attach_name> name. Animated and video stickers can't be uploaded via HTTP URL. More information on Sending Files »",
           "type": [
-            "file",
             "str"
           ],
           "name": "sticker"
         },
         {
           "optional": false,
-          "description": "Format of the added sticker, must be one of “static” for a .WEBP or .PNG image, “animated” for a .TGS animation, “video” for a WEBM video",
+          "description": "Format of the added sticker, must be one of “static” for a .WEBP or .PNG image, “animated” for a .TGS animation, “video” for a .WEBM video",
           "type": [
             "str"
           ],
@@ -7385,71 +8797,6 @@
       ],
       "description": "This object describes a sticker to be added to a sticker set.",
       "name": "InputSticker"
-    },
-    {
-      "params": [
-        {
-          "optional": false,
-          "description": "Unique identifier of the gift",
-          "type": [
-            "str"
-          ],
-          "name": "id"
-        },
-        {
-          "optional": false,
-          "description": "The sticker that represents the gift",
-          "type": [
-            "Sticker"
-          ],
-          "name": "sticker"
-        },
-        {
-          "optional": false,
-          "description": "The number of Telegram Stars that must be paid to send the sticker",
-          "type": [
-            "int"
-          ],
-          "name": "star_count"
-        },
-        {
-          "optional": true,
-          "description": "Optional. The total number of the gifts of this type that can be sent; for limited gifts only",
-          "type": [
-            "int"
-          ],
-          "name": "total_count"
-        },
-        {
-          "optional": true,
-          "description": "Optional. The number of remaining gifts of this type that can be sent; for limited gifts only",
-          "type": [
-            "int"
-          ],
-          "name": "remaining_count"
-        }
-      ],
-      "description": "This object represents a gift that can be sent by the bot.",
-      "name": "Gift"
-    },
-    {
-      "params": [
-        {
-          "optional": false,
-          "description": "The list of gifts",
-          "type": [
-            [
-              "array",
-              [
-                "Gift"
-              ]
-            ]
-          ],
-          "name": "gifts"
-        }
-      ],
-      "description": "This object represent a list of gifts.",
-      "name": "Gifts"
     },
     {
       "params": [
@@ -7584,14 +8931,6 @@
             "str"
           ],
           "name": "url"
-        },
-        {
-          "optional": true,
-          "description": "Optional. Pass True if you don't want the URL to be shown in the message",
-          "type": [
-            "bool"
-          ],
-          "name": "hide_url"
         },
         {
           "optional": true,
@@ -7772,7 +9111,7 @@
         },
         {
           "optional": false,
-          "description": "A valid URL for the GIF file. File size must not exceed 1MB",
+          "description": "A valid URL for the GIF file",
           "type": [
             "str"
           ],
@@ -7903,7 +9242,7 @@
         },
         {
           "optional": false,
-          "description": "A valid URL for the MPEG4 file. File size must not exceed 1MB",
+          "description": "A valid URL for the MPEG4 file",
           "type": [
             "str"
           ],
@@ -10258,7 +11597,7 @@
           "name": "provider_payment_charge_id"
         }
       ],
-      "description": "This object contains basic information about a successful payment.",
+      "description": "This object contains basic information about a successful payment. Note that if the buyer initiates a chargeback with the relevant payment provider following this transaction, the funds may be debited from your balance. This is outside of Telegram's control.",
       "name": "SuccessfulPayment"
     },
     {
@@ -10490,12 +11829,66 @@
     {
       "params": [
         {
+          "optional": true,
+          "description": "Optional. The bot or the user that received an affiliate commission if it was received by a bot or a user",
+          "type": [
+            "User"
+          ],
+          "name": "affiliate_user"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The chat that received an affiliate commission if it was received by a chat",
+          "type": [
+            "Chat"
+          ],
+          "name": "affiliate_chat"
+        },
+        {
+          "optional": false,
+          "description": "The number of Telegram Stars received by the affiliate for each 1000 Telegram Stars received by the bot from referred users",
+          "type": [
+            "int"
+          ],
+          "name": "commission_per_mille"
+        },
+        {
+          "optional": false,
+          "description": "Integer amount of Telegram Stars received by the affiliate from the transaction, rounded to 0; can be negative for refunds",
+          "type": [
+            "int"
+          ],
+          "name": "amount"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The number of 1/1000000000 shares of Telegram Stars received by the affiliate; from -999999999 to 999999999; can be negative for refunds",
+          "type": [
+            "int"
+          ],
+          "name": "nanostar_amount"
+        }
+      ],
+      "description": "Contains information about the affiliate that received a commission via this transaction.",
+      "name": "AffiliateInfo"
+    },
+    {
+      "params": [
+        {
           "optional": false,
           "description": "Type of the transaction partner, always “user”",
           "type": [
             "str"
           ],
           "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Type of the transaction, currently one of “invoice_payment” for payments via invoices, “paid_media_payment” for payments for paid media, “gift_purchase” for gifts sent by the bot, “premium_purchase” for Telegram Premium subscriptions gifted by the bot, “business_account_transfer” for direct transfers from managed business accounts",
+          "type": [
+            "str"
+          ],
+          "name": "transaction_type"
         },
         {
           "optional": false,
@@ -10507,7 +11900,15 @@
         },
         {
           "optional": true,
-          "description": "Optional. Bot-specified invoice payload",
+          "description": "Optional. Information about the affiliate that received a commission via this transaction. Can be available only for “invoice_payment” and “paid_media_payment” transactions.",
+          "type": [
+            "AffiliateInfo"
+          ],
+          "name": "affiliate"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Bot-specified invoice payload. Can be available only for “invoice_payment” transactions.",
           "type": [
             "str"
           ],
@@ -10515,7 +11916,7 @@
         },
         {
           "optional": true,
-          "description": "Optional. The duration of the paid subscription",
+          "description": "Optional. The duration of the paid subscription. Can be available only for “invoice_payment” transactions.",
           "type": [
             "int"
           ],
@@ -10523,7 +11924,7 @@
         },
         {
           "optional": true,
-          "description": "Optional. Information about the paid media bought by the user",
+          "description": "Optional. Information about the paid media bought by the user; for “paid_media_payment” transactions only",
           "type": [
             [
               "array",
@@ -10536,7 +11937,7 @@
         },
         {
           "optional": true,
-          "description": "Optional. Bot-specified paid media payload",
+          "description": "Optional. Bot-specified paid media payload. Can be available only for “paid_media_payment” transactions.",
           "type": [
             "str"
           ],
@@ -10544,15 +11945,83 @@
         },
         {
           "optional": true,
-          "description": "Optional. The gift sent to the user by the bot",
+          "description": "Optional. The gift sent to the user by the bot; for “gift_purchase” transactions only",
           "type": [
-            "str"
+            "Gift"
           ],
           "name": "gift"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Number of months the gifted Telegram Premium subscription will be active for; for “premium_purchase” transactions only",
+          "type": [
+            "int"
+          ],
+          "name": "premium_subscription_duration"
         }
       ],
       "description": "Describes a transaction with a user.",
       "name": "TransactionPartnerUser"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the transaction partner, always “chat”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": false,
+          "description": "Information about the chat",
+          "type": [
+            "Chat"
+          ],
+          "name": "chat"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The gift sent to the chat by the bot",
+          "type": [
+            "Gift"
+          ],
+          "name": "gift"
+        }
+      ],
+      "description": "Describes a transaction with a chat.",
+      "name": "TransactionPartnerChat"
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Type of the transaction partner, always “affiliate_program”",
+          "type": [
+            "str"
+          ],
+          "name": "type"
+        },
+        {
+          "optional": true,
+          "description": "Optional. Information about the bot that sponsored the affiliate program",
+          "type": [
+            "User"
+          ],
+          "name": "sponsor_user"
+        },
+        {
+          "optional": false,
+          "description": "The number of Telegram Stars received by the bot for each 1000 Telegram Stars received by the affiliate program sponsor from referred users",
+          "type": [
+            "int"
+          ],
+          "name": "commission_per_mille"
+        }
+      ],
+      "description": "Describes the affiliate program that issued the affiliate commission received via this transaction.",
+      "name": "TransactionPartnerAffiliateProgram"
     },
     {
       "params": [
@@ -10638,11 +12107,19 @@
         },
         {
           "optional": false,
-          "description": "Number of Telegram Stars transferred by the transaction",
+          "description": "Integer amount of Telegram Stars transferred by the transaction",
           "type": [
             "int"
           ],
           "name": "amount"
+        },
+        {
+          "optional": true,
+          "description": "Optional. The number of 1/1000000000 shares of Telegram Stars transferred by the transaction; from 0 to 999999999",
+          "type": [
+            "int"
+          ],
+          "name": "nanostar_amount"
         },
         {
           "optional": false,
@@ -10669,7 +12146,7 @@
           "name": "receiver"
         }
       ],
-      "description": "Describes a Telegram Star transaction.",
+      "description": "Describes a Telegram Star transaction. Note that if the buyer initiates a chargeback with the payment provider from whom they acquired Stars (e.g., Apple, Google) following this transaction, the refunded Stars will be deducted from the bot's balance. This is outside of Telegram's control.",
       "name": "StarTransaction"
     },
     {
@@ -11507,6 +12984,20 @@
     },
     {
       "subtypes": [
+        "InputProfilePhotoStatic",
+        "InputProfilePhotoAnimated"
+      ],
+      "name": "InputProfilePhoto"
+    },
+    {
+      "subtypes": [
+        "InputStoryContentPhoto",
+        "InputStoryContentVideo"
+      ],
+      "name": "InputStoryContent"
+    },
+    {
+      "subtypes": [
         "InlineQueryResultCachedAudio",
         "InlineQueryResultCachedDocument",
         "InlineQueryResultCachedGif",
@@ -11551,6 +13042,8 @@
     {
       "subtypes": [
         "TransactionPartnerUser",
+        "TransactionPartnerChat",
+        "TransactionPartnerAffiliateProgram",
         "TransactionPartnerFragment",
         "TransactionPartnerTelegramAds",
         "TransactionPartnerTelegramApi",
@@ -11602,7 +13095,7 @@
         },
         {
           "optional": true,
-          "description": "A JSON-serialized list of the update types you want your bot to receive. For example, specify [\"message\", \"edited_channel_post\", \"callback_query\"] to only receive updates of these types. See Update for a complete list of available update types. Specify an empty list to receive all update types except chat_member, message_reaction, and message_reaction_count (default). If not specified, the previous setting will be used.\n\nPlease note that this parameter doesn't affect updates created before the call to the getUpdates, so unwanted updates may be received for a short period of time.",
+          "description": "A JSON-serialized list of the update types you want your bot to receive. For example, specify [\"message\", \"edited_channel_post\", \"callback_query\"] to only receive updates of these types. See Update for a complete list of available update types. Specify an empty list to receive all update types except chat_member, message_reaction, and message_reaction_count (default). If not specified, the previous setting will be used.\n\nPlease note that this parameter doesn't affect updates created before the call to getUpdates, so unwanted updates may be received for a short period of time.",
           "type": [
             [
               "array",
@@ -11690,7 +13183,7 @@
           "name": "secret_token"
         }
       ],
-      "description": "Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of attempts. Returns True on success.",
+      "description": "Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request (a request with response HTTP status code different from 2XY), we will repeat the request and give up after a reasonable amount of attempts. Returns True on success.",
       "type": "post",
       "name": "setWebhook",
       "return": [
@@ -11904,6 +13397,14 @@
         },
         {
           "optional": true,
+          "description": "New start timestamp for the forwarded video in the message",
+          "type": [
+            "int"
+          ],
+          "name": "video_start_timestamp"
+        },
+        {
+          "optional": true,
           "description": "Sends the message silently. Users will receive a notification with no sound.",
           "type": [
             "bool"
@@ -11996,7 +13497,12 @@
       "type": "post",
       "name": "forwardMessages",
       "return": [
-        "messages"
+        [
+          "array",
+          [
+            "MessageId"
+          ]
+        ]
       ]
     },
     {
@@ -12034,6 +13540,14 @@
             "int"
           ],
           "name": "message_id"
+        },
+        {
+          "optional": true,
+          "description": "New start timestamp for the copied video in the message",
+          "type": [
+            "int"
+          ],
+          "name": "video_start_timestamp"
         },
         {
           "optional": true,
@@ -12193,7 +13707,12 @@
       "type": "post",
       "name": "copyMessages",
       "return": [
-        "messages"
+        [
+          "array",
+          [
+            "MessageId"
+          ]
+        ]
       ]
     },
     {
@@ -12702,6 +14221,23 @@
             "str"
           ],
           "name": "thumbnail"
+        },
+        {
+          "optional": true,
+          "description": "Cover for the video in the message. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://<file_attach_name>” to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files »",
+          "type": [
+            "file",
+            "str"
+          ],
+          "name": "cover"
+        },
+        {
+          "optional": true,
+          "description": "Start timestamp for the video in the message",
+          "type": [
+            "int"
+          ],
+          "name": "start_timestamp"
         },
         {
           "optional": true,
@@ -13261,7 +14797,7 @@
         },
         {
           "optional": false,
-          "description": "The number of Telegram Stars that must be paid to buy access to the media; 1-2500",
+          "description": "The number of Telegram Stars that must be paid to buy access to the media; 1-10000",
           "type": [
             "int"
           ],
@@ -14263,7 +15799,7 @@
           "name": "is_big"
         }
       ],
-      "description": "Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.",
+      "description": "Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.",
       "type": "post",
       "name": "setMessageReaction",
       "return": [
@@ -14914,7 +16450,7 @@
         },
         {
           "optional": false,
-          "description": "The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-2500",
+          "description": "The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-10000",
           "type": [
             "int"
           ],
@@ -16710,6 +18246,915 @@
       ]
     },
     {
+      "params": [],
+      "description": "Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object.",
+      "type": "get",
+      "name": "getAvailableGifts",
+      "return": [
+        "Gifts"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": true,
+          "description": "Required if chat_id is not specified. Unique identifier of the target user who will receive the gift.",
+          "type": [
+            "int"
+          ],
+          "name": "user_id"
+        },
+        {
+          "optional": true,
+          "description": "Required if user_id is not specified. Unique identifier for the chat or username of the channel (in the format @channelusername) that will receive the gift.",
+          "type": [
+            "int",
+            "str"
+          ],
+          "name": "chat_id"
+        },
+        {
+          "optional": false,
+          "description": "Identifier of the gift",
+          "type": [
+            "str"
+          ],
+          "name": "gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to pay for the gift upgrade from the bot's balance, thereby making the upgrade free for the receiver",
+          "type": [
+            "bool"
+          ],
+          "name": "pay_for_upgrade"
+        },
+        {
+          "optional": true,
+          "description": "Text that will be shown along with the gift; 0-128 characters",
+          "type": [
+            "str"
+          ],
+          "name": "text"
+        },
+        {
+          "optional": true,
+          "description": "Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
+          "type": [
+            "str"
+          ],
+          "name": "text_parse_mode"
+        },
+        {
+          "optional": true,
+          "description": "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "text_entities"
+        }
+      ],
+      "description": "Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns True on success.",
+      "type": "post",
+      "name": "sendGift",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the target user who will receive a Telegram Premium subscription",
+          "type": [
+            "int"
+          ],
+          "name": "user_id"
+        },
+        {
+          "optional": false,
+          "description": "Number of months the Telegram Premium subscription will be active for the user; must be one of 3, 6, or 12",
+          "type": [
+            "int"
+          ],
+          "name": "month_count"
+        },
+        {
+          "optional": false,
+          "description": "Number of Telegram Stars to pay for the Telegram Premium subscription; must be 1000 for 3 months, 1500 for 6 months, and 2500 for 12 months",
+          "type": [
+            "int"
+          ],
+          "name": "star_count"
+        },
+        {
+          "optional": true,
+          "description": "Text that will be shown along with the service message about the subscription; 0-128 characters",
+          "type": [
+            "str"
+          ],
+          "name": "text"
+        },
+        {
+          "optional": true,
+          "description": "Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
+          "type": [
+            "str"
+          ],
+          "name": "text_parse_mode"
+        },
+        {
+          "optional": true,
+          "description": "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "text_entities"
+        }
+      ],
+      "description": "Gifts a Telegram Premium subscription to the given user. Returns True on success.",
+      "type": "post",
+      "name": "giftPremiumSubscription",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the target user",
+          "type": [
+            "int"
+          ],
+          "name": "user_id"
+        },
+        {
+          "optional": true,
+          "description": "Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.",
+          "type": [
+            "str"
+          ],
+          "name": "custom_description"
+        }
+      ],
+      "description": "Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.",
+      "type": "post",
+      "name": "verifyUser",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier for the target chat or username of the target channel (in the format @channelusername)",
+          "type": [
+            "int",
+            "str"
+          ],
+          "name": "chat_id"
+        },
+        {
+          "optional": true,
+          "description": "Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.",
+          "type": [
+            "str"
+          ],
+          "name": "custom_description"
+        }
+      ],
+      "description": "Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.",
+      "type": "post",
+      "name": "verifyChat",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the target user",
+          "type": [
+            "int"
+          ],
+          "name": "user_id"
+        }
+      ],
+      "description": "Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success.",
+      "type": "post",
+      "name": "removeUserVerification",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier for the target chat or username of the target channel (in the format @channelusername)",
+          "type": [
+            "int",
+            "str"
+          ],
+          "name": "chat_id"
+        }
+      ],
+      "description": "Removes verification from a chat that is currently verified on behalf of the organization represented by the bot. Returns True on success.",
+      "type": "post",
+      "name": "removeChatVerification",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection on behalf of which to read the message",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the chat in which the message was received. The chat must have been active in the last 24 hours.",
+          "type": [
+            "int"
+          ],
+          "name": "chat_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the message to mark as read",
+          "type": [
+            "int"
+          ],
+          "name": "message_id"
+        }
+      ],
+      "description": "Marks incoming message as read on behalf of a business account. Requires the can_read_messages business bot right. Returns True on success.",
+      "type": "post",
+      "name": "readBusinessMessage",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection on behalf of which to delete the messages",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See deleteMessage for limitations on which messages can be deleted",
+          "type": [
+            [
+              "array",
+              [
+                "int"
+              ]
+            ]
+          ],
+          "name": "message_ids"
+        }
+      ],
+      "description": "Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.",
+      "type": "post",
+      "name": "deleteBusinessMessages",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "The new value of the first name for the business account; 1-64 characters",
+          "type": [
+            "str"
+          ],
+          "name": "first_name"
+        },
+        {
+          "optional": true,
+          "description": "The new value of the last name for the business account; 0-64 characters",
+          "type": [
+            "str"
+          ],
+          "name": "last_name"
+        }
+      ],
+      "description": "Changes the first and last name of a managed business account. Requires the can_change_name business bot right. Returns True on success.",
+      "type": "post",
+      "name": "setBusinessAccountName",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": true,
+          "description": "The new value of the username for the business account; 0-32 characters",
+          "type": [
+            "str"
+          ],
+          "name": "username"
+        }
+      ],
+      "description": "Changes the username of a managed business account. Requires the can_change_username business bot right. Returns True on success.",
+      "type": "post",
+      "name": "setBusinessAccountUsername",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": true,
+          "description": "The new value of the bio for the business account; 0-140 characters",
+          "type": [
+            "str"
+          ],
+          "name": "bio"
+        }
+      ],
+      "description": "Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success.",
+      "type": "post",
+      "name": "setBusinessAccountBio",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "The new profile photo to set",
+          "type": [
+            "InputProfilePhoto"
+          ],
+          "name": "photo"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to set the public photo, which will be visible even if the main photo is hidden by the business account's privacy settings. An account can have only one public photo.",
+          "type": [
+            "bool"
+          ],
+          "name": "is_public"
+        }
+      ],
+      "description": "Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.",
+      "type": "post",
+      "name": "setBusinessAccountProfilePhoto",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to remove the public photo, which is visible even if the main photo is hidden by the business account's privacy settings. After the main photo is removed, the previous profile photo (if present) becomes the main photo.",
+          "type": [
+            "bool"
+          ],
+          "name": "is_public"
+        }
+      ],
+      "description": "Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.",
+      "type": "post",
+      "name": "removeBusinessAccountProfilePhoto",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Pass True, if a button for sending a gift to the user or by the business account must always be shown in the input field",
+          "type": [
+            "bool"
+          ],
+          "name": "show_gift_button"
+        },
+        {
+          "optional": false,
+          "description": "Types of gifts accepted by the business account",
+          "type": [
+            "AcceptedGiftTypes"
+          ],
+          "name": "accepted_gift_types"
+        }
+      ],
+      "description": "Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success.",
+      "type": "post",
+      "name": "setBusinessAccountGiftSettings",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        }
+      ],
+      "description": "Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns StarAmount on success.",
+      "type": "get",
+      "name": "getBusinessAccountStarBalance",
+      "return": [
+        "StarAmount"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Number of Telegram Stars to transfer; 1-10000",
+          "type": [
+            "int"
+          ],
+          "name": "star_count"
+        }
+      ],
+      "description": "Transfers Telegram Stars from the business account balance to the bot's balance. Requires the can_transfer_stars business bot right. Returns True on success.",
+      "type": "post",
+      "name": "transferBusinessAccountStars",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to exclude gifts that aren't saved to the account's profile page",
+          "type": [
+            "bool"
+          ],
+          "name": "exclude_unsaved"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to exclude gifts that are saved to the account's profile page",
+          "type": [
+            "bool"
+          ],
+          "name": "exclude_saved"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to exclude gifts that can be purchased an unlimited number of times",
+          "type": [
+            "bool"
+          ],
+          "name": "exclude_unlimited"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to exclude gifts that can be purchased a limited number of times",
+          "type": [
+            "bool"
+          ],
+          "name": "exclude_limited"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to exclude unique gifts",
+          "type": [
+            "bool"
+          ],
+          "name": "exclude_unique"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to sort results by gift price instead of send date. Sorting is applied before pagination.",
+          "type": [
+            "bool"
+          ],
+          "name": "sort_by_price"
+        },
+        {
+          "optional": true,
+          "description": "Offset of the first entry to return as received from the previous request; use empty string to get the first chunk of results",
+          "type": [
+            "str"
+          ],
+          "name": "offset"
+        },
+        {
+          "optional": true,
+          "description": "The maximum number of gifts to be returned; 1-100. Defaults to 100",
+          "type": [
+            "int"
+          ],
+          "name": "limit"
+        }
+      ],
+      "description": "Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success.",
+      "type": "get",
+      "name": "getBusinessAccountGifts",
+      "return": [
+        "OwnedGifts"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the regular gift that should be converted to Telegram Stars",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        }
+      ],
+      "description": "Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot right. Returns True on success.",
+      "type": "post",
+      "name": "convertGiftToStars",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the regular gift that should be upgraded to a unique one",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to keep the original gift text, sender and receiver in the upgraded gift",
+          "type": [
+            "bool"
+          ],
+          "name": "keep_original_details"
+        },
+        {
+          "optional": true,
+          "description": "The amount of Telegram Stars that will be paid for the upgrade from the business account balance. If gift.prepaid_upgrade_star_count > 0, then pass 0, otherwise, the can_transfer_stars business bot right is required and gift.upgrade_star_count must be passed.",
+          "type": [
+            "int"
+          ],
+          "name": "star_count"
+        }
+      ],
+      "description": "Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success.",
+      "type": "post",
+      "name": "upgradeGift",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the regular gift that should be transferred",
+          "type": [
+            "str"
+          ],
+          "name": "owned_gift_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the chat which will own the gift. The chat must be active in the last 24 hours.",
+          "type": [
+            "int"
+          ],
+          "name": "new_owner_chat_id"
+        },
+        {
+          "optional": true,
+          "description": "The amount of Telegram Stars that will be paid for the transfer from the business account balance. If positive, then the can_transfer_stars business bot right is required.",
+          "type": [
+            "int"
+          ],
+          "name": "star_count"
+        }
+      ],
+      "description": "Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success.",
+      "type": "post",
+      "name": "transferGift",
+      "return": [
+        "true"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Content of the story",
+          "type": [
+            "InputStoryContent"
+          ],
+          "name": "content"
+        },
+        {
+          "optional": false,
+          "description": "Period after which the story is moved to the archive, in seconds; must be one of 6 * 3600, 12 * 3600, 86400, or 2 * 86400",
+          "type": [
+            "int"
+          ],
+          "name": "active_period"
+        },
+        {
+          "optional": true,
+          "description": "Caption of the story, 0-2048 characters after entities parsing",
+          "type": [
+            "str"
+          ],
+          "name": "caption"
+        },
+        {
+          "optional": true,
+          "description": "Mode for parsing entities in the story caption. See formatting options for more details.",
+          "type": [
+            "str"
+          ],
+          "name": "parse_mode"
+        },
+        {
+          "optional": true,
+          "description": "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "caption_entities"
+        },
+        {
+          "optional": true,
+          "description": "A JSON-serialized list of clickable areas to be shown on the story",
+          "type": [
+            [
+              "array",
+              [
+                "StoryArea"
+              ]
+            ]
+          ],
+          "name": "areas"
+        },
+        {
+          "optional": true,
+          "description": "Pass True to keep the story accessible after it expires",
+          "type": [
+            "bool"
+          ],
+          "name": "post_to_chat_page"
+        },
+        {
+          "optional": true,
+          "description": "Pass True if the content of the story must be protected from forwarding and screenshotting",
+          "type": [
+            "bool"
+          ],
+          "name": "protect_content"
+        }
+      ],
+      "description": "Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.",
+      "type": "post",
+      "name": "postStory",
+      "return": [
+        "Story"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the story to edit",
+          "type": [
+            "int"
+          ],
+          "name": "story_id"
+        },
+        {
+          "optional": false,
+          "description": "Content of the story",
+          "type": [
+            "InputStoryContent"
+          ],
+          "name": "content"
+        },
+        {
+          "optional": true,
+          "description": "Caption of the story, 0-2048 characters after entities parsing",
+          "type": [
+            "str"
+          ],
+          "name": "caption"
+        },
+        {
+          "optional": true,
+          "description": "Mode for parsing entities in the story caption. See formatting options for more details.",
+          "type": [
+            "str"
+          ],
+          "name": "parse_mode"
+        },
+        {
+          "optional": true,
+          "description": "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode",
+          "type": [
+            [
+              "array",
+              [
+                "MessageEntity"
+              ]
+            ]
+          ],
+          "name": "caption_entities"
+        },
+        {
+          "optional": true,
+          "description": "A JSON-serialized list of clickable areas to be shown on the story",
+          "type": [
+            [
+              "array",
+              [
+                "StoryArea"
+              ]
+            ]
+          ],
+          "name": "areas"
+        }
+      ],
+      "description": "Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.",
+      "type": "post",
+      "name": "editStory",
+      "return": [
+        "Story"
+      ]
+    },
+    {
+      "params": [
+        {
+          "optional": false,
+          "description": "Unique identifier of the business connection",
+          "type": [
+            "str"
+          ],
+          "name": "business_connection_id"
+        },
+        {
+          "optional": false,
+          "description": "Unique identifier of the story to delete",
+          "type": [
+            "int"
+          ],
+          "name": "story_id"
+        }
+      ],
+      "description": "Deletes a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns True on success.",
+      "type": "post",
+      "name": "deleteStory",
+      "return": [
+        "true"
+      ]
+    },
+    {
       "params": [
         {
           "optional": true,
@@ -17209,7 +19654,7 @@
         },
         {
           "optional": true,
-          "description": "A .WEBP or .PNG image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a .TGS animation with a thumbnail up to 32 kilobytes in size (see https://core.telegram.org/stickers#animation-requirements for animated sticker technical requirements), or a WEBM video with the thumbnail up to 32 kilobytes in size; see https://core.telegram.org/stickers#video-requirements for video sticker technical requirements. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files ». Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.",
+          "description": "A .WEBP or .PNG image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a .TGS animation with a thumbnail up to 32 kilobytes in size (see https://core.telegram.org/stickers#animation-requirements for animated sticker technical requirements), or a .WEBM video with the thumbnail up to 32 kilobytes in size; see https://core.telegram.org/stickers#video-requirements for video sticker technical requirements. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files ». Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.",
           "type": [
             "file",
             "str"
@@ -17218,7 +19663,7 @@
         },
         {
           "optional": false,
-          "description": "Format of the thumbnail, must be one of “static” for a .WEBP or .PNG image, “animated” for a .TGS animation, or “video” for a WEBM video",
+          "description": "Format of the thumbnail, must be one of “static” for a .WEBP or .PNG image, “animated” for a .TGS animation, or “video” for a .WEBM video",
           "type": [
             "str"
           ],
@@ -17272,116 +19717,6 @@
       "description": "Use this method to delete a sticker set that was created by the bot. Returns True on success.",
       "type": "post",
       "name": "deleteStickerSet",
-      "return": [
-        "true"
-      ]
-    },
-    {
-      "params": [
-        {
-          "optional": false,
-          "description": "Unique identifier of the target user that will receive the gift",
-          "type": [
-            "int"
-          ],
-          "name": "user_id"
-        },
-        {
-          "optional": false,
-          "description": "Identifier of the gift",
-          "type": [
-            "str"
-          ],
-          "name": "gift_id"
-        },
-        {
-          "optional": true,
-          "description": "Text that will be shown along with the gift; 0-255 characters",
-          "type": [
-            "str"
-          ],
-          "name": "text"
-        },
-        {
-          "optional": true,
-          "description": "Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
-          "type": [
-            "str"
-          ],
-          "name": "text_parse_mode"
-        },
-        {
-          "optional": true,
-          "description": "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
-          "type": [
-            [
-              "array",
-              [
-                "MessageEntity"
-              ]
-            ]
-          ],
-          "name": "text_entities"
-        }
-      ],
-      "description": "Returns the list of gifts that can be sent by the bot to users. Requires no parameters. Returns a Gifts object.",
-      "type": "get",
-      "name": "getAvailableGifts",
-      "return": [
-        "Gifts"
-      ]
-    },
-    {
-      "params": [
-        {
-          "optional": false,
-          "description": "Unique identifier of the target user that will receive the gift",
-          "type": [
-            "int"
-          ],
-          "name": "user_id"
-        },
-        {
-          "optional": false,
-          "description": "Identifier of the gift",
-          "type": [
-            "str"
-          ],
-          "name": "gift_id"
-        },
-        {
-          "optional": true,
-          "description": "Text that will be shown along with the gift; 0-255 characters",
-          "type": [
-            "str"
-          ],
-          "name": "text"
-        },
-        {
-          "optional": true,
-          "description": "Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
-          "type": [
-            "str"
-          ],
-          "name": "text_parse_mode"
-        },
-        {
-          "optional": true,
-          "description": "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
-          "type": [
-            [
-              "array",
-              [
-                "MessageEntity"
-              ]
-            ]
-          ],
-          "name": "text_entities"
-        }
-      ],
-      "description": "Sends a gift to the given user. The gift can't be converted to Telegram Stars by the user. Returns True on success.",
-      "type": "post",
-      "name": "sendGift",
       "return": [
         "true"
       ]
@@ -17851,7 +20186,7 @@
         },
         {
           "optional": true,
-          "description": "The number of seconds the subscription will be active for before the next payment. The currency must be set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if specified. Any number of subscriptions can be active for a given bot at the same time, including multiple concurrent subscriptions from the same user.",
+          "description": "The number of seconds the subscription will be active for before the next payment. The currency must be set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if specified. Any number of subscriptions can be active for a given bot at the same time, including multiple concurrent subscriptions from the same user. Subscription price must no exceed 10000 Telegram Stars.",
           "type": [
             "int"
           ],
@@ -18015,7 +20350,7 @@
         },
         {
           "optional": true,
-          "description": "Required if ok is False. Error message in human readable form that explains why it is impossible to complete the order (e.g. \"Sorry, delivery to your desired address is unavailable'). Telegram will display this message to the user.",
+          "description": "Required if ok is False. Error message in human readable form that explains why it is impossible to complete the order (e.g. “Sorry, delivery to your desired address is unavailable”). Telegram will display this message to the user.",
           "type": [
             "str"
           ],

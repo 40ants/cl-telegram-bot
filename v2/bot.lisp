@@ -11,6 +11,13 @@
                 #:*current-bot*)
   (:import-from #:cl-telegram-bot2/states/base
                 #:base-state)
+  (:import-from #:serapeum
+                #:soft-list-of)
+  (:import-from #:closer-mop
+                #:slot-definition-name
+                #:class-direct-slots)
+  (:import-from #:str
+                #:replace-all)
   (:export #:defbot
            #:bot
            #:get-last-update-id
@@ -22,7 +29,9 @@
            #:debug-mode
            #:sent-commands-cache
            #:actors-system
-           #:initial-state))
+           #:initial-state
+           #:bot-allowed-updates
+           #:get-default-allowed-updates))
 (in-package #:cl-telegram-bot2/bot)
 
 
@@ -71,7 +80,13 @@
                   :initform (required-argument ":INITIAL-STATE is required argument.")
                   :type (or symbol
                             base-state)
-                  :reader initial-state)))
+                  :reader initial-state)
+   (allowed-updates :initarg :allowed-updates
+                    :initform nil
+                    :type (soft-list-of string)
+                    :reader bot-allowed-updates
+                    :documentation "If given, then only listed updates will be received by the bot. Or you might pass ADDITIONAL-ALLOWED-UPDATES argument to get some update types additionally to default types. According to TG API documentation, these update types aren't received by default: chat_member, message_reaction, and message_reaction_count."))
+  (:default-initargs :additional-allowed-updates nil))
 
 
 (defmacro defbot (name base-classes &optional slots &rest options)
@@ -112,21 +127,52 @@
          ;; ,@options
          (:default-initargs ,@default-initargs))
 
-       (defun ,(alexandria:symbolicate 'make- name) (token &rest args)
+       (defun ,(alexandria:symbolicate 'make- name) (token &rest args &key allowed-updates additional-allowed-updates &allow-other-keys)
+         (declare (ignore allowed-updates additional-allowed-updates))
          (apply 'make-instance
                 ',name
                 :token token
                 args)))))
 
 
-(defmethod initialize-instance :after ((bot bot) &key &allow-other-keys)
-  (with-accessors ((token         token)
-                   (file-endpoint file-endpoint)
-                   (api-uri       api-uri)) bot
-    (setf (slot-value bot 'endpoint)
-          (concatenate 'string api-uri "bot" token "/")
-          (slot-value bot 'file-endpoint)
-          (concatenate 'string api-uri "file/" "bot" token "/"))))
+(defparameter *update-types-excluded-from-default-list*
+  '("chat_member" "message_reaction" "message_reaction_count"))
+
+
+(defun get-default-allowed-updates ()
+  "Returns a list of strings suitable to pass as ALLOWED-UPDATES argument to the bot constructor."
+  (loop for slot in (class-direct-slots (find-class 'cl-telegram-bot2/api::update))
+        for slot-name = (slot-definition-name slot)
+        for slot-name-as-tg = (replace-all "-" "_" (string-downcase slot-name))
+        unless (member slot-name-as-tg *update-types-excluded-from-default-list*
+                       :test #'string=)
+          collect slot-name-as-tg))
+
+
+(defmethod initialize-instance :around ((bot bot) &rest rest &key allowed-updates additional-allowed-updates &allow-other-keys)
+  (let* ((allowed-updates
+           (cond
+             ((and allowed-updates
+                   additional-allowed-updates)
+              (error "Only ALLOWED-UPDATES or ADDITIONAL-ALLOWED-UPDATES should be used."))
+             (allowed-updates allowed-updates)
+             (additional-allowed-updates
+              (loop with result = (get-default-allowed-updates)
+                    for method in additional-allowed-updates
+                    do (pushnew method result :test #'string-equal)
+                    finally (return result)))))
+         (new-args (list* :allowed-updates
+                          allowed-updates
+                          rest))
+         (result (apply #'call-next-method bot new-args)))
+    (with-accessors ((token         token)
+                     (file-endpoint file-endpoint)
+                     (api-uri       api-uri)) bot
+      (setf (slot-value bot 'endpoint)
+            (concatenate 'string api-uri "bot" token "/")
+            (slot-value bot 'file-endpoint)
+            (concatenate 'string api-uri "file/" "bot" token "/")))
+    (values result)))
 
 
 (defmethod print-object ((bot bot) stream)

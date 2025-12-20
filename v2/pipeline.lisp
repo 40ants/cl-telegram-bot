@@ -10,6 +10,7 @@
                 #:api-uri
                 #:token
                 #:get-last-update-id
+                #:bot-allowed-updates
                 #:bot)
   (:import-from #:cl-telegram-bot2/vars
                 #:*default-special-bindings*
@@ -25,6 +26,7 @@
                 #:*token*
                 #:*api-url*)
   (:import-from #:serapeum
+                #:soft-list-of
                 #:->
                 #:fmt)
   (:import-from #:sento.actor-cell
@@ -89,6 +91,11 @@
                                   rest-states)))))
 
 
+(-> get-updates (bot &key
+                 (:limit (or null integer))
+                 (:timeout (or null integer)))
+    (values (soft-list-of cl-telegram-bot2/api:update))) 
+
 (defun get-updates (bot &key limit timeout)
   "https://core.telegram.org/bots/api#getupdates"
   (let* ((current-id (get-last-update-id bot))
@@ -98,7 +105,8 @@
                     (log:debug "Requesting updates" current-id)
                     (cl-telegram-bot2/api:get-updates :limit limit
                                                       :offset current-id
-                                                      :timeout timeout))))
+                                                      :timeout timeout
+                                                      :allowed-updates (bot-allowed-updates bot)))))
     
     (when updates
       (let ((max-id (reduce #'max
