@@ -12,6 +12,24 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.14.0 2025-12-31
+          "
+Changed
+=======
+
+- If `text` of CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT is a callback, now it will be called with one argument - the action itself.
+- If `parse-mode` of CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT is a callback, now it will be called with   action itself as a first argument and `:text` keyword argument where text is a string stored in the slot or returned by a callback.
+- If `reply-markup` of CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT is a callback, now it will be called with   action itself as a first argument plus `:text` and `:parse-mode` keyword arguments.
+
+Pay attention, some key arguments may be added to these callbacks in future! It is better to define callbacks having `&allow-other-keys`.
+
+Added
+=====
+
+- Slot `link-preview-options` was added to CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT class. It could be an API object or a callable of one positional argument - action itself + keyword arguments `:text`, `:parse-mode` and `:reply-markup`.
+
+")
+
   (0.13.0 2025-12-20
           "
 Added

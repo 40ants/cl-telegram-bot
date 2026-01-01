@@ -28,7 +28,8 @@
   (:export #:send-text
            #:text
            #:reply-markup
-           #:parse-mode))
+           #:parse-mode
+           #:link-preview-options))
 (in-package #:cl-telegram-bot2/actions/send-text)
 
 
@@ -49,20 +50,36 @@
                          symbol
                          string)
                :documentation "Supported values are: `\"Markdown\"`, `\"MarkdownV2\"` or `\"HTML\"`. Read more about formatting options in the Telegram documentaion: https://core.telegram.org/bots/api#formatting-options"
-               :reader parse-mode)))
+               :reader parse-mode)
+   (link-preview-options :initarg :link-preview-options
+                         :initform nil
+                         :type (or null
+                                   symbol
+                                   (member :disable)
+                                   cl-telegram-bot2/api:link-preview-options)
+                         :documentation "Options object of type CL-TELEGRAM-BOT2/API:LINK-PREVIEW-OPTIONS to control if Telegram client should show a preview for some link from the message. Can be a symbol bound to a callable of one positional argument - action itself + keyword arguments `:text`, `:parse-mode` and `:reply-markup`. Shortcut :disable can be used instead of an object."
+                         :reader link-preview-options)))
 
 
 (-> send-text ((or string symbol)
                &key
-               (:reply-markup (or null reply-markup-type))
-               (:parse-mode (or null string)))
+               (:reply-markup (or null
+                                  symbol
+                                  reply-markup-type))
+               (:parse-mode (or null
+                                symbol
+                                string))
+               (:link-preview-options (or null
+                                          symbol
+                                          cl-telegram-bot2/api:link-preview-options)))
     (values send-text &optional))
 
 
 (defun send-text (text-or-func-name
                   &key
-                  reply-markup
-                  parse-mode)
+                    reply-markup
+                    parse-mode
+                    link-preview-options)
   (when (and (symbolp text-or-func-name)
              (not (fboundp text-or-func-name)))
     (error "SEND-TEXT waits a text or fbound symbol. ~S is not fbound."
@@ -71,7 +88,8 @@
   (make-instance 'send-text
                  :text text-or-func-name
                  :reply-markup reply-markup
-                 :parse-mode parse-mode))
+                 :parse-mode parse-mode
+                 :link-preview-options link-preview-options))
 
 
 (defmethod print-object ((obj send-text) stream)
@@ -84,17 +102,38 @@
     (values &optional))
 
 (defun do-action (action)
-  (let* ((text (call-if-needed
-                (text action)))
-         (parse-mode (call-if-needed (parse-mode action)))
-         (reply-markup (call-if-needed (reply-markup action))))
+  (let* ((text (call-if-needed (text action)
+                               action))
+         (parse-mode (call-if-needed (parse-mode action)
+                                     action
+                                     :text text))
+         (reply-markup (call-if-needed (reply-markup action)
+                                       action
+                                       :text text
+                                       :parse-mode parse-mode))
+         (link-preview-options (call-if-needed (link-preview-options action)
+                                               action
+                                               :text text
+                                               :parse-mode parse-mode
+                                               :reply-markup reply-markup)))
+    (when (and link-preview-options
+               (keywordp link-preview-options))
+      (unless (eql link-preview-options
+                   :disable)
+        (error "When link-preview-options is given as a keyword, it should be :DISABLE"))
+      
+      (setf link-preview-options
+            (make-instance 'cl-telegram-bot2/api:link-preview-options
+                           :is-disabled t)))
     (apply #'reply
            text 
            (append
             (when parse-mode
               (list :parse-mode parse-mode))
             (when reply-markup
-              (list :reply-markup (reply-markup action))))))
+              (list :reply-markup reply-markup))
+            (when link-preview-options
+              (list :link-preview-options link-preview-options)))))
   (values))
 
 
