@@ -48,7 +48,9 @@
                 #:deep-copy)
   (:import-from #:sento.actor)
   (:import-from #:alexandria
-                #:named-lambda))
+                #:named-lambda)
+  (:import-from #:cl-telegram-bot2/restarts
+                #:retry))
 (in-package cl-telegram-bot2/pipeline)
 
 
@@ -238,18 +240,26 @@ FUNCTION."
 
 
 (defun get-or-create-chat-actor (bot chat-id)
-  (flet ((local-process-update (update)
-           (with-log-unhandled ()
-             (handler-bind ((serious-condition (lambda (condition)
-                                                 (when 40ants-slynk:*connections*
-                                                   (invoke-debugger condition)))))
-               (let ((*current-bot* bot)
-                     (*token* (cl-telegram-bot2/bot::token bot))
-                     (*print-readably*
-                       ;; bordeaux-threads sets this var to T and this breaks logging
-                       ;; our objects. So we have to turn this off.
-                       nil))
-                 (process-update bot update))))))
+  (labels ((local-process-update (update)
+             (restart-case
+                 (with-log-unhandled ()
+                   (handler-bind ((serious-condition (lambda (condition)
+                                                       (when 40ants-slynk:*connections*
+                                                         (invoke-debugger condition)))))
+                     (let ((*current-bot* bot)
+                           (*token* (cl-telegram-bot2/bot::token bot))
+                           (*print-readably*
+                             ;; bordeaux-threads sets this var to T and this breaks logging
+                             ;; our objects. So we have to turn this off.
+                             nil))
+                       (process-update bot update))))
+               (abort ()
+                 :report "Abort processing current Telegram update"
+                 (log:warn "Aborting processing of the current update")
+                 (return-from local-process-update))
+               (retry ()
+                 :report "Retry processing current Telegram update"
+                 (local-process-update update)))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
