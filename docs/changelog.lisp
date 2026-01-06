@@ -12,6 +12,17 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"))
 
+  (0.15.0 2026-01-07
+          "
+Added
+=====
+
+Two restarts `abort` and `retry` were added around CL-TELEGRAM-BOT2/GENERICS:PROCESS-UPDATE generic-function call. These restarts simplify interactive debug.
+
+- `Abort` restart allows to skip bad update processing without destrying underlying Sento thread.
+- `Retry` restart allows to retry call to CL-TELEGRAM-BOT2/GENERICS:PROCESS-UPDATE and useful when I've fixed implementation and want to process the same update object with new code.
+")
+
   (0.14.0 2025-12-31
           "
 Changed
