@@ -26,13 +26,22 @@
                 #:param-case)
   (:import-from #:cl-telegram-bot2/errors
                 #:telegram-error)
-  (:import-from #:quri)
+  (:import-from #:quri
+                #:render-uri
+                #:make-uri)
   (:import-from #:global-vars
                 #:define-global-parameter)
   (:import-from #:cl-telegram-bot2/utils
                 #:bool-value-to-symbol
                 #:to-json
                 #:from-json)
+  (:import-from #:secret-values
+                #:ensure-value-revealed
+                #:conceal-value
+                #:reveal-value
+                #:secret-value)
+  (:import-from #:log4cl-extras/secrets
+                #:with-secrets)
   (:export
    #:telegram-object))
 (in-package #:cl-telegram-bot2/spec)
@@ -222,7 +231,14 @@ Bot token and method name is appended to it")
     (error 'telegram-error
            :description "Variable *TOKEN* is NIL."))
 
-  (let* ((url *api-url*)
+  (let* ((full-url
+           (conceal-value
+            (render-uri (make-uri :path (concatenate 'string
+                                                     "bot"
+                                                     (ensure-value-revealed *token*)
+                                                     "/"
+                                                     method-name)
+                                  :defaults *api-url*))))
          (content
            ;; editMessageMedia documentation say that media file can be uploaded
            ;; using multipart/form-data. But to make this work, we need to extract
@@ -275,23 +291,23 @@ Bot token and method name is appended to it")
                 pathnames-to-upload))))
          (return (from-json
                   (handler-case
-                      (dex:post
-                             ;; NOTE: probably it is better to pass token as a header?
-                             ;;       I didn't find information in the official docs
-                             ;;       how to do this :(
-                             (quri:render-uri (quri:make-uri :path (uiop:strcat "bot" *token* "/" method-name)
-                                                             :defaults url))
-                             ;; NOTE: previously I've send data as JSON
-                             ;; but this makes us impossible to send local files by providing
-                             ;; their pathnames. Thus we let dexador to decide if to use
-                             ;; application/x-www-form-urlencoded
-                             ;; or
-                             ;; multipart/form-data
-                             ;; 
-                             ;; :headers '(("Content-Type" . "application/json"))
-                             :read-timeout *timeout*
-                             :connect-timeout *timeout*
-                             :content content)
+                      (with-secrets (full-url)
+                       (dex:post
+                           ;; NOTE: probably it is better to pass token as a header?
+                           ;;       I didn't find information in the official docs
+                           ;;       how to do this :(
+                           (reveal-value full-url)
+                         ;; NOTE: previously I've send data as JSON
+                         ;; but this makes us impossible to send local files by providing
+                         ;; their pathnames. Thus we let dexador to decide if to use
+                         ;; application/x-www-form-urlencoded
+                         ;; or
+                         ;; multipart/form-data
+                         ;; 
+                         ;; :headers '(("Content-Type" . "application/json"))
+                         :read-timeout *timeout*
+                         :connect-timeout *timeout*
+                         :content content))
                     (dex:http-request-failed (e)
                       (dex:response-body e))))))
     

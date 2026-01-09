@@ -18,12 +18,16 @@
                 #:class-direct-slots)
   (:import-from #:str
                 #:replace-all)
+  (:import-from #:secret-values
+                #:ensure-value-concealed
+                #:reveal-value
+                #:secret-value
+                #:conceal-value)
   (:export #:defbot
            #:bot
            #:get-last-update-id
            #:token
            #:api-uri
-           #:get-endpoint
            #:file-endpoint
            #:bot-info
            #:debug-mode
@@ -50,10 +54,6 @@
     :initarg  :api-uri
     :initform "https://api.telegram.org/"
     :accessor api-uri)
-   (endpoint
-    :initarg :endpoint
-    :reader get-endpoint
-    :documentation "HTTPS endpoint")
    (file-endpoint
     :initarg :file-endpoint
     :accessor file-endpoint
@@ -131,7 +131,7 @@
          (declare (ignore allowed-updates additional-allowed-updates))
          (apply 'make-instance
                 ',name
-                :token token
+                :token (ensure-value-concealed token)
                 args)))))
 
 
@@ -168,10 +168,9 @@
     (with-accessors ((token         token)
                      (file-endpoint file-endpoint)
                      (api-uri       api-uri)) bot
-      (setf (slot-value bot 'endpoint)
-            (concatenate 'string api-uri "bot" token "/")
-            (slot-value bot 'file-endpoint)
-            (concatenate 'string api-uri "file/" "bot" token "/")))
+      (setf (slot-value bot 'file-endpoint)
+            (conceal-value
+             (concatenate 'string api-uri "file/" "bot" (reveal-value token) "/"))))
     (values result)))
 
 

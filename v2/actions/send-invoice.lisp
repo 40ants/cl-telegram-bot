@@ -20,6 +20,10 @@
                 #:wait-for-payment)
   (:import-from #:cl-telegram-bot2/state-with-commands
                 #:command)
+  (:import-from #:secret-values
+                #:ensure-value-revealed
+                #:ensure-value-concealed
+                #:secret-value)
   (:export #:send-invoice
            #:title
            #:description
@@ -52,7 +56,7 @@
                       symbol)
             :reader payload)
    (provider-token :initarg :provider-token
-                   :type (or string
+                   :type (or secret-value
                              symbol)
                    :reader provider-token)
    (currency :initarg :currency
@@ -77,7 +81,7 @@
 (-> send-invoice ((or string symbol)
                   (or string symbol)
                   (or string symbol)
-                  (or string symbol)
+                  (or string secret-value symbol)
                   (or string symbol)
                   (or prices-list symbol)
                   &key
@@ -92,7 +96,10 @@
                  :title title
                  :description description
                  :payload payload
-                 :provider-token provider-token
+                 :provider-token (typecase provider-token
+                                   (symbol provider-token)
+                                   (t
+                                    (ensure-value-concealed provider-token)))
                  :currency currency
                  :prices prices
                  :on-success on-success
@@ -109,26 +116,27 @@
     (values wait-for-payment &optional))
 
 (defun perform-action (action)
-  (cl-telegram-bot2/api::send-invoice
-   (cl-telegram-bot2/api::chat-id cl-telegram-bot2/vars::*current-chat*)
-   ;; title
-   (call-if-needed
-    (title action))
-   ;; description
-   (call-if-needed
-    (description action))
-   ;; payload
-   (call-if-needed
-    (payload action))
-   ;; currency
-   (call-if-needed
-    (currency action))
-   ;; prices
-   (call-if-needed
-    (prices action))
-   
-   :provider-token (call-if-needed
-                    (provider-token action)))
+  (let ((provider-token (call-if-needed
+                         (provider-token action))))
+    (log4cl-extras/secrets:with-secrets (provider-token)
+      (cl-telegram-bot2/api::send-invoice
+       (cl-telegram-bot2/api::chat-id cl-telegram-bot2/vars::*current-chat*)
+       ;; title
+       (call-if-needed
+        (title action))
+       ;; description
+       (call-if-needed
+        (description action))
+       ;; payload
+       (call-if-needed
+        (payload action))
+       ;; currency
+       (call-if-needed
+        (currency action))
+       ;; prices
+       (call-if-needed
+        (prices action))
+       :provider-token (ensure-value-revealed provider-token))))
 
   (wait-for-payment :on-success (on-success action)
                     :commands (commands action)))
