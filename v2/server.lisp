@@ -1,8 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2/server
   (:use #:cl)
   (:import-from #:log)
-  (:import-from #:trivial-backtrace
-                #:print-backtrace)
   (:import-from #:cl-telegram-bot2/pipeline
                 #:process-updates
                 #:continue-processing)
