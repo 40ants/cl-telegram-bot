@@ -10,8 +10,28 @@
                               "API"
                               "REPL"
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
-                              "HTTP"))
+                              "HTTP"
+                              "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.16.0 2026-01-09
+          "
+
+These changes are valid only for v2 API version.
+
+Updated
+=======
+
+Now library tries to its best keeping the Telegram API token in secret and preventing it from leaking to the logs during error handling.
+You may pass token as a SECRET-VALUES:SECRET-VALUE object.
+
+Also you may pass as a SECRET-VALUES:SECRET-VALUE object a PROVIDER-TOKEN argument to the CL-TELEGRAM-BOT2/ACTIONS/SEND-INVOICE:SEND-INVOICE function.
+
+Removed
+=======
+
+Slot `endpoint` was removed from base bot class as well as it's accessor `get-endpoint`.
+
+")
   (0.15.0 2026-01-07
           "
 Added

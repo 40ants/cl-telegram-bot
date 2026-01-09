@@ -17,6 +17,7 @@
     "build-docs": {
       "runs-on": "ubuntu-24.04",
       "env": {
+        "DYNAMIC_SPACE_SIZE": "4Gb",
         "OS": "ubuntu-24.04",
         "QUICKLISP_DIST": "quicklisp",
         "LISP": "sbcl-bin/2.5.10"

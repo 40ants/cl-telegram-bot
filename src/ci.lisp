@@ -42,6 +42,7 @@
           :os "ubuntu-24.04"
           :asdf-system "cl-telegram-bot-docs"
           :dynamic-space-size "4gb"
+          :env (("DYNAMIC_SPACE_SIZE" . "4Gb"))
           :steps (list
                   (sh "Install PlantUML"
                       "sudo apt-get install -y plantuml")

@@ -1,8 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2/server
   (:use #:cl)
   (:import-from #:log)
-  (:import-from #:trivial-backtrace
-                #:print-backtrace)
   (:import-from #:cl-telegram-bot2/pipeline
                 #:process-updates
                 #:continue-processing)
@@ -16,6 +14,8 @@
                 #:all-threads)
   (:import-from #:str
                 #:starts-with?)
+  (:import-from #:log4cl-extras/error
+                #:with-log-unhandled)
   (:export #:start-polling
            #:stop-polling))
 (in-package #:cl-telegram-bot2/server)
@@ -46,10 +46,9 @@
            (let ((restart (find-restart 'continue-processing
                                         condition)))
              (when restart
-               (let ((traceback (print-backtrace
-                                 condition :output nil)))
-                 (log:error "Unable to process Telegram updates" traceback))
-               
+               ;; If bot is not in debug mode, then we ignore the error
+               ;; and will do the next attempt to fetch updates.
+               ;; Otherwise an interactive debugger will be shown
                (unless (debug-mode bot)
                  (invoke-restart restart delay-between-retries)))))
          (stop-bot ()
@@ -61,7 +60,8 @@
           (make-thread
            (lambda ()
              (handler-bind ((serious-condition #'continue-processing-if-not-debug))
-               (process-updates bot)))
+               (with-log-unhandled ()
+                 (process-updates bot))))
            :name thread-name))
 
     ;; Here we return a closure to stop the bot:
