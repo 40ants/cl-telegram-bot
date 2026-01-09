@@ -39,4 +39,5 @@
 (asdf:register-system-packages "sento" '("SENTO.ACTOR-SYSTEM"
                                          "SENTO.ACTOR-CONTEXT"
                                          "SENTO.ACTOR"
+                                         "SENTO.WHEEL-TIMER"
                                          "SENTO.ACTOR-CELL"))
