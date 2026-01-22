@@ -18,6 +18,7 @@
                "cl-telegram-bot2/actions/send-invoice"
                "cl-telegram-bot2/actions/send-photo"
                "cl-telegram-bot2/actions/send-text"
+               "cl-telegram-bot2/actions/delete-messages"
                "cl-telegram-bot2/actions/delay"
                "cl-telegram-bot2/matchers/string"
                "cl-telegram-bot2/matchers/regex"

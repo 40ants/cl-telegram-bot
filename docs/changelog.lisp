@@ -13,6 +13,18 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.17.0 2026-01-23
+          "
+**Added**
+
+- A new back-like state that wraps another state to facilitate switching: CL-TELEGRAM-BOT2/TERM/BACK:SWITCH-TO.
+
+**Changed**
+
+- The generic function CL-TELEGRAM-BOT2/GENERICS:ON-STATE-ACTIVATION will now be called when the bot returns to a state due to an item of the CL-TELEGRAM-BOT2/TERM/BACK:BACK class — unless the `back` object does not contain a result.
+- If a result is provided, the generic function CL-TELEGRAM-BOT2/GENERICS:ON-RESULT will be called as before.
+")
+
   (0.16.0 2026-01-09
           "
 
