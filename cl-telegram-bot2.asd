@@ -25,6 +25,7 @@
                "cl-telegram-bot2/states/ask-for-text"
                "cl-telegram-bot2/states/ask-for-choice"
                "cl-telegram-bot2/states/ask-for-number"
+               "cl-telegram-bot2/states/screen"
                "cl-telegram-bot2/high/keyboard"
                "cl-telegram-bot2/high/callbacks"
                ;; Work in progress on these modules
