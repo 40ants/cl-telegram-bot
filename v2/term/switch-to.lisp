@@ -8,6 +8,8 @@
                 #:state)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back)
+  (:import-from #:trivial-types
+                #:function-designator)
   (:export #:switch-to
            #:delete-prev-state-p
            #:switch-to-state))

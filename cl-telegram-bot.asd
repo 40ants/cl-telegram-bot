@@ -9,7 +9,15 @@
   :class :40ants-asdf-system
   :defsystem-depends-on ("40ants-asdf-system")
   :pathname "src"
-  :depends-on ("cl-telegram-bot/core")
+  :depends-on ("cl-telegram-bot/core"
+               "cl-telegram-bot/files"
+               "cl-telegram-bot/game"
+               "cl-telegram-bot/inline"
+               "cl-telegram-bot/keyboard"
+               "cl-telegram-bot/media"
+               "cl-telegram-bot/profile"
+               "cl-telegram-bot/stickers"
+               "cl-telegram-bot/webhooks")
   :in-order-to ((test-op (test-op "cl-telegram-bot-tests"))))
 
 

@@ -30,7 +30,8 @@
                "cl-telegram-bot2/high/callbacks"
                ;; Work in progress on these modules
                "cl-telegram-bot2/actor-reference"
-               "cl-telegram-bot2/debug")
+               "cl-telegram-bot2/debug"
+               "cl-telegram-bot2/debug/diagram")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 
