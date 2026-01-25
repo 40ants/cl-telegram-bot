@@ -43,7 +43,8 @@
   (:export #:screen
            #:screen-widgets
            #:switch-to-screen
-           #:screenp))
+           #:screenp
+           #:screen-keyboard))
 (in-package #:cl-telegram-bot2/states/screen)
 
 

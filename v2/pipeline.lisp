@@ -346,7 +346,7 @@ FUNCTION."
          ;; Processing BACK actions:
          ((typep new-state 'back)
           (let* ((back new-state)
-                 (process-result-p (cl-telegram-bot2/term/back::back-process-result-p new-state))
+                 (process-result-p (cl-telegram-bot2/term/back:back-process-result-p new-state))
                  ;; Result can be an fbound symbol and in this case we
                  ;; need to call it while we didn't change the current state.
                  ;; This way a custom code may be used to calculate

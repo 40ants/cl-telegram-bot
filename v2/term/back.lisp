@@ -18,7 +18,8 @@
            #:parent-number
            #:state-class
            #:back-to-id
-           #:parent-id))
+           #:parent-id
+           #:back-process-result-p))
 (in-package #:cl-telegram-bot2/term/back)
 
 

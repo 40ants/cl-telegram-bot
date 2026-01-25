@@ -29,7 +29,8 @@
   (:export #:send-text
            #:text
            #:reply-markup
-           #:parse-mode))
+           #:parse-mode
+           #:link-preview-options))
 (in-package #:cl-telegram-bot2/actions/send-text)
 
 
