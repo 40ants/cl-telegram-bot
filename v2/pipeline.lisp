@@ -39,10 +39,11 @@
   (:import-from #:cl-telegram-bot2/states/base
                 #:state-id
                 #:base-state)
-  (:import-from #:cl-telegram-bot2/term/back
+  (:import-from #:cl-telegram-bot2/term/switch-to
                 #:delete-prev-state-p
                 #:switch-to-state
-                #:switch-to
+                #:switch-to)
+  (:import-from #:cl-telegram-bot2/term/back
                 #:back-to-id
                 #:back
                 #:back-to

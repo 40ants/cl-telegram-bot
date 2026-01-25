@@ -6,6 +6,8 @@
                 #:->)
   (:import-from #:trivial-types
                 #:function-designator)
+  (:import-from #:cl-telegram-bot2/api
+                #:inline-keyboard-markup)
   (:export #:text-widget
            #:text-widget-text))
 (in-package #:cl-telegram-bot2/screen-widgets/text)
@@ -32,9 +34,12 @@
 
 
 (-> text-widget ((or string
-                     function-designator))
+                     function-designator)
+                 &key
+                 (:keyboard (or null inline-keyboard-markup)))
     (values text-widget &optional))
 
-(defun text-widget (text)
+(defun text-widget (text &key keyboard)
   (make-instance 'text-widget
-                 :text text))
+                 :text text
+                 :keyboard keyboard))
