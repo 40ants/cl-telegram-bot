@@ -4,17 +4,8 @@
                 #:required-argument)
   (:import-from #:serapeum
                 #:->)
-  (:import-from #:cl-telegram-bot2/generics
-                #:process-state)
-  (:import-from #:cl-telegram-bot2/debug/diagram/utils
-                #:find-state-by-id)
-  (:import-from #:cl-telegram-bot2/debug/diagram/generics
-                #:to-text
-                #:render-handler-link)
   (:import-from #:cl-telegram-bot2/state
                 #:state)
-  (:import-from #:trivial-types
-                #:function-designator)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back)
   (:export #:switch-to

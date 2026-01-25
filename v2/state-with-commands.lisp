@@ -9,10 +9,12 @@
                 #:flatten
                 #:length=
                 #:required-argument)
+  (:import-from #:log)
   (:import-from #:serapeum
                 #:->
                 #:length<
                 #:soft-list-of)
+  (:import-from #:str)
   (:import-from #:cl-telegram-bot2/api
                 #:chat-type
                 #:bot-command-scope-chat

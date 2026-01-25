@@ -12,6 +12,7 @@
                 #:*current-chat*)
   (:import-from #:lambda-fiddle
                 #:key-lambda-vars)
+  (:import-from #:log)
   (:import-from #:trivial-arguments
                 #:arglist)
   (:import-from #:cl-telegram-bot2/errors

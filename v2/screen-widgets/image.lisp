@@ -4,8 +4,6 @@
                 #:base-widget)
   (:import-from #:serapeum
                 #:->)
-  (:import-from #:trivial-types
-                #:function-designator)
   (:export #:image-widget
            #:image-url
            #:image-url-widget))

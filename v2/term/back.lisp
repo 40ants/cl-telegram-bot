@@ -11,8 +11,6 @@
   (:import-from #:cl-telegram-bot2/debug/diagram/generics
                 #:to-text
                 #:render-handler-link)
-  (:import-from #:trivial-types
-                #:function-designator)
   (:export #:back
            #:back-to
            #:back-to-nth-parent

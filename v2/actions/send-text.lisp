@@ -8,6 +8,7 @@
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
+  (:import-from #:cl-telegram-bot2/api)
   (:import-from #:serapeum
                 #:fmt
                 #:soft-list-of
@@ -28,8 +29,7 @@
   (:export #:send-text
            #:text
            #:reply-markup
-           #:parse-mode
-           #:link-preview-options))
+           #:parse-mode))
 (in-package #:cl-telegram-bot2/actions/send-text)
 
 

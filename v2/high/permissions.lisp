@@ -8,6 +8,7 @@
                 #:replace-all)
   (:import-from #:cl-telegram-bot2/utils
                 #:to-json)
+  (:import-from #:yason)
   (:import-from #:cl-telegram-bot2/api
                 #:chat-administrator-rights)
   (:export
