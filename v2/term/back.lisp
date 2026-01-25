@@ -18,8 +18,7 @@
            #:parent-number
            #:state-class
            #:back-to-id
-           #:parent-id
-           #:delete-prev-state-p))
+           #:parent-id))
 (in-package #:cl-telegram-bot2/term/back)
 
 

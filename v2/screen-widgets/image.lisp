@@ -5,7 +5,6 @@
   (:import-from #:serapeum
                 #:->)
   (:export #:image-widget
-           #:image-url
            #:image-url-widget))
 (in-package #:cl-telegram-bot2/screen-widgets/image)
 
