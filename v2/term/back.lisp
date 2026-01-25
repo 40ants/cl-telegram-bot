@@ -18,7 +18,8 @@
            #:parent-number
            #:state-class
            #:back-to-id
-           #:parent-id))
+           #:parent-id
+           #:back-process-result-p))
 (in-package #:cl-telegram-bot2/term/back)
 
 
@@ -28,7 +29,12 @@
 (defclass back ()
   ((result :initarg :result
            :initform nil
-           :reader result)))
+           :reader result)
+   (process-result-p :initarg :process-result-p
+                     :initform t
+                     :type boolean
+                     :reader back-process-result-p
+                     :documentation "When T then value from slot result will be passed to the CL-TELEGRAM-BOT2/GENERICS:ON-RESULT generic-function called on the state where we returned back to. Otherwise CL-TELEGRAM-BOT2/GENERICS:ON-STATE-ACTIVATION generic-function will be called on a new current state.")))
 
 
 (-> back (&optional t)

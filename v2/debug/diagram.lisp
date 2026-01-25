@@ -1,44 +1,14 @@
 (uiop:define-package #:cl-telegram-bot2/debug/diagram
   (:use #:cl)
   (:import-from #:40ants-plantuml)
-  (:import-from #:cl-telegram-bot2/state
-                #:state)
-  (:import-from #:cl-telegram-bot2/server
-                #:stop-polling
-                #:start-polling)
   (:import-from #:cl-telegram-bot2/actions/send-text
                 #:send-text)
-  (:import-from #:cl-telegram-bot2/state-with-commands
-                #:global-command
-                #:command)
-  (:import-from #:cl-telegram-bot2-examples/calc)
-  (:import-from #:cl-telegram-bot2-examples/commands)
-  (:import-from #:cl-telegram-bot2-examples/gallery)
-  (:import-from #:cl-telegram-bot2-examples/payments)
-  (:import-from #:cl-telegram-bot2-examples/mini-app)
-  (:import-from #:cl-telegram-bot2-examples/echo)
-  (:import-from #:cl-telegram-bot2-examples/text-chain)
-  (:import-from #:cl-telegram-bot2/high/keyboard
-                #:inline-keyboard
-                #:call-callback)
   (:import-from #:cl-telegram-bot2/bot
                 #:initial-state)
-  (:import-from #:cl-telegram-bot2/term/back
-                #:back-to-id)
-  (:import-from #:cl-telegram-bot2/actions/delete-messages
-                #:delete-messages)
-  (:import-from #:cl-telegram-bot2/api
-                #:pre-checkout-query
-                #:pre-checkout-query-id
-                #:answer-pre-checkout-query)
   (:import-from #:cl-telegram-bot2/generics
-                #:process-state
-                #:on-pre-checkout-query)
+                #:process-state)
   (:import-from #:cl-telegram-bot2/actions/send-photo
                 #:send-photo)
-  (:import-from #:cl-telegram-bot2/callback
-                #:callback-data
-                #:callback)
   (:import-from #:cl-telegram-bot2/debug/diagram/vars
                 #:*state-to-name*
                 #:*id-to-state*
@@ -50,11 +20,8 @@
                 #:*diagram-stream*
                 #:*on-after-object*
                 #:*objects-created*)
-  (:import-from #:alexandria
-                #:once-only)
   (:import-from #:serapeum
-                #:fmt
-                #:push-end)
+                #:fmt)
   (:import-from #:cl-telegram-bot2/debug/diagram/utils
                 #:obj-id
                 #:on-after-object

@@ -13,6 +13,30 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.17.0 2026-01-25
+          "
+**Added**
+
+- A new `switch-to` mechanism that allows switching between states with more control: CL-TELEGRAM-BOT2/TERM/SWITCH-TO:SWITCH-TO.
+- A new screen state system for displaying complex UI elements: CL-TELEGRAM-BOT2/STATES/SCREEN:SCREEN.
+- Screen widgets system with base, text, and image widgets: CL-TELEGRAM-BOT2/SCREEN-WIDGETS/BASE, CL-TELEGRAM-BOT2/SCREEN-WIDGETS/TEXT, CL-TELEGRAM-BOT2/SCREEN-WIDGETS/IMAGE.
+- Support for request-users and request-chat keyboard buttons with enhanced permissions handling.
+
+**Changed**
+
+- The generic function CL-TELEGRAM-BOT2/GENERICS:ON-STATE-ACTIVATION will now be called when the bot returns to a state due to an item of the CL-TELEGRAM-BOT2/TERM/BACK:BACK class — unless the `back` object does not contain a result.
+- If a result is provided, the generic function CL-TELEGRAM-BOT2/GENERICS:ON-RESULT will be called as before.
+- The `back` class now has a `back-process-result-p` slot to control whether results are processed.
+- Keyboard button API updated with new request-chat functionality and corrected permission handling.
+- Renamed `user-administration-rights` and `bot-administration-rights` to `user-administrator-rights` and `bot-administrator-rights` respectively.
+- Updated permissions conversion with new `permissions-to-tg-obj` function.
+- Text buttons can no longer be used in inline keyboards; use `call-callback` instead.
+
+**Removed**
+
+- Removed deprecated files: src/files.lisp, src/game.lisp, and src/inline.lisp.
+")
+
   (0.16.0 2026-01-09
           "
 

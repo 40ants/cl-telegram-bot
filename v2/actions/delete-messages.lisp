@@ -16,6 +16,7 @@
                 #:on-result
                 #:process-state
                 #:on-state-activation)
+  (:import-from #:log)
   (:import-from #:serapeum
                 #:soft-list-of
                 #:->)

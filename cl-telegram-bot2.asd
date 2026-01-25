@@ -18,17 +18,20 @@
                "cl-telegram-bot2/actions/send-invoice"
                "cl-telegram-bot2/actions/send-photo"
                "cl-telegram-bot2/actions/send-text"
+               "cl-telegram-bot2/actions/delete-messages"
                "cl-telegram-bot2/actions/delay"
                "cl-telegram-bot2/matchers/string"
                "cl-telegram-bot2/matchers/regex"
                "cl-telegram-bot2/states/ask-for-text"
                "cl-telegram-bot2/states/ask-for-choice"
                "cl-telegram-bot2/states/ask-for-number"
+               "cl-telegram-bot2/states/screen"
                "cl-telegram-bot2/high/keyboard"
                "cl-telegram-bot2/high/callbacks"
                ;; Work in progress on these modules
                "cl-telegram-bot2/actor-reference"
-               "cl-telegram-bot2/debug")
+               "cl-telegram-bot2/debug"
+               "cl-telegram-bot2/debug/diagram")
   :in-order-to ((test-op (test-op "cl-telegram-bot2-tests"))))
 
 
@@ -39,5 +42,6 @@
 (asdf:register-system-packages "sento" '("SENTO.ACTOR-SYSTEM"
                                          "SENTO.ACTOR-CONTEXT"
                                          "SENTO.ACTOR"
+                                         "SENTO.MESSAGEB"
                                          "SENTO.WHEEL-TIMER"
                                          "SENTO.ACTOR-CELL"))

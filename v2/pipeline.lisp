@@ -39,6 +39,10 @@
   (:import-from #:cl-telegram-bot2/states/base
                 #:state-id
                 #:base-state)
+  (:import-from #:cl-telegram-bot2/term/switch-to
+                #:delete-prev-state-p
+                #:switch-to-state
+                #:switch-to)
   (:import-from #:cl-telegram-bot2/term/back
                 #:back-to-id
                 #:back
@@ -73,6 +77,34 @@
           collect current-state into states-to-delete
           finally (return (values states-to-delete
                                   rest-states))))
+  
+  (:method ((back-command switch-to) (state-stack list))
+    (let ((current-state (car state-stack))
+          (new-state (switch-to-state back-command)))
+      (cond
+        ((and current-state
+              (funcall (delete-prev-state-p back-command)
+                       current-state))
+         (let* ((rest-states (cdr state-stack))
+                (states-to-delete
+                  (list current-state))
+                (new-stack
+                  (list* new-state
+                         rest-states)))
+           (log:info "Removing state ~A from stack and adding state ~A on top"
+                     current-state
+                     new-state)
+           (values states-to-delete
+                   new-stack)))
+        ;; In this case we do not remove current state from the stack
+        ;; and just add a new one on top.
+        (t
+         (log:info "Leaving state ~A on stack and adding state ~A on top"
+                   current-state
+                   new-state)
+         (values nil
+                 (list* new-state
+                        state-stack))))))
   
   (:method ((back-command back-to-nth-parent) (state-stack list))
     (loop for rest-states on state-stack
@@ -313,20 +345,23 @@ FUNCTION."
            state-stack))
          ;; Processing BACK actions:
          ((typep new-state 'back)
-          (let* ((result (cl-telegram-bot2/term/back:result new-state))
+          (let* ((back new-state)
+                 (process-result-p (cl-telegram-bot2/term/back:back-process-result-p new-state))
                  ;; Result can be an fbound symbol and in this case we
-                 ;; neet to call it while we didn't change the current state.
+                 ;; need to call it while we didn't change the current state.
                  ;; This way a custom code may be used to calculate
                  ;; result before it will be passed to some previous state.
-                 (result (cond
-                           ((and (symbolp result)
-                                 (fboundp result))
-                            (funcall result))
-                           (t
-                            result))))
-
+                 (result (when process-result-p
+                           (let ((result (cl-telegram-bot2/term/back:result back)))
+                             (cond
+                               ((and (symbolp result)
+                                     (fboundp result))
+                                (funcall result))
+                               (t
+                                result))))))
+            
             (multiple-value-bind (states-to-delete new-stack)
-                (split-stack new-state state-stack)
+                (split-stack back state-stack)
                
               (unless new-stack
                 (error "Unexpected behaviour - no states left in the stack."))
@@ -338,19 +373,27 @@ FUNCTION."
               (let ((*current-state* (car new-stack))
                     (*state* new-stack))
                 (log:debug "New state is ~A" *current-state*)
-                 
-                (let* ((on-result-return-value
-                         ;; We need to call ON-RESULT handler
-                         ;; when the state to which we have returned
-                         ;; is bound to current-state, because
-                         ;; handler can send new messages and
-                         ;; we need them to be saved inside the message
-                         ;; to which we've returned:
-                         (cl-telegram-bot2/generics:on-result *current-state*
-                                                              ;; Result might be empty
-                                                              result)))
-                  (probably-switch-to-new-state on-result-return-value
-                                                new-stack))))))
+
+                (cond
+                  (process-result-p
+                   (let* ((on-result-return-value
+                            ;; We need to call ON-RESULT handler
+                            ;; when the state to which we have returned
+                            ;; is bound to current-state, because
+                            ;; handler can send new messages and
+                            ;; we need them to be saved inside the message
+                            ;; to which we've returned:
+                            (cl-telegram-bot2/generics:on-result *current-state*
+                                                                 ;; Result might be empty
+                                                                 result)))
+                     (probably-switch-to-new-state on-result-return-value
+                                                   new-stack)))
+                  ;; When result was not returned to the previous state, then
+                  ;; we call on-activation on the new-state.
+                  (t
+                   (probably-switch-to-new-state
+                    (on-state-activation *current-state*)
+                    *state*)))))))
          ((typep new-state 'base-state)
           (log:debug "New state is ~A" new-state)
            

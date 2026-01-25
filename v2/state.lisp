@@ -9,6 +9,7 @@
   (:import-from #:cl-telegram-bot2/action
                 #:call-if-action
                 #:action)
+  (:import-from #:cl-telegram-bot2/api)
   (:import-from #:cl-telegram-bot2/generics
                 #:process-state
                 #:on-state-activation)
