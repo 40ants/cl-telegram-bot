@@ -13,16 +13,34 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.18.0 2026-02-01
+          "
+Added
+=====
+
+* CL-TELEGRAM-BOT2/ACTIONS/SEND-INVOICE:SEND-INVOICE function now accepts additional arguments: :ON-CANCEL, :PREPARE-TEXT, :PAY-BUTTON-TEXT and :CANCEL-BUTTON-TEXT.
+* Function CL-TELEGRAM-BOT2/HIGH:REGISTER-SENT-MESSAGE allows to register messages sent with direct calls to methods from cl-telegram-bot2/api package
+
+Changed
+=======
+
+* CL-TELEGRAM-BOT2/ACTIONS/SEND-INVOICE:SEND-INVOICE function now shows two buttons: Pay and Cancel. And you can control which state will be set on Cancel, by specifying ON-CANCEL argument.
+* CL-TELEGRAM-BOT2/TERM/SWITCH-TO:SWITCH-TO class now deletes states until delete-prev-state-p will return T. Previously it only deleted the topmost state on the stack.
+* Screen widgets now have ON-CALLBACK-QUERY slot which filled by appending callback query handlers from all screen widgets. This way a few widgets can have their own inline keyboards.
+* Screen constructor now accepts additional arguments :ID :ON-UPDATE and :LINK-PREVIEW-OPTIONS
+")
   (0.17.0 2026-01-25
           "
-**Added**
+Added
+=====
 
 - A new `switch-to` mechanism that allows switching between states with more control: CL-TELEGRAM-BOT2/TERM/SWITCH-TO:SWITCH-TO.
 - A new screen state system for displaying complex UI elements: CL-TELEGRAM-BOT2/STATES/SCREEN:SCREEN.
 - Screen widgets system with base, text, and image widgets: CL-TELEGRAM-BOT2/SCREEN-WIDGETS/BASE, CL-TELEGRAM-BOT2/SCREEN-WIDGETS/TEXT, CL-TELEGRAM-BOT2/SCREEN-WIDGETS/IMAGE.
 - Support for request-users and request-chat keyboard buttons with enhanced permissions handling.
 
-**Changed**
+Changed
+=======
 
 - The generic function CL-TELEGRAM-BOT2/GENERICS:ON-STATE-ACTIVATION will now be called when the bot returns to a state due to an item of the CL-TELEGRAM-BOT2/TERM/BACK:BACK class — unless the `back` object does not contain a result.
 - If a result is provided, the generic function CL-TELEGRAM-BOT2/GENERICS:ON-RESULT will be called as before.
@@ -32,7 +50,8 @@
 - Updated permissions conversion with new `permissions-to-tg-obj` function.
 - Text buttons can no longer be used in inline keyboards; use `call-callback` instead.
 
-**Removed**
+Removed
+=======
 
 - Removed deprecated files: src/files.lisp, src/game.lisp, and src/inline.lisp.
 ")

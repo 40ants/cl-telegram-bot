@@ -3,6 +3,9 @@
   (:import-from #:cl-telegram-bot2/generics
                 #:process-state
                 #:on-state-activation)
+  (:import-from #:cl-telegram-bot2/workflow
+                #:workflow-blocks
+                #:workflow-block)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
   (:import-from #:cl-telegram-bot2/states/base
@@ -22,9 +25,13 @@
   (:import-from #:cl-telegram-bot2/utils
                 #:call-if-needed)
   (:import-from #:cl-telegram-bot2/state-with-commands
-                #:state-with-commands-mixin)
+                #:state-with-commands-mixin
+                #:command)
   (:import-from #:alexandria
                 #:curry)
+  (:import-from #:serapeum
+                #:soft-list-of
+                #:->)
   (:export #:wait-for-payment
            #:on-success))
 (in-package #:cl-telegram-bot2/states/wait-for-payment)
@@ -36,16 +43,33 @@
                :type (or symbol
                          workflow-blocks)
                :reader on-success
-               :documentation "On success could be an fbound symbol which function returns a list of workflow blocks or a list of workflow blocks.")))
+               :documentation "On success could be an fbound symbol which function returns a list of workflow blocks or a list of workflow blocks.")
+   (on-cancel :initarg :on-cancel
+              :type (or workflow-block
+                        workflow-blocks
+                        symbol)
+              :reader on-cancel)))
 
 
-(defun wait-for-payment (&key on-success commands)
+(-> wait-for-payment (&key
+                      (:on-success (or workflow-block
+                                       workflow-blocks
+                                       symbol))
+                      (:on-cancel (or workflow-block
+                                      workflow-blocks
+                                      symbol)))
+    (values wait-for-payment &optional))
+
+(defun wait-for-payment (&key on-success on-cancel)
   (make-instance 'wait-for-payment
                  :on-success (typecase on-success
                                (symbol on-success)
                                (t
-                                (uiop:ensure-list on-success)))
-                 :commands commands))
+                                  (uiop:ensure-list on-success)))
+                 :on-cancel (typecase on-cancel
+                              (symbol on-cancel)
+                              (t
+                                 (uiop:ensure-list on-cancel)))))
 
 
 (defmethod process-state ((bot t) (state wait-for-payment) update)
@@ -56,18 +80,43 @@
            ;; Sometimes user might click a button again and update will have no
            ;; a message at all, only callback-query.
            (when message
-             (cl-telegram-bot2/api:message-successful-payment message))))
+             (cl-telegram-bot2/api:message-successful-payment message)))
+         (callback-data
+           ;; Sometimes user might click a button again and update will have no
+           ;; a message at all, only callback-query.
+           (cl-telegram-bot2/high/callbacks:get-callback-data update)))
 
     (cond
+      ((and callback-data
+            (string= callback-data
+                     "cancel"))
+       (log:info "Cancelling payment")
+       
+       (cond
+         ((on-cancel state)
+          (let* ((action-or-state
+                   (call-if-needed (on-cancel state)))
+                 (result (call-if-action action-or-state
+                                         (curry #'process-state bot)
+                                         update)))
+            (log:debug "Returning result of on-cancel" result)
+            (values result)))
+         (t
+          (error "There is no ON-CANCEL handler for ~S state."
+                 (type-of state)))))
       (successful-payment
+       (log:info "Successful payment")
+       
        (cond
          ((on-success state)
-          (let ((action-or-state
-                  (call-if-needed (on-success state)
-                                  successful-payment)))
-            (call-if-action action-or-state
-                            (curry #'process-state bot)
-                            update)))
+          (let* ((action-or-state
+                   (call-if-needed (on-success state)
+                                   successful-payment))
+                 (result (call-if-action action-or-state
+                                         (curry #'process-state bot)
+                                         update)))
+            (log:debug "Returning result of on-success" result)
+            (values result)))
          (t
           (error "There is no ON-SUCCESS handler for ~S state."
                  (type-of state)))))
