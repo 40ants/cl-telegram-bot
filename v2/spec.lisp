@@ -96,6 +96,21 @@ Bot token and method name is appended to it")
    "giveaway" "chat-boost-source-giveaway"))
 
 
+(defparameter *background-type-to-class*
+  (dict
+   "fill" "background-type-fill"
+   "wallpaper" "background-type-wallpaper"
+   "pattern" "background-type-pattern"
+   "chat_theme" "background-type-chat-theme"))
+
+
+(defparameter *background-fill-to-class*
+  (dict
+   "solid" "background-fill-solid"
+   "gradient" "background-fill-gradient"
+   "freeform_gradient" "background-fill-freeform-gradient"))
+
+
 (-> guess-generic-subclass (symbol hash-table)
     (values (or null symbol) &optional))
 
@@ -123,6 +138,20 @@ Bot token and method name is appended to it")
                               *message-origin-type-to-class*)))
                (or real-class
                    (error "Unable to parse generic MESSAGE-ORIGIN with type \"~A\"."
+                          (gethash "type" object)))))
+            ((string-equal generic-class "background-type")
+             (let ((real-class
+                     (gethash (gethash "type" object)
+                              *background-type-to-class*)))
+               (or real-class
+                   (error "Unable to parse generic BACKGROUND-TYPE with type \"~A\"."
+                          (gethash "type" object)))))
+            ((string-equal generic-class "background-fill")
+             (let ((real-class
+                     (gethash (gethash "type" object)
+                              *background-fill-to-class*)))
+               (or real-class
+                   (error "Unable to parse generic BACKGROUND-FILL with type \"~A\"."
                           (gethash "type" object)))))
             ((string-equal generic-class "chat-boost-source")
              (let ((real-class

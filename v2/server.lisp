@@ -36,7 +36,8 @@
    If DEBUG argument is T, then bot will ignore updates which it can't to process without errors.
    Otherwise, an interactive debugger will popup."
   
-  (when (getf *threads* bot)
+  (when (and (getf *threads* bot)
+             (bt2:thread-alive-p (getf *threads* bot)))
     (error "Processing already started."))
 
   (setf (debug-mode bot) debug)
