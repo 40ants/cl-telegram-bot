@@ -62,15 +62,20 @@
   '(soft-list-of hash-table))
 
 
-(defvar *default-pay-button-text* "Pay")
+(defvar *default-pay-button-text* "Pay"
+  "A text to be shown on the \"pay\" button.")
 
-(defvar *default-cancel-button-text* "Cancel")
+(defvar *default-cancel-button-text* "Cancel"
+  "A text to be shown on the \"cancel\" button.")
 
-(defvar *default-prepare-text* "Preparing invoice.")
+(defvar *default-prepare-text* "Preparing invoice."
+  "A text to be shown in the message shown just to hide the reply keyboard.")
 
-(defvar *default-on-success* (back))
+(defvar *default-on-success* (back)
+  "State or action to be returned after the successful payment.")
 
-(defvar *default-on-cancel* (back))
+(defvar *default-on-cancel* (back)
+  "State or action to be returned after the user pushed the \"cancel\" button.")
 
 
 (defclass send-invoice (action)

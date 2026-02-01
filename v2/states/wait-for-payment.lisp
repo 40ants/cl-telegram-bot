@@ -35,7 +35,8 @@
                 #:soft-list-of
                 #:->)
   (:export #:wait-for-payment
-           #:on-success))
+           #:on-success
+           #:on-cancel))
 (in-package #:cl-telegram-bot2/states/wait-for-payment)
 
 
@@ -47,8 +48,7 @@
                :reader on-success
                :documentation "On success could be an fbound symbol which function returns a list of workflow blocks or a list of workflow blocks.")
    (on-cancel :initarg :on-cancel
-              :type (or workflow-block
-                        workflow-blocks
+              :type (or workflow-blocks
                         symbol)
               :reader on-cancel)))
 
