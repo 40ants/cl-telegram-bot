@@ -8,6 +8,7 @@
   (:import-from #:cl-telegram-bot2/state
                 #:state)
   (:import-from #:cl-telegram-bot2/generics
+                #:on-result
                 #:process-state
                 #:on-state-activation)
   (:import-from #:cl-telegram-bot2/high
@@ -18,6 +19,7 @@
   (:import-from #:cl-telegram-bot2/term/switch-to
                 #:switch-to)
   (:import-from #:cl-telegram-bot2/screen-widgets/text
+                #:text-widget-parse-mode
                 #:text-widget-text
                 #:text-widget)
   (:import-from #:cl-telegram-bot2/screen-widgets/base
@@ -40,6 +42,11 @@
                 #:reply-keyboard-remove
                 #:inline-keyboard-markup
                 #:reply-keyboard-markup)
+  (:import-from #:cl-telegram-bot2/workflow
+                #:workflow-block
+                #:workflow-blocks)
+  (:import-from #:trivial-types
+                #:function-designator)
   (:export #:screen
            #:screen-widgets
            #:switch-to-screen
@@ -57,8 +64,15 @@
              :initform nil
              :type (or null
                        reply-keyboard-markup
-                       reply-keyboard-remove)
-             :reader screen-keyboard))
+                       reply-keyboard-remove
+                       function-designator)
+             :reader screen-keyboard)
+   (link-preview-options :initarg :link-preview-options
+                         :initform nil
+                         :type (or null
+                                   keyword
+                                   cl-telegram-bot2/api:link-preview-options)
+                         :reader screen-link-preview-options))
   (:default-initargs
    :on-deletion (list (delete-messages))))
 
@@ -73,7 +87,8 @@
              :type (or null
                        reply-keyboard-remove
                        reply-keyboard-markup
-                       inline-keyboard-markup)
+                       inline-keyboard-markup
+                       function-designator)
              :reader widgets-group-keyboard)))
 
 
@@ -82,7 +97,8 @@
                          (or null
                              reply-keyboard-remove
                              reply-keyboard-markup
-                             inline-keyboard-markup)))
+                             inline-keyboard-markup
+                             function-designator)))
     (values widgets-group &optional))
 
 (defun widgets-group (widgets &key keyboard)
@@ -100,33 +116,54 @@
 
 
 (-> screen ((soft-list-of (or string base-widget))
-            &key (:keyboard (or null reply-keyboard-markup))))
+            &key
+            (:id (or null string))
+            (:keyboard (or null
+                           reply-keyboard-markup
+                           function-designator))
+            (:on-update (or workflow-block
+                            workflow-blocks))
+            (:link-preview-options (or null
+                                       keyword
+                                       cl-telegram-bot2/api:link-preview-options))))
 
-(defun screen (widgets &key (keyboard nil keyboard-given-p))
+(defun screen (widgets &key
+                       id
+                       (keyboard nil keyboard-given-p)
+                       on-update
+                       link-preview-options)
   "If KEYBOARD argument was not supplied, then existing reply keyboard will stay on screen.
 
    Pass a REPLY-KEYBOARD-MARKUP object as KEYBOARD argument, to show a new keyboard.
    Pass a NIL as KEYBOARD argument, to hide current reply keyboard keyboard.
    "
-  (let ((widgets (mapcar #'ensure-widget
-                         widgets)))
+  (let* ((widgets (mapcar #'ensure-widget
+                          widgets))
+         (on-callback-query (mapcan #'cl-telegram-bot2/screen-widgets/base:on-callback-query
+                                    widgets)))
     (when (widget-keyboard
            (first widgets))
       (error "First widget should not have a keyboard because in this case screen can't show or hide reply keyboard."))
-
+    
     (make-instance 'screen
+                   :id id
                    :widgets widgets
                    :keyboard (cond
                                (keyboard-given-p
                                 (or keyboard
                                     (make-instance 'reply-keyboard-remove)))
                                (t
-                                nil)))))
+                                nil))
+                   :link-preview-options link-preview-options
+                   :on-callback-query on-callback-query
+                   :on-update (uiop:ensure-list on-update))))
 
 
 (-> group-widgets ((soft-list-of base-widget)
-                   (or null reply-keyboard-markup
-                       reply-keyboard-remove))
+                   (or null
+                       reply-keyboard-markup
+                       reply-keyboard-remove
+                       function-designator))
     (values (soft-list-of widgets-group) &optional))
 
 (defun group-widgets (widgets screen-keyboard)
@@ -158,22 +195,50 @@
             'string))
 
 
-(-> group-to-reply (widgets-group)
+(-> group-to-reply (screen widgets-group)
     (values &optional))
 
-(defun group-to-reply (group)
+(defun group-to-reply (screen group)
   (let ((text-items nil)
+        (parse-mode nil)
         (photo nil)
-        (keyboard (widgets-group-keyboard group)))
+        (keyboard (awhen (widgets-group-keyboard group)
+                    (typecase it
+                      (function-designator
+                         (funcall it))
+                      (t
+                         it))))
+        (link-preview-options (screen-link-preview-options screen)))
 
+    (when (and link-preview-options
+               (keywordp link-preview-options))
+      (unless (eql link-preview-options
+                   :disable)
+        (error "When link-preview-options is given as a keyword, it should be :DISABLE"))
+      
+      (setf link-preview-options
+            (make-instance 'cl-telegram-bot2/api:link-preview-options
+                           :is-disabled t)))
+    
     (loop for widget in (widgets-group-widgets group)
           do (etypecase widget
                (text-widget
-                (push (text-widget-text widget)
-                      text-items))
+                  (push (text-widget-text widget)
+                        text-items)
+                  (let ((widget-parse-mode
+                          (text-widget-parse-mode widget)))
+                    (when widget-parse-mode
+                      (when (and parse-mode
+                                 (not (string-equal parse-mode
+                                                    widget-parse-mode)))
+                        (error "Found two widgets with different parse-mode: ~A and ~A"
+                               parse-mode
+                               widget-parse-mode))
+                      (setf parse-mode
+                            widget-parse-mode))))
                (image-widget
-                (setf photo
-                      (image-widget-to-tg widget)))))
+                  (setf photo
+                        (image-widget-to-tg widget)))))
 
     (flet ((get-text ()
              (when text-items
@@ -186,25 +251,37 @@
                 (append
                  (awhen (get-text)
                    (list :caption it))
-
                  (awhen keyboard
                    (list :reply-markup it)))))
         (text-items
          (apply #'reply
                 (get-text)
                 (append
+                 (awhen parse-mode
+                   (list :parse-mode it))
+                 (awhen link-preview-options 
+                   (list :link-preview-options it))
                  (awhen keyboard
                    (list :reply-markup it))))))))
   (values))
 
 
-(defmethod on-state-activation ((state screen))
-  (loop with all-groups = (group-widgets (screen-widgets state)
-                                         (screen-keyboard state))
+(defun show-widgets (screen)
+  (loop with all-groups = (group-widgets (screen-widgets screen)
+                                         (screen-keyboard screen))
         for group in all-groups
-        do (group-to-reply group))
-  
+        do (group-to-reply screen group))
+
   (values))
+
+
+(defmethod on-state-activation ((screen screen))
+  (show-widgets screen))
+
+
+(defmethod on-result ((screen screen) value)
+  (declare (ignore value))
+  (show-widgets screen))
 
 
 (defun screenp (obj)

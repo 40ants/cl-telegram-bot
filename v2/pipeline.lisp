@@ -79,32 +79,37 @@
                                   rest-states))))
   
   (:method ((back-command switch-to) (state-stack list))
-    (let ((current-state (car state-stack))
-          (new-state (switch-to-state back-command)))
-      (cond
-        ((and current-state
-              (funcall (delete-prev-state-p back-command)
-                       current-state))
-         (let* ((rest-states (cdr state-stack))
-                (states-to-delete
-                  (list current-state))
-                (new-stack
-                  (list* new-state
-                         rest-states)))
-           (log:info "Removing state ~A from stack and adding state ~A on top"
-                     current-state
-                     new-state)
-           (values states-to-delete
-                   new-stack)))
-        ;; In this case we do not remove current state from the stack
-        ;; and just add a new one on top.
-        (t
-         (log:info "Leaving state ~A on stack and adding state ~A on top"
-                   current-state
-                   new-state)
-         (values nil
-                 (list* new-state
-                        state-stack))))))
+    (let ((new-state (switch-to-state back-command)))
+      (multiple-value-bind (states-to-delete rest-states)
+          (loop for rest-items on state-stack
+                for current-item = (car rest-items)
+                collect current-item into to-delete
+                when (funcall (delete-prev-state-p back-command)
+                              current-item)
+                  do (return (values to-delete
+                                     (cdr rest-items)))
+                finally (return (values nil
+                                        state-stack)))
+        (cond
+          (states-to-delete
+           (let* ((new-stack
+                    (list* new-state
+                           rest-states)))
+             (log:info "Removing states ~{~A~^, ~} from stack and adding state ~A on top"
+                       states-to-delete
+                       new-state)
+             (values states-to-delete
+                     new-stack)))
+          ;; In this case we do not remove current state from the stack
+          ;; and just add a new one on top.
+          (t
+           (let ((current-state (car state-stack)))
+             (log:info "Leaving state ~A on stack and adding state ~A on top"
+                       current-state
+                       new-state))
+           (values nil
+                   (list* new-state
+                          state-stack)))))))
   
   (:method ((back-command back-to-nth-parent) (state-stack list))
     (loop for rest-states on state-stack
@@ -359,7 +364,7 @@ FUNCTION."
                                 (funcall result))
                                (t
                                 result))))))
-            
+
             (multiple-value-bind (states-to-delete new-stack)
                 (split-stack back state-stack)
                
@@ -368,8 +373,9 @@ FUNCTION."
 
               (loop for state-to-delete in states-to-delete
                     do (let ((*current-state* state-to-delete))
+                         (log:debug "Calling on-state-deletion for" state-to-delete)
                          (cl-telegram-bot2/generics:on-state-deletion state-to-delete)))
-              
+
               (let ((*current-state* (car new-stack))
                     (*state* new-stack))
                 (log:debug "New state is ~A" *current-state*)

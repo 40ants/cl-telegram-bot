@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "lisp-dev": {
+      "command": "lisp-dev-mcp",
+      "args": ["--log", "mcp.log", "--verbose"],
+      "env": {
+        "SLYNK_PORT": "9991"
+      }
+    }
+  },
+  "$version": 2
+}
