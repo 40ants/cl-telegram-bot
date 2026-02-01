@@ -1,5 +1,7 @@
 (uiop:define-package #:cl-telegram-bot2/actions/delay
   (:use #:cl)
+  (:import-from #:cl-telegram-bot2/action
+                #:action)
   (:import-from #:cl-telegram-bot2/spec
                 #:*token*)
   (:import-from #:log4cl-extras/error
@@ -12,8 +14,15 @@
                 #:scheduler)
   (:import-from #:sento.actor
                 #:*self*)
+  (:import-from #:serapeum
+                #:->)
+  (:import-from #:cl-telegram-bot2/generics
+                #:process-state
+                #:on-state-activation)
   (:export #:delay
-           #:cancel-delayed-execution))
+           #:cancel-delayed-execution
+           #:sync-delay
+           #:sync-delay-seconds))
 (in-package #:cl-telegram-bot2/actions/delay)
 
 
@@ -60,3 +69,25 @@
          (timer-wheel (scheduler system)))
 
     (sento.wheel-timer:cancel timer-wheel signature)))
+
+
+(defclass sync-delay (action)
+  ((seconds :initarg :seconds
+            :initform 0
+            :type integer
+            :reader sync-delay-seconds))
+  (:documentation "Makes bot sleep given number of seconds before processing next workflow action."))
+
+
+(-> sync-delay (integer)
+    (values sync-delay &optional))
+
+(defun sync-delay (seconds)
+  "Creates an object of class SYNC-DELAY."
+  (make-instance 'sync-delay
+                 :seconds seconds))
+
+
+(defmethod process-state ((bot t) (action sync-delay) update)
+  (sleep (sync-delay-seconds action))
+  (values))
