@@ -29,6 +29,11 @@ Changed
 * CL-TELEGRAM-BOT2/TERM/SWITCH-TO:SWITCH-TO class now deletes states until delete-prev-state-p will return T. Previously it only deleted the topmost state on the stack.
 * Screen widgets now have ON-CALLBACK-QUERY slot which filled by appending callback query handlers from all screen widgets. This way a few widgets can have their own inline keyboards.
 * Screen constructor now accepts additional arguments :ID :ON-UPDATE and :LINK-PREVIEW-OPTIONS
+
+Fixed
+=====
+
+* Now messages sent by CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT action can be deleted with the following CL-TELEGRAM-BOT2/ACTIONS/DELETE-MESSAGES:DELETE-MESSAGES in the same workflow-blocks chain.
 ")
   (0.17.0 2026-01-25
           "

@@ -26,6 +26,8 @@
                 #:shorten)
   (:import-from #:cl-telegram-bot2/debug/diagram/vars
                 #:*send-text-limit*)
+  (:import-from #:cl-telegram-bot2/sent-messages
+                #:save-sent-message-id)
   (:export #:send-text
            #:text
            #:reply-markup
@@ -126,15 +128,17 @@
       (setf link-preview-options
             (make-instance 'cl-telegram-bot2/api:link-preview-options
                            :is-disabled t)))
-    (apply #'reply
-           text 
-           (append
-            (when parse-mode
-              (list :parse-mode parse-mode))
-            (when reply-markup
-              (list :reply-markup reply-markup))
-            (when link-preview-options
-              (list :link-preview-options link-preview-options)))))
+    (let ((message (apply #'reply
+                          text 
+                          (append
+                           (when parse-mode
+                             (list :parse-mode parse-mode))
+                           (when reply-markup
+                             (list :reply-markup reply-markup))
+                           (when link-preview-options
+                             (list :link-preview-options link-preview-options))))))
+      (save-sent-message-id cl-telegram-bot2/vars::*current-state*
+                            message)))
   (values))
 
 

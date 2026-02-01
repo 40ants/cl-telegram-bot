@@ -13,6 +13,7 @@
   (:import-from #:cl-telegram-bot2/api
                 #:update
                 #:update-message
+                #:message
                 #:message-message-id)
   (:import-from #:cl-telegram-bot2/high
                 #:collect-sent-messages)
@@ -24,8 +25,25 @@
                 #:received-message-ids
                 #:base-state)
   (:export #:save-received-message-id
-           #:capture-sent-messages))
+           #:capture-sent-messages
+           #:save-sent-message-id))
 (in-package #:cl-telegram-bot2/sent-messages)
+
+
+(-> save-sent-message-id (base-state message)
+    (values &optional))
+
+
+(defun save-sent-message-id (state message)
+  "Usually all sent messages are captured automatically during update processing.
+
+   However, when messages are sent and deleted in a one workflow-blocks list, delete-messages
+   action will not see these sent messages. Thus we have to call this function explicitly
+   inside send-text action."
+  (pushnew (message-message-id message)
+           (sent-message-ids state)
+           :test #'equal)
+  (values))
 
 
 (defmacro capture-sent-messages ((state-var) &body body)
@@ -36,8 +54,8 @@
          ,@body)
     
      (loop for message in sent-messages
-           do (push (message-message-id message)
-                    (sent-message-ids ,state-var)))
+           do (save-sent-message-id ,state-var message))
+     
      (values result)))
 
 
@@ -52,8 +70,9 @@
    for this state."
   (let ((message (update-message update)))
     (when message
-      (push (message-message-id message)
-            (received-message-ids state))))
+      (pushnew (message-message-id message)
+               (received-message-ids state)
+               :test #'equal)))
   (values))
 
 
