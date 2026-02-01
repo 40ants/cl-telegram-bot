@@ -20,6 +20,7 @@ Added
 
 * CL-TELEGRAM-BOT2/ACTIONS/SEND-INVOICE:SEND-INVOICE function now accepts additional arguments: :ON-CANCEL, :PREPARE-TEXT, :PAY-BUTTON-TEXT and :CANCEL-BUTTON-TEXT.
 * Function CL-TELEGRAM-BOT2/HIGH:REGISTER-SENT-MESSAGE allows to register messages sent with direct calls to methods from cl-telegram-bot2/api package
+* Action class CL-TELEGRAM-BOT2/ACTIONS/DELAY:SYNC-DELAY was added and can be used to introduce a delay between workflow actions.
 
 Changed
 =======
