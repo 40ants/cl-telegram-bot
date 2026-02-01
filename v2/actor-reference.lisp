@@ -1,5 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2/actor-reference
   (:use #:cl)
+  (:import-from #:sento.actor)
   (:import-from #:sento.actor-context
                 #:actor-context)
   (:import-from #:alexandria

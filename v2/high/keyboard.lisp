@@ -9,7 +9,7 @@
   (:import-from #:alexandria
                 #:required-argument)
   (:import-from #:cl-telegram-bot2/high/permissions
-                #:permissions-to-json
+                #:permissions-to-tg-obj
                 #:chat-administration-permissions)
   (:export #:keyboard
            #:text-button
@@ -36,13 +36,14 @@
            #:allow-bot-chats-p
            #:allow-group-chats-p
            #:allow-channel-chats-p
-           #:users-request-id
+           #:request-users-request-id
+           #:request-chat-request-id
            #:chat-is-channel-p
            #:chat-is-forum-p
            #:chat-has-username-p
            #:chat-is-created-p
-           #:user-administration-rights
-           #:bot-administration-rights
+           #:user-administrator-rights
+           #:bot-administrator-rights
            #:bot-is-member-p
            #:request-title-p
            #:request-username-p
@@ -110,8 +111,7 @@
 
 
 (defmethod make-inline-keyboard-button ((button text-button))
-  (make-instance 'cl-telegram-bot2/api:inline-keyboard-button
-                 :text (button-title button)))
+  (error "Text buttons can't be used in inline keyboards. Use call-callback instead."))
 
 
 (defclass open-web-app (keyboard-button-mixin inline-keyboard-button-mixin button)
@@ -150,7 +150,7 @@
   ((request-id :initarg :request-id
                :type integer
                :initform (required-argument "Argument :request-id is required.")
-               :reader users-request-id)
+               :reader request-users-request-id)
    (user-is-bot :initarg :user-is-bot
                 :type boolean
                 :initform nil
@@ -214,6 +214,7 @@
   (make-instance 'cl-telegram-bot2/api:keyboard-button
                  :text (button-title button)
                  :request-users (make-instance 'cl-telegram-bot2/api:keyboard-button-request-users
+                                               :request-id (request-users-request-id button)
                                                :user-is-bot (user-is-bot-p button)
                                                :user-is-premium (user-is-premium-p button)
                                                :max-quantity (max-quantity button)
@@ -226,7 +227,7 @@
   ((request-id :initarg :request-id
                :type integer
                :initform (required-argument "Argument :request-id is required.")
-               :reader users-request-id)
+               :reader request-chat-request-id)
    (chat-is-channel :initarg :chat-is-channel
                     :type boolean
                     :initform nil
@@ -243,14 +244,14 @@
                     :type boolean
                     :initform nil
                     :reader chat-is-created-p)
-   (user-administration-rights :initarg :user-administration-rights
-                               :type chat-administration-permissions
-                               :initform nil
-                               :reader user-administration-rights)
-   (bot-administration-rights :initarg :bot-administration-rights
+   (user-administrator-rights :initarg :user-administrator-rights
                               :type chat-administration-permissions
                               :initform nil
-                              :reader bot-administration-rights)
+                              :reader user-administrator-rights)
+   (bot-administrator-rights :initarg :bot-administrator-rights
+                             :type chat-administration-permissions
+                             :initform nil
+                             :reader bot-administrator-rights)
    (bot-is-member :initarg :bot-is-member
                   :type boolean
                   :initform nil
@@ -275,8 +276,8 @@
                   (:chat-is-forum boolean)
                   (:chat-has-username boolean)
                   (:chat-is-created boolean)
-                  (:user-administration-rights chat-administration-permissions)
-                  (:bot-administration-rights chat-administration-permissions)
+                  (:user-administrator-rights chat-administration-permissions)
+                  (:bot-administrator-rights chat-administration-permissions)
                   (:bot-is-member boolean)
                   (:request-title boolean)
                   (:request-username boolean)
@@ -291,8 +292,8 @@
                      chat-is-forum
                      chat-has-username
                      chat-is-created
-                     user-administration-rights
-                     bot-administration-rights
+                     user-administrator-rights
+                     bot-administrator-rights
                      bot-is-member
                      request-title
                      request-username
@@ -301,8 +302,8 @@
                    chat-is-forum
                    chat-has-username
                    chat-is-created
-                   user-administration-rights
-                   bot-administration-rights
+                   user-administrator-rights
+                   bot-administrator-rights
                    bot-is-member
                    request-title
                    request-username
@@ -317,20 +318,24 @@
 (defmethod make-main-keyboard-button ((button request-chat))
   (make-instance 'cl-telegram-bot2/api:keyboard-button
                  :text (button-title button)
-                 :request-users (make-instance 'cl-telegram-bot2/api:keyboard-button-request-chat
-                                               :chat-is-channel (chat-is-channel-p button)
-                                               :chat-is-forum (chat-is-forum-p button)
-                                               :chat-has-username (chat-has-username-p button)
-                                               :chat-is-created (chat-is-created-p button)
-                                               :chat-is-channel (chat-is-channel-p button)
-                                               :user-administration-rights (permissions-to-json
-                                                                            (user-administration-rights button))
-                                               :bot-administration-rights (permissions-to-json
-                                                                           (bot-administration-rights button))
-                                               :bot-is-member (bot-is-member-p button)
-                                               :request-title (request-title-p button)
-                                               :request-username (request-username-p button)
-                                               :request-photo (request-photo-p button))))
+                 :request-chat (make-instance 'cl-telegram-bot2/api:keyboard-button-request-chat
+                                              :request-id (request-chat-request-id button)
+                                              :chat-is-channel (chat-is-channel-p button)
+                                              :chat-is-forum (chat-is-forum-p button)
+                                              :chat-has-username (chat-has-username-p button)
+                                              :chat-is-created (chat-is-created-p button)
+                                              :chat-is-channel (chat-is-channel-p button)
+                                              :user-administrator-rights (permissions-to-tg-obj
+                                                                          (or (user-administrator-rights button)
+                                                                              (list :is-anonymous)))
+                                              :bot-administrator-rights (permissions-to-tg-obj
+                                                                         (or
+                                                                          (bot-administrator-rights button)
+                                                                          (list :is-anonymous)))
+                                              :bot-is-member (bot-is-member-p button)
+                                              :request-title (request-title-p button)
+                                              :request-username (request-username-p button)
+                                              :request-photo (request-photo-p button))))
 
 
 (defclass request-contact (keyboard-button-mixin button)
@@ -397,8 +402,8 @@
 (defmethod make-main-keyboard-button ((button request-poll))
   (make-instance 'cl-telegram-bot2/api:keyboard-button
                  :text (button-title button)
-                 :request-contact (make-instance 'cl-telegram-bot2/api:keyboard-button-poll-type
-                                                 :type (requested-poll-type button))))
+                 :request-poll (make-instance 'cl-telegram-bot2/api:keyboard-button-poll-type
+                                              :type (requested-poll-type button))))
 
 
 ;; Inline keyboard buttons

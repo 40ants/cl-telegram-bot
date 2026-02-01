@@ -1,5 +1,10 @@
 (uiop:define-package #:cl-telegram-bot2/debug
   (:use #:cl)
+  (:import-from #:bordeaux-threads-2
+                #:thread-alive-p)
+  (:import-from #:sento.actor-cell)
+  (:import-from #:sento.messageb)
+  (:import-from #:sento.actor-system)
   (:import-from #:cl-telegram-bot2/bot)
   (:export
    #:bot-actors-info))
@@ -43,7 +48,7 @@
                          (sento.actor-cell:name actor)
                          (sento.queue:queued-count queue)
                          ;; (queue-size queue)
-                         (if (bt2:thread-alive-p thread)
+                         (if (thread-alive-p thread)
                              "thread alive"
                              "thread died")
                          (when verbose

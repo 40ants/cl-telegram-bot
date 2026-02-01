@@ -11,10 +11,11 @@
 
 
 (-> get-callback-data (update)
-    (values string &optional))
+    (values (or null string) &optional))
 
 
 (defun get-callback-data (update)
   "Extracts callback query data from the UPDATE object."
   (let* ((query (update-callback-query update)))
-    (callback-query-data query)))
+    (when query
+      (callback-query-data query))))

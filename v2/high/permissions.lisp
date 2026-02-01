@@ -8,6 +8,9 @@
                 #:replace-all)
   (:import-from #:cl-telegram-bot2/utils
                 #:to-json)
+  (:import-from #:yason)
+  (:import-from #:cl-telegram-bot2/api
+                #:chat-administrator-rights)
   (:export
    #:chat-administration-permission
    #:chat-administration-permissions))
@@ -48,3 +51,15 @@
                           hash)
                  yason:true)
         finally (return (to-json hash))))
+
+
+(-> permissions-to-tg-obj (chat-administration-permissions)
+    (values chat-administrator-rights &optional))
+
+(defun permissions-to-tg-obj (permissions)
+
+  (let ((args (loop for perm in permissions
+                    appending (list perm t))))
+    (apply #'make-instance
+           'chat-administrator-rights
+           args)))
