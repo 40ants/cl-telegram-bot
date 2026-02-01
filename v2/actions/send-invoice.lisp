@@ -9,6 +9,11 @@
   (:import-from #:cl-telegram-bot2/high
                 #:register-sent-message
                 #:reply)
+  (:import-from #:cl-telegram-bot2/high/keyboard
+                #:remove-keyboard
+                #:inline-keyboard
+                #:pay-button
+                #:call-callback)
   (:import-from #:cl-telegram-bot2/api)
   (:import-from #:log4cl-extras/secrets
                 #:with-secrets)
@@ -158,7 +163,7 @@
                      (prepare-text *default-prepare-text*)
                      (cancel-button-text *default-cancel-button-text*)
                      (pay-button-text *default-pay-button-text*)
-                     commands)
+                     (commands nil))
   (make-instance 'send-invoice
                  :title title
                  :description description
@@ -198,7 +203,7 @@
                                            (call-if-needed
                                             (prepare-text action))
                                            :reply-markup
-                                           (cl-telegram-bot2/high/keyboard:remove-keyboard)))
+                                           (remove-keyboard)))
       ;; Now send an invoice with Pay and Cancel buttons
       (register-sent-message
        (cl-telegram-bot2/api::send-invoice
@@ -219,13 +224,13 @@
         (call-if-needed
          (prices action))
         :provider-token (ensure-value-revealed provider-token)
-        :reply-markup (cl-telegram-bot2/high/keyboard:inline-keyboard
+        :reply-markup (inline-keyboard
                        (list
                         (list
-                         (cl-telegram-bot2/high/keyboard:pay-button
+                         (pay-button
                           (call-if-needed
                            (pay-button-text action)))
-                         (cl-telegram-bot2/high/keyboard:call-callback
+                         (call-callback
                           (call-if-needed
                            (cancel-button-text action))
                           "cancel"))))))))

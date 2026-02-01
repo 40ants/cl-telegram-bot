@@ -8,6 +8,8 @@
                 #:workflow-block)
   (:import-from #:cl-telegram-bot2/high
                 #:reply)
+  (:import-from #:cl-telegram-bot2/high/callbacks
+                #:get-callback-data)
   (:import-from #:cl-telegram-bot2/states/base
                 #:base-state)
   (:import-from #:cl-telegram-bot2/api
@@ -84,7 +86,7 @@
          (callback-data
            ;; Sometimes user might click a button again and update will have no
            ;; a message at all, only callback-query.
-           (cl-telegram-bot2/high/callbacks:get-callback-data update)))
+           (get-callback-data update)))
 
     (cond
       ((and callback-data
