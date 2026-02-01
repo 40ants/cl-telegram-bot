@@ -34,6 +34,7 @@ Fixed
 =====
 
 * Now messages sent by CL-TELEGRAM-BOT2/ACTIONS/SEND-TEXT:SEND-TEXT action can be deleted with the following CL-TELEGRAM-BOT2/ACTIONS/DELETE-MESSAGES:DELETE-MESSAGES in the same workflow-blocks chain.
+* Fixed parsing of background-type and background-fill telegram objects.
 ")
   (0.17.0 2026-01-25
           "
