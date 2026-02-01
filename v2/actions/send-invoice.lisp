@@ -51,7 +51,9 @@
            #:*default-cancel-button-text*
            #:*default-on-success*
            #:*default-on-cancel*
-           #:*default-prepare-text*))
+           #:*default-prepare-text*
+           #:pay-button-text
+           #:prepare-text))
 (in-package #:cl-telegram-bot2/actions/send-invoice)
 
 

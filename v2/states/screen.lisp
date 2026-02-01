@@ -51,7 +51,8 @@
            #:screen-widgets
            #:switch-to-screen
            #:screenp
-           #:screen-keyboard))
+           #:screen-keyboard
+           #:screen-link-preview-options))
 (in-package #:cl-telegram-bot2/states/screen)
 
 
