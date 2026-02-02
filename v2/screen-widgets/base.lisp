@@ -4,6 +4,8 @@
                 #:inline-keyboard-markup)
   (:import-from #:cl-telegram-bot2/state
                 #:callback-query-handlers)
+  (:import-from #:trivial-types
+                #:function-designator)
   (:export #:base-widget
            #:widget-keyboard
            #:on-callback-query))

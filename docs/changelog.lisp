@@ -13,6 +13,13 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.18.1 2026-02-02
+          "
+Fixed
+=====
+
+Error \"unknown type specifier: CL-TELEGRAM-BOT2/SCREEN-WIDGETS/BASE::FUNCTION-DESIGNATOR\" was fixed.
+	  ")
   (0.18.0 2026-02-01
           "
 Added
