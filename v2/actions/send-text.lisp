@@ -137,8 +137,9 @@
                              (list :reply-markup reply-markup))
                            (when link-preview-options
                              (list :link-preview-options link-preview-options))))))
-      (save-sent-message-id cl-telegram-bot2/vars::*current-state*
-                            message)))
+      (when message
+        (save-sent-message-id cl-telegram-bot2/vars::*current-state*
+                              message))))
   (values))
 
 
