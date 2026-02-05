@@ -13,6 +13,13 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.18.2 2026-02-05
+          "
+Fixed
+=====
+
+Attempt of saving NIL message after unsuccessful reply was fixed.
+")
   (0.18.1 2026-02-02
           "
 Fixed
