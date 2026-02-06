@@ -24,6 +24,7 @@
                 #:text-widget)
   (:import-from #:cl-telegram-bot2/screen-widgets/base
                 #:widget-keyboard
+                #:maybe-widget-type
                 #:base-widget)
   (:import-from #:serapeum
                 #:->
@@ -52,14 +53,15 @@
            #:switch-to-screen
            #:screenp
            #:screen-keyboard
-           #:screen-link-preview-options))
+           #:screen-link-preview-options
+           #:ensure-widget))
 (in-package #:cl-telegram-bot2/states/screen)
 
 
 (defclass screen (state)
   ((widgets :initform nil
             :initarg :widgets
-            :type (soft-list-of base-widget)
+            :type (soft-list-of maybe-widget-type)
             :reader screen-widgets)
    (keyboard :initarg :keyboard
              :initform nil
@@ -108,15 +110,33 @@
                  :keyboard keyboard))
 
 
+(-> ensure-widget (maybe-widget-type)
+    (values (or null base-widget) &optional))
+
+
 (defun ensure-widget (obj)
+  "Returns a BASE-WIDGET or NIL making it from the OBJ argument.
+
+   - If object is already of type BASE-WIDGET, then it is returned as is.
+   - If it is a string, then a new text widget will be created.
+   - If it is a function-designator, then it will be funcalled without arguments. If function returns an object which is not subtype of BASE-WIDGET, then error will be signalled."
   (etypecase obj
+    (function-designator
+       (let ((new-object (funcall obj)))
+         (cond
+           ((and new-object
+                 (not (typep new-object 'base-widget)))
+            (error "Object ~A is not a subtype of BASE-WIDGET."
+                   new-object))
+           (t
+            (values new-object)))))
     (base-widget
-     obj)
+       obj)
     (string
-     (text-widget obj))))
+       (text-widget obj))))
 
 
-(-> screen ((soft-list-of (or string base-widget))
+(-> screen ((soft-list-of maybe-widget-type)
             &key
             (:id (or null string))
             (:keyboard (or null
@@ -128,6 +148,25 @@
                                        keyword
                                        cl-telegram-bot2/api:link-preview-options))))
 
+(defmethod cl-telegram-bot2/state:on-callback-query :around ((state screen))
+  (let* ((maybe-widgets (screen-widgets state))
+         (widgets (remove-if #'null
+                             (mapcar #'ensure-widget 
+                                     maybe-widgets)))
+         (on-callback-query (mapcan #'cl-telegram-bot2/screen-widgets/base:on-callback-query
+                                    widgets)))
+    (values on-callback-query)))
+
+
+(defun ensure-first-widget-has-no-keyboard (widgets)
+  (let ((first-widget (first widgets)))
+    (when (and first-widget
+               (typep first-widget 'base-widget)
+               (widget-keyboard first-widget))
+      (error "First widget should not have a keyboard because in this case screen can't show or hide reply keyboard.")))
+  (values widgets))
+
+
 (defun screen (widgets &key
                        id
                        (keyboard nil keyboard-given-p)
@@ -137,38 +176,40 @@
 
    Pass a REPLY-KEYBOARD-MARKUP object as KEYBOARD argument, to show a new keyboard.
    Pass a NIL as KEYBOARD argument, to hide current reply keyboard keyboard.
+
+   Widget items can be a subclass of BASE-WIDGET, string or a function designator. If it is
+   a function designator, then it will be funcalled each time when scren should be rendered.
    "
-  (let* ((widgets (mapcar #'ensure-widget
-                          widgets))
-         (on-callback-query (mapcan #'cl-telegram-bot2/screen-widgets/base:on-callback-query
-                                    widgets)))
-    (when (widget-keyboard
-           (first widgets))
-      (error "First widget should not have a keyboard because in this case screen can't show or hide reply keyboard."))
-    
-    (make-instance 'screen
-                   :id id
-                   :widgets widgets
-                   :keyboard (cond
-                               (keyboard-given-p
-                                (or keyboard
-                                    (make-instance 'reply-keyboard-remove)))
-                               (t
-                                nil))
-                   :link-preview-options link-preview-options
-                   :on-callback-query on-callback-query
-                   :on-update (uiop:ensure-list on-update))))
+  (ensure-first-widget-has-no-keyboard widgets)
+  
+  (make-instance 'screen
+                 :id id
+                 :widgets widgets
+                 :keyboard (cond
+                             (keyboard-given-p
+                              (or keyboard
+                                  (make-instance 'reply-keyboard-remove)))
+                             (t
+                              nil))
+                 :link-preview-options link-preview-options
+                 ;; Instead of this slot, we override the reader method
+                 :on-callback-query nil
+                 :on-update (uiop:ensure-list on-update)))
 
 
-(-> group-widgets ((soft-list-of base-widget)
+(-> group-widgets ((soft-list-of maybe-widget-type)
                    (or null
                        reply-keyboard-markup
                        reply-keyboard-remove
                        function-designator))
     (values (soft-list-of widgets-group) &optional))
 
-(defun group-widgets (widgets screen-keyboard)
-  (loop with group = nil
+(defun group-widgets (maybe-widgets screen-keyboard)
+  (loop with widgets = (ensure-first-widget-has-no-keyboard
+                        (remove-if  #'null
+                                    (mapcar #'ensure-widget 
+                                            maybe-widgets)))
+        with group = nil
         with groups = nil
         with group-keyboard = screen-keyboard
         for rest-widgets on widgets

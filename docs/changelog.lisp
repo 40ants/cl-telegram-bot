@@ -13,6 +13,21 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.19.0 2026-02-06
+          "
+Added
+=====
+
+* Now screen widget could be a function-designator.
+
+Fixed
+=====
+
+* Fixed how optional arguemtns of CL-TELEGRAM-BOT2/HIGH/KEYBOARD:REQUEST-CHAT function are processed.
+  Previously if argument is not given, it was sent to API as `False` and this filtered out all chats.
+
+")
+
   (0.18.2 2026-02-05
           "
 Fixed
