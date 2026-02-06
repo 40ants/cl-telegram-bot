@@ -8,7 +8,8 @@
                 #:->)
   (:import-from #:alexandria
                 #:non-negative-fixnum
-                #:positive-fixnum)
+                #:positive-fixnum
+                #:alist-plist)
   (:import-from #:yason
                 #:with-output-to-string*)
   (:export #:call-if-needed
@@ -17,7 +18,8 @@
            #:from-json
            #:to-json
            #:call-with-one-or-zero-args
-           #:fbound-symbol))
+           #:fbound-symbol
+           #:optional-arguments-plist))
 (in-package #:cl-telegram-bot2/utils)
 
 
@@ -142,3 +144,19 @@ It merely returns its results."
   '(and
     symbol
     (satisfies fboundp)))
+
+
+(defmacro optional-arguments-plist (&body plist-forms)
+  "Creates a plist where items will be present unless their form didnt signaled unbound-slot error."
+  (loop for (key form) on plist-forms by #'cddr
+        for wrapped-form = `(handler-case
+                                ,form
+                              (unbound-slot ()
+                                'unbound-slot))
+        collect `(cons ,key ,wrapped-form) into results
+        finally (return
+                  `(alist-plist (remove-if (lambda (item)
+                                             (eql (cdr item)
+                                                  'unbound-slot))
+                                           (list ,@results))))))
+
