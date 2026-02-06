@@ -91,7 +91,8 @@
    (on-callback-query :initarg :on-callback-query
                       :type callback-query-handlers
                       :initform nil
-                      :reader on-callback-query)
+                      :reader on-callback-query
+                      :documentation "A list of callback handlers which will be used to process callback data.")
    (on-web-app-data :initarg :on-web-app-data
                     :type workflow-blocks
                     :initform nil

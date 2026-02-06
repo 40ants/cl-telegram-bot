@@ -13,6 +13,15 @@
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
 
+  (0.19.0 2026-02-06
+          "
+Added
+=====
+
+* Now screen widget could be a function-designator.
+
+")
+
   (0.18.2 2026-02-05
           "
 Fixed
