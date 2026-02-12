@@ -12,6 +12,13 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.19.1 2026-02-12
+          "
+Fixed
+=====
+
+Deleting messages by action CL-TELEGRAM-BOT2/ACTIONS/DELETE-MESSAGES:DELETE-MESSAGES was improved to handle situation when one of the messages can't be deleted on user side. In this case bot will try to delete messages one by one and then continue to the usual processing even in case of subsequent errors.
+")
 
   (0.19.0 2026-02-06
           "
