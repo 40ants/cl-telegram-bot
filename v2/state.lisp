@@ -225,7 +225,11 @@
 
 
 (defmethod process-state ((bot t) (items list) update)
-  (loop for obj in items
+  (loop for obj in (remove-if
+                    ;; Just in case, to protect from actions returning NIL
+                    ;; as result
+                    #'null
+                    items)
         thereis (etypecase obj
                   (symbol
                      (let ((maybe-other-action
