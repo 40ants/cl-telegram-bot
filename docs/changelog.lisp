@@ -12,6 +12,12 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.19.2 2026-02-13
+          "
+Fixed
+=====
+
+Now method of process-state will ignore NIL in the list of actions to process.")
   (0.19.1 2026-02-12
           "
 Fixed
