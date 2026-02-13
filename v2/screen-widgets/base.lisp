@@ -23,14 +23,15 @@
    (on-callback-query :initarg :on-callback-query
                       :type callback-query-handlers
                       :initform nil
-                      :reader on-callback-query)))
+                      :reader on-callback-query))
+  (:documentation "Base class for all widgets which might be shown on the screen.s"))
 
 (deftype maybe-widget-type ()
   "A type for which can be CL-TELEGRAM-BOT2/STATES/SCREEN:ENSURE-WIDGET function can return a real object of BASE-WIDGET class.
 
-   - If object is already of type BASE-WIDGET, then it is returned as is.
+   - If object is already of class BASE-WIDGET, then it is returned as is.
    - If it is a string, then a new text widget will be created.
-   - If it is a function-designator, then it will be funcalled with a single CL-TELEGRAM-BOT2/API:UPDATE object.ww"
+   - If it is a function-designator, then it will be funcalled with a single CL-TELEGRAM-BOT2/API:UPDATE object."
   '(or
     base-widget
     string

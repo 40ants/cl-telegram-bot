@@ -117,16 +117,16 @@
 (defun ensure-widget (obj)
   "Returns a BASE-WIDGET or NIL making it from the OBJ argument.
 
-   - If object is already of type BASE-WIDGET, then it is returned as is.
+   - If object is already of class BASE-WIDGET, then it is returned as is.
    - If it is a string, then a new text widget will be created.
-   - If it is a function-designator, then it will be funcalled without arguments. If function returns an object which is not subtype of BASE-WIDGET, then error will be signalled."
+   - If it is a function-designator, then it will be funcalled without arguments. If function returns an object which is not subclass of BASE-WIDGET, then error will be signalled."
   (etypecase obj
     (function-designator
        (let ((new-object (funcall obj)))
          (cond
            ((and new-object
                  (not (typep new-object 'base-widget)))
-            (error "Object ~A is not a subtype of BASE-WIDGET."
+            (error "Object ~A is not a subclass of BASE-WIDGET."
                    new-object))
            (t
             (values new-object)))))
