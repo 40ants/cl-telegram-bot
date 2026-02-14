@@ -12,6 +12,20 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.20.0 2026-02-14
+          "
+Fixed
+=====
+
+* Fixed a bug where state variables storing the bot's state could be reused within chat processing for another user. Now, all variables bound to the state during user message processing are stored separately.
+* Fixed printing of CL-TELEGRAM-BOT2/STATE:STATE class objects when they have an `on-callback-query` slot and the current user is unknown. 
+
+
+Changed
+=======
+
+Now, objects of the CL-TELEGRAM-BOT2/STATES/BASE:BASE-STATE class must have an `id` slot. If it is not specified, it will be auto-generated.
+")
   (0.19.2 2026-02-13
           "
 Fixed

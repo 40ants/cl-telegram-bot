@@ -48,6 +48,8 @@
                 #:workflow-blocks)
   (:import-from #:trivial-types
                 #:function-designator)
+  (:import-from #:cl-telegram-bot2/states/base
+                #:generate-state-id)
   (:export #:screen
            #:screen-widgets
            #:switch-to-screen
@@ -168,7 +170,7 @@
 
 
 (defun screen (widgets &key
-                       id
+                       (id (generate-state-id))
                        (keyboard nil keyboard-given-p)
                        on-update
                        link-preview-options)

@@ -23,7 +23,9 @@
                 #:command
                 #:state-with-commands-mixin)
   (:import-from #:cl-telegram-bot2/states/base
-                #:base-state)
+                #:generate-state-id
+                #:base-state
+                #:delete-state-data)
   (:import-from #:cl-telegram-bot2/workflow
                 #:workflow-block
                 #:workflow-blocks)
@@ -101,11 +103,16 @@
 
 (defmethod print-items append ((state state))
   (macrolet ((handler (accessor-name)
-               `(when (,accessor-name state)
-                  (list (list (alexandria:make-keyword ',accessor-name)
-                              " ~A = ~S"
-                              (string-downcase ',accessor-name)
-                              (,accessor-name state))))))
+               `(let* ((error nil)
+                       (value (handler-case (,accessor-name state)
+                                (serious-condition (c)
+                                  (setf error c)
+                                  (values nil)))))
+                  (when (or value error)
+                    (list (list (alexandria:make-keyword ',accessor-name)
+                                " ~A = ~S"
+                                (string-downcase ',accessor-name)
+                                (or value error)))))))
     (append
      (handler on-activation)
      (handler on-update)
@@ -136,7 +143,7 @@
 (-> state ((or workflow-block
                workflow-blocks)
            &key
-           (:id (or null string))
+           (:id string)
            (:commands (or null
                           command
                           (soft-list-of command)))
@@ -155,7 +162,9 @@
                                  workflow-blocks)))
     (values state &optional))
 
-(defun state (on-activation &key id commands on-update on-deletion on-result on-callback-query on-web-app-data)
+(defun state (on-activation &key
+                            (id (generate-state-id))
+                            commands on-update on-deletion on-result on-callback-query on-web-app-data)
   (make-instance 'state
                  :id id
                  :commands (uiop:ensure-list commands)
@@ -284,7 +293,8 @@
 
 
 (defmethod cl-telegram-bot2/generics:on-state-deletion ((state state))
-  (cl-telegram-bot2/generics:on-state-deletion (on-deletion state)))
+  (prog1 (cl-telegram-bot2/generics:on-state-deletion (on-deletion state))
+    (delete-state-data state)))
 
 
 (defmethod cl-telegram-bot2/generics:on-state-deletion ((workflow-blocks list))

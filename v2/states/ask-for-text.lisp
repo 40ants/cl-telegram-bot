@@ -8,6 +8,7 @@
                 #:validate-on-deletion-arg
                 #:base-state)
   (:import-from #:cl-telegram-bot2/states/base
+                #:generate-state-id
                 #:state-var)
   (:import-from #:cl-telegram-bot2/pipeline
                 #:back)
@@ -64,7 +65,8 @@
    (var-name :initarg :to
              :initform *default-var-name*
              :type string
-             :reader var-name)
+             :reader var-name
+             :documentation "State variable name to which answer should be stored before on-success callback called.")
    (on-success :initarg :on-success
                :initform nil
                :type workflow-blocks
@@ -77,6 +79,7 @@
 
 (-> ask-for-text (string
                   &key
+                  (:id string)
                   (:prompt-keyboard (or null inline-keyboard-markup))
                   (:to string)
                   (:regex string)
@@ -87,16 +90,18 @@
                   (:vars (or null hash-table))))
 
 (defun ask-for-text (prompt &key
-                              prompt-keyboard
-                              (to *default-var-name*)
-                              (regex ".*")
-                              on-success
-                              on-validation-error
-                              on-deletion
-                              on-callback-query
-                              vars)
+                            (id (generate-state-id))
+                            prompt-keyboard
+                            (to *default-var-name*)
+                            (regex ".*")
+                            on-success
+                            on-validation-error
+                            on-deletion
+                            on-callback-query
+                            vars)
 
   (make-instance 'ask-for-text
+                 :id id
                  :prompt prompt
                  :prompt-keyboard prompt-keyboard
                  :matcher (regex-matcher regex)
