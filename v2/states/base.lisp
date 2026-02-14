@@ -6,6 +6,8 @@
                 #:pretty-print-hash-table
                 #:dict
                 #:soft-list-of)
+  (:import-from #:cl-telegram-bot2/api
+                #:chat-id)
   (:import-from #:cl-telegram-bot2/debug/diagram/group
                 #:group-name
                 #:group-slots
@@ -38,6 +40,15 @@
                 #:*name-to-state*
                 #:*id-to-state*
                 #:*state-to-name*)
+  (:import-from #:cl-telegram-bot2/vars
+                #:*current-chat*
+                #:*current-state*)
+  (:import-from #:fset2
+                #:do-map
+                #:ch-map)
+  (:import-from #:alexandria
+                #:plist-alist
+                #:proper-list-p)
   (:export #:var
            #:state-var
            #:clear-state-vars
@@ -45,23 +56,180 @@
            #:state-id
            #:sent-message-ids
            #:state-vars
-           #:received-message-ids))
+           #:received-message-ids
+           #:state-initial-vars))
 (in-package #:cl-telegram-bot2/states/base)
 
 
-(defclass base-state (print-items-mixin)
-  ((id :initarg :id
-       :initform nil
-       :type (or null string)
-       :reader state-id)
-   (vars :initarg :vars
+(defgeneric state-vars (state))
+(defgeneric sent-message-ids (state))
+(defgeneric received-message-ids (state))
+
+
+
+(defclass state-data (print-items-mixin)
+  ((vars :initarg :vars
          :initform (dict)
          :type hash-table
          :reader state-vars)
    (sent-message-ids :initform nil
                      :accessor sent-message-ids)
    (received-message-ids :initform nil
-                         :accessor received-message-ids)))
+                         :accessor received-message-ids))
+  (:documentation "This data is kept aside from state object, because state objects can be shared between different chats if you are using declarative style of pipeline definition."))
+
+
+(defun generate-state-id ()
+  (symbol-name (gensym "auto-state-id-")))
+
+
+(defclass base-state (print-items-mixin)
+  ((id :initarg :id
+       :initform (generate-state-id)
+       :type string
+       :reader state-id)
+   (initial-vars :initarg :vars
+                 :initform nil
+                 :type (or null ch-map)
+                 :reader state-initial-vars
+                 :documentation "Variables set on state when it was created. Immutable. When STATE-VARS generic-function is called, this value will be used as default for current chat and state."))
+  (:default-initargs :vars nil))
+
+
+(defvar *state-data* (make-hash-table)
+  "Chat-id -> state -> data hash-table")
+
+;; For debug
+;; (clrhash *state-data*)
+
+
+(-> make-immutable-vars ((or null hash-table list))
+    (values (or ch-map null) &optional))
+
+(defun make-immutable-vars (vars)
+  (etypecase vars
+    (null
+       vars)
+    (hash-table
+       (fset2:convert 'ch-map vars))
+    (list
+       (cond
+         ;; plist
+         ((and (proper-list-p vars)
+               (keywordp (car vars)))
+          (fset2:convert 'ch-map
+                         (plist-alist vars)))
+         ;; alist
+         ((and (proper-list-p vars)
+               (consp (car vars)))
+          (fset2:convert 'ch-map vars))
+         (t
+          (error "Unable to convert ~S to immutable map." vars))))))
+
+
+(-> immutable-vars-to-dict ((or null ch-map))
+    (values hash-table))
+
+(defun immutable-vars-to-dict (vars)
+  (etypecase vars
+    (null
+       (dict))
+    (ch-map
+       ;; Here we do not use fset2:convert, because even if keys are strings it will
+       ;; create a hash-table with function 'eql
+       (let ((result (dict)))
+         (do-map (key value vars result)
+           (setf (gethash key result)
+                 value))))))
+
+
+(defmethod initialize-instance :around ((state base-state) &rest initargs &key vars)
+  (let* ((vars (make-immutable-vars vars)))
+    (apply #'call-next-method
+           state
+           (list* :vars vars
+                  initargs))))
+
+
+(-> get-current-state-data ()
+    (values state-data &optional))
+
+(defun get-current-state-data ()
+  (unless (boundp '*current-chat*)
+    (break))
+  (let* ((chat (or *current-chat*
+                   (error "No current chat")))
+         (chat-id (chat-id chat))
+         (data-by-state (or (gethash chat-id *state-data*)
+                            (setf (gethash chat-id *state-data*)
+                                  (make-hash-table))))
+         (state (or *current-state*
+                    (error "No current state")))
+         (state-id (state-id state))
+         (state-data (or (gethash state-id data-by-state)
+                         (setf (gethash state-id data-by-state)
+                               (make-instance 'state-data
+                                              :vars (immutable-vars-to-dict
+                                                     (state-initial-vars state)))))))
+    (values state-data)))
+
+
+(-> delete-state-data (base-state)
+    (values &optional))
+
+(defun delete-state-data (state)
+  (let* ((chat (or *current-chat*
+                   (error "No current chat")))
+         (chat-id (chat-id chat))
+         (data-by-state (or (gethash chat-id *state-data*)
+                            (setf (gethash chat-id *state-data*)
+                                  (make-hash-table))))
+         (state-id (state-id state)))
+    (remhash state-id data-by-state)
+    (values)))
+
+
+(defmethod state-vars ((state base-state))
+  (state-vars (get-current-state-data)))
+
+
+(defmethod sent-message-ids ((state base-state))
+  (sent-message-ids (get-current-state-data)))
+
+
+(defmethod (setf sent-message-ids) ((new-value t) (state base-state))
+  (setf (sent-message-ids (get-current-state-data))
+        new-value))
+
+
+(defmethod received-message-ids ((state base-state))
+  (received-message-ids (get-current-state-data)))
+
+
+(defmethod (setf received-message-ids) ((new-value t) (state base-state))
+  (setf (received-message-ids (get-current-state-data))
+        new-value))
+
+
+(defmethod print-items append ((state state-data))
+  (append
+   (list
+    (list :vars
+          "vars = {~A}"
+          (with-output-to-string (s)
+            (loop for key being the hash-key of (state-vars state)
+                    using (hash-value value)
+                  do (format s "~S: ~S"
+                             key value)))))
+   (when (received-message-ids state)
+     (list (list :received
+                 " received = ~S"
+                 (received-message-ids state))))
+   
+   (when (sent-message-ids state)
+     (list (list :sent
+                 " sent = ~S"
+                 (sent-message-ids state))))))
 
 
 (defmethod print-items append ((state base-state))
@@ -70,15 +238,18 @@
      (list (list :id
                  "id = ~S"
                  (state-id state))))
-   (unless (zerop (hash-table-count (state-vars state)))
-     (list (list :vars
-                 "vars = {~A}"
-                 (with-output-to-string (s)
-
-                   (loop for key being the hash-key of (state-vars state)
-                         using (hash-value value)
-                         do (format s "~S: ~S"
-                                    key value))))))))
+   (cond
+     ((not (boundp '*current-chat*))
+      (list (list :vars
+                  "vars = no-current-chat")))
+     ((not (zerop (hash-table-count (state-vars state))))
+      (list (list :vars
+                  "vars = {~A}"
+                  (with-output-to-string (s)
+                    (loop for key being the hash-key of (state-vars state)
+                            using (hash-value value)
+                          do (format s "~S: ~S"
+                                     key value)))))))))
 
 
 (defgeneric state-var (state var-name)

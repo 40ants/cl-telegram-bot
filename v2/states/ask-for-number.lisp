@@ -7,6 +7,7 @@
                 #:validate-on-deletion-arg
                 #:base-state)
   (:import-from #:cl-telegram-bot2/states/base
+                #:generate-state-id
                 #:state-var)
   (:import-from #:cl-telegram-bot2/pipeline
                 #:back)
@@ -65,12 +66,14 @@
 
 
 (defun ask-for-number (prompt &key
+                              (id (generate-state-id))
                               (to *default-var-name*)
                               on-success
                               on-validation-error
                               on-deletion)
 
   (make-instance 'ask-for-number
+                 :id id
                  :prompt prompt
                  :to to
                  :on-success (uiop:ensure-list

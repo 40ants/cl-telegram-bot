@@ -284,6 +284,9 @@ FUNCTION."
                                                        (when 40ants-slynk:*connections*
                                                          (invoke-debugger condition)))))
                      (let ((*current-bot* bot)
+                           (*current-state* (car *state*))
+                           (*current-chat* (get-chat update))
+                           (*current-user* (get-user update))
                            (*token* (cl-telegram-bot2/bot::token bot))
                            (*print-readably*
                              ;; bordeaux-threads sets this var to T and this breaks logging
@@ -422,10 +425,7 @@ FUNCTION."
 (defmethod process-update ((bot bot) (update cl-telegram-bot2/api:update))
   (log:info "Processing chat update"
             update)
-  (let* ((*current-state* (car *state*))
-         (*current-chat* (get-chat update))
-         (*current-user* (get-user update))
-         (new-state (process-state bot *current-state* update)))
+  (let* ((new-state (process-state bot *current-state* update)))
 
     (setf *state*
           (probably-switch-to-new-state new-state *state*)))

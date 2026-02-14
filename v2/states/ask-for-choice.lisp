@@ -7,6 +7,7 @@
   (:import-from #:cl-telegram-bot2/state
                 #:base-state)
   (:import-from #:cl-telegram-bot2/states/base
+                #:generate-state-id
                 #:state-var)
   (:import-from #:cl-telegram-bot2/pipeline
                 #:back)
@@ -136,6 +137,7 @@
 (-> ask-for-choice ((or string symbol)
                     choice-buttons-descriptor
                     &key
+                    (:id string)
                     (:to string)
                     (:vars (or null hash-table))
                     (:delete-messages boolean)
@@ -149,17 +151,19 @@
 
 (defun ask-for-choice (prompt buttons
                        &key
-                         (to *default-var-name*)
-                         vars
-                         (delete-messages t)
-                         (delete-wrong-user-messages t)
-                         on-success
-                         (on-wrong-user-message
-                          (send-text "Please push one of the buttons.")))
+                       (id (generate-state-id))
+                       (to *default-var-name*)
+                       vars
+                       (delete-messages t)
+                       (delete-wrong-user-messages t)
+                       on-success
+                       (on-wrong-user-message
+                        (send-text "Please push one of the buttons.")))
   (unless buttons
     (error "Please, specify at least one button."))
   
   (make-instance 'ask-for-choice
+                 :id id
                  :prompt prompt
                  :buttons (ensure-choice-buttons-rows buttons)
                  :to to
