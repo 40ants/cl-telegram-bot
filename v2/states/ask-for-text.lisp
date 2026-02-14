@@ -101,6 +101,7 @@
                             vars)
 
   (make-instance 'ask-for-text
+                 :id id
                  :prompt prompt
                  :prompt-keyboard prompt-keyboard
                  :matcher (regex-matcher regex)
