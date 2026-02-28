@@ -54,7 +54,8 @@
          ,@body)
     
      (loop for message in sent-messages
-           do (save-sent-message-id ,state-var message))
+           do (when message
+                (save-sent-message-id ,state-var message)))
      
      (values result)))
 
