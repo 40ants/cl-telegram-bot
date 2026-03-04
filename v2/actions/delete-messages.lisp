@@ -1,5 +1,6 @@
 (uiop:define-package #:cl-telegram-bot2/actions/delete-messages
   (:use #:cl)
+  (:import-from #:cl-telegram-bot2/sent-messages)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
   (:import-from #:cl-telegram-bot2/vars
@@ -68,45 +69,9 @@
     (values &optional))
 
 (defun delete-created-messages (action)
-  (let* ((state *current-state*)
-         (ids (append
-               (when (delete-sent-messages-p action)
-                 (sent-message-ids state))
-               (when (delete-received-messages-p action)
-                 (received-message-ids state))))
-         (chat-id (chat-id *current-chat*)))
-    
-    (log:debug "Deleting messages created in" state)
-    
-    (when ids
-      (with-fields (:chat-id chat-id
-                    :message-ids ids)
-        (log:debug "These messages will be deleted" ids)
-      
-        (handler-case
-          (with-log-unhandled ()
-            (cl-telegram-bot2/api:delete-messages chat-id
-                                                  ids))
-          (telegram-error (e)
-            (let ((desc (error-description e)))
-              (when (str:containsp "message can't be deleted for everyone"
-                                   desc)
-                ;; Sometimes this response can be sent because user already deleted messages
-                ;; probably by cleaning chat history. Just for the case, we will try to
-                ;; again to delete messages one by one, maybe some of the can be deleted:
-                (loop for id in ids
-                      do (with-fields (:message-id id)
-                           (handler-case
-                               (with-log-unhandled ()
-                                 (cl-telegram-bot2/api:delete-messages (chat-id *current-chat*)
-                                                                       (list id)))
-                             (telegram-error ()
-                               ;; Just ignore subsequent errors (hovever they will be logged)
-                               nil))))))))
-      
-        (setf (sent-message-ids *current-state*)
-              nil)))
-    (values)))
+  (cl-telegram-bot2/sent-messages:delete-messages
+   :sent (delete-sent-messages-p action)
+   :received (delete-received-messages-p action)))
 
 
 (defmethod on-state-activation ((action delete-messages))

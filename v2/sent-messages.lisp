@@ -1,5 +1,15 @@
 (uiop:define-package #:cl-telegram-bot2/sent-messages
   (:use #:cl)
+  (:import-from #:cl-telegram-bot2/errors
+                #:error-description
+                #:telegram-error)
+  (:import-from #:log4cl-extras/error
+                #:with-log-unhandled)
+  (:import-from #:log4cl-extras/context
+                #:with-fields)
+  (:import-from #:cl-telegram-bot2/vars
+                #:*current-chat*
+                #:*current-state*)
   (:import-from #:serapeum
                 #:fmt
                 #:->
@@ -11,6 +21,7 @@
                 #:on-state-activation
                 #:process-state)
   (:import-from #:cl-telegram-bot2/api
+                #:chat-id
                 #:update
                 #:update-message
                 #:message
@@ -26,7 +37,8 @@
                 #:base-state)
   (:export #:save-received-message-id
            #:capture-sent-messages
-           #:save-sent-message-id))
+           #:save-sent-message-id
+           #:delete-messages))
 (in-package #:cl-telegram-bot2/sent-messages)
 
 
@@ -92,3 +104,49 @@
 (defmethod on-result :around ((state base-state) result)
   (capture-sent-messages (state)
     (call-next-method)))
+
+
+(-> delete-messages (&key (:sent boolean) (:received boolean))
+    (values &optional))
+
+(defun delete-messages (&key (sent t) (received t))
+  "Deletes messages of the current state."
+  (let* ((state *current-state*)
+         (ids (append
+               (when sent
+                 (sent-message-ids state))
+               (when received
+                 (received-message-ids state))))
+         (chat-id (chat-id *current-chat*)))
+    
+    (log:debug "Deleting messages created in" state)
+    
+    (when ids
+      (with-fields (:chat-id chat-id
+                    :message-ids ids)
+        (log:debug "These messages will be deleted" ids)
+      
+        (handler-case
+            (with-log-unhandled ()
+              (cl-telegram-bot2/api:delete-messages chat-id
+                                                    ids))
+          (telegram-error (e)
+            (let ((desc (error-description e)))
+              (when (str:containsp "message can't be deleted for everyone"
+                                   desc)
+                ;; Sometimes this response can be sent because user already deleted messages
+                ;; probably by cleaning chat history. Just for the case, we will try to
+                ;; again to delete messages one by one, maybe some of the can be deleted:
+                (loop for id in ids
+                      do (with-fields (:message-id id)
+                           (handler-case
+                               (with-log-unhandled ()
+                                 (cl-telegram-bot2/api:delete-messages (chat-id *current-chat*)
+                                                                       (list id)))
+                             (telegram-error ()
+                               ;; Just ignore subsequent errors (hovever they will be logged)
+                               nil))))))))
+      
+        (setf (sent-message-ids *current-state*)
+              nil)))
+    (values)))

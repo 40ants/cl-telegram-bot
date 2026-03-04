@@ -14,7 +14,7 @@
   (:import-from #:cl-telegram-bot2/high
                 #:reply-with-photo
                 #:reply)
-  (:import-from #:cl-telegram-bot2/actions/delete-messages
+  (:import-from #:cl-telegram-bot2/sent-messages
                 #:delete-messages)
   (:import-from #:cl-telegram-bot2/term/switch-to
                 #:switch-to)
@@ -79,7 +79,7 @@
                                    cl-telegram-bot2/api:link-preview-options)
                          :reader screen-link-preview-options))
   (:default-initargs
-   :on-deletion (list (delete-messages))))
+   :on-deletion (list 'delete-messages)))
 
 
 (defclass widgets-group ()
@@ -325,6 +325,7 @@
 
 (defmethod on-result ((screen screen) value)
   (declare (ignore value))
+  (delete-messages)
   (show-widgets screen))
 
 
