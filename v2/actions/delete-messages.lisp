@@ -3,9 +3,6 @@
   (:import-from #:cl-telegram-bot2/sent-messages)
   (:import-from #:cl-telegram-bot2/action
                 #:action)
-  (:import-from #:cl-telegram-bot2/vars
-                #:*current-chat*
-                #:*current-state*)
   (:import-from #:cl-telegram-bot2/api
                 #:message-chat
                 #:update-message
@@ -17,7 +14,6 @@
                 #:on-result
                 #:process-state
                 #:on-state-activation)
-  (:import-from #:log)
   (:import-from #:serapeum
                 #:soft-list-of
                 #:->)
@@ -26,13 +22,6 @@
   (:import-from #:cl-telegram-bot2/states/base
                 #:received-message-ids
                 #:sent-message-ids)
-  (:import-from #:log4cl-extras/error
-                #:with-log-unhandled)
-  (:import-from #:cl-telegram-bot2/errors
-                #:error-description
-                #:telegram-error)
-  (:import-from #:log4cl-extras/context
-                #:with-fields)
   (:export #:delete-messages
            #:delete-sent-messages-p
            #:delete-received-messages-p))
