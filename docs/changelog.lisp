@@ -12,6 +12,14 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.20.1 2026-03-03
+          "
+Fixed
+=====
+
+* Fixed the way how state variables are saved. Previously hash-table used eql test and string keys were duplicated.
+* Now states of class CL-TELEGRAM-BOT2/STATES/SCREEN:SCREEN deletes all sent or received messages when bot returns to them using actions of class CL-TELEGRAM-BOT2/TERM/BACK:BACK.
+")
   (0.20.0 2026-02-14
           "
 Fixed

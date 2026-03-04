@@ -96,7 +96,7 @@
   (:default-initargs :vars nil))
 
 
-(defvar *state-data* (make-hash-table)
+(defvar *state-data* (make-hash-table :test 'equal)
   "Chat-id -> state -> data hash-table")
 
 ;; For debug
@@ -151,20 +151,16 @@
                   initargs))))
 
 
-(-> get-current-state-data ()
+(-> get-state-data (base-state)
     (values state-data &optional))
 
-(defun get-current-state-data ()
-  (unless (boundp '*current-chat*)
-    (break))
+(defun get-state-data (state)
   (let* ((chat (or *current-chat*
                    (error "No current chat")))
          (chat-id (chat-id chat))
          (data-by-state (or (gethash chat-id *state-data*)
                             (setf (gethash chat-id *state-data*)
-                                  (make-hash-table))))
-         (state (or *current-state*
-                    (error "No current state")))
+                                  (make-hash-table :test 'equal))))
          (state-id (state-id state))
          (state-data (or (gethash state-id data-by-state)
                          (setf (gethash state-id data-by-state)
@@ -183,31 +179,31 @@
          (chat-id (chat-id chat))
          (data-by-state (or (gethash chat-id *state-data*)
                             (setf (gethash chat-id *state-data*)
-                                  (make-hash-table))))
+                                  (make-hash-table :test 'equal))))
          (state-id (state-id state)))
     (remhash state-id data-by-state)
     (values)))
 
 
 (defmethod state-vars ((state base-state))
-  (state-vars (get-current-state-data)))
+  (state-vars (get-state-data state)))
 
 
 (defmethod sent-message-ids ((state base-state))
-  (sent-message-ids (get-current-state-data)))
+  (sent-message-ids (get-state-data state)))
 
 
 (defmethod (setf sent-message-ids) ((new-value t) (state base-state))
-  (setf (sent-message-ids (get-current-state-data))
+  (setf (sent-message-ids (get-state-data state))
         new-value))
 
 
 (defmethod received-message-ids ((state base-state))
-  (received-message-ids (get-current-state-data)))
+  (received-message-ids (get-state-data state)))
 
 
 (defmethod (setf received-message-ids) ((new-value t) (state base-state))
-  (setf (received-message-ids (get-current-state-data))
+  (setf (received-message-ids (get-state-data state))
         new-value))
 
 
