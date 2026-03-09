@@ -184,19 +184,21 @@
    "
   (ensure-first-widget-has-no-keyboard widgets)
   
-  (make-instance 'screen
-                 :id id
-                 :widgets widgets
-                 :keyboard (cond
-                             (keyboard-given-p
-                              (or keyboard
-                                  (make-instance 'reply-keyboard-remove)))
-                             (t
-                              nil))
-                 :link-preview-options link-preview-options
-                 ;; Instead of this slot, we override the reader method
-                 :on-callback-query nil
-                 :on-update (uiop:ensure-list on-update)))
+  (let ((keyboard (cond
+                    (keyboard-given-p
+                     (or keyboard
+                         (make-instance 'reply-keyboard-remove
+                                        :remove-keyboard t)))
+                    (t
+                     nil))))
+    (make-instance 'screen
+                   :id id
+                   :widgets widgets
+                   :keyboard keyboard
+                   :link-preview-options link-preview-options
+                   ;; Instead of this slot, we override the reader method
+                   :on-callback-query nil
+                   :on-update (uiop:ensure-list on-update))))
 
 
 (-> group-widgets ((soft-list-of maybe-widget-type)

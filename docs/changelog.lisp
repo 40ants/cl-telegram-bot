@@ -12,6 +12,12 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.20.2 2026-03-09
+          "
+Fixed
+=====
+
+Keyboard removing was fixed for screen constructed with NIL keyboard argument.")
   (0.20.1 2026-03-03
           "
 Fixed
