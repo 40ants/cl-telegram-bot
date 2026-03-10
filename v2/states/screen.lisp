@@ -50,6 +50,8 @@
                 #:function-designator)
   (:import-from #:cl-telegram-bot2/states/base
                 #:generate-state-id)
+  (:import-from #:alexandria
+                #:remove-from-plist)
   (:export #:screen
            #:screen-widgets
            #:switch-to-screen
@@ -138,18 +140,6 @@
        (text-widget obj))))
 
 
-(-> screen ((soft-list-of maybe-widget-type)
-            &key
-            (:id (or null string))
-            (:keyboard (or null
-                           reply-keyboard-markup
-                           function-designator))
-            (:on-update (or workflow-block
-                            workflow-blocks))
-            (:link-preview-options (or null
-                                       keyword
-                                       cl-telegram-bot2/api:link-preview-options))))
-
 (defmethod cl-telegram-bot2/state:on-callback-query :around ((state screen))
   (let* ((maybe-widgets (screen-widgets state))
          (widgets (remove-if #'null
@@ -158,7 +148,6 @@
          (on-callback-query (mapcan #'cl-telegram-bot2/screen-widgets/base:on-callback-query
                                     widgets)))
     (values on-callback-query)))
-
 
 (defun ensure-first-widget-has-no-keyboard (widgets)
   (let ((first-widget (first widgets)))
@@ -169,11 +158,27 @@
   (values widgets))
 
 
-(defun screen (widgets &key
-                       (id (generate-state-id))
-                       (keyboard nil keyboard-given-p)
-                       on-update
-                       link-preview-options)
+(-> screen ((soft-list-of maybe-widget-type)
+            &key
+            (:id (or null string))
+            (:screen-class symbol)
+            (:keyboard (or null
+                           reply-keyboard-markup
+                           function-designator))
+            (:on-update (or workflow-block
+                            workflow-blocks))
+            (:link-preview-options (or null
+                                       keyword
+                                       cl-telegram-bot2/api:link-preview-options))
+            &allow-other-keys))
+
+(defun screen (widgets &rest rest &key
+                                  (id (generate-state-id))
+                                  (screen-class 'screen)
+                                  (keyboard nil keyboard-given-p)
+                                  link-preview-options
+                                  on-update
+               &allow-other-keys)
   "If KEYBOARD argument was not supplied, then existing reply keyboard will stay on screen.
 
    Pass a REPLY-KEYBOARD-MARKUP object as KEYBOARD argument, to show a new keyboard.
@@ -191,14 +196,16 @@
                                         :remove-keyboard t)))
                     (t
                      nil))))
-    (make-instance 'screen
-                   :id id
-                   :widgets widgets
-                   :keyboard keyboard
-                   :link-preview-options link-preview-options
-                   ;; Instead of this slot, we override the reader method
-                   :on-callback-query nil
-                   :on-update (uiop:ensure-list on-update))))
+    (apply #'make-instance
+           screen-class
+           :id id
+           :widgets widgets
+           :keyboard keyboard
+           ;; Instead of this slot, we override the reader method
+           :on-callback-query nil
+           :link-preview-options link-preview-options
+           :on-update (uiop:ensure-list on-update)
+           (remove-from-plist rest :screen-class :keyboard :on-update))))
 
 
 (-> group-widgets ((soft-list-of maybe-widget-type)

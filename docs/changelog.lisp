@@ -21,6 +21,8 @@ Added
   This is useful when you want to switch to another state externally with delay, not during processing an
   update object.
 
+* CL-TELEGRAM-BOT2/STATES/SCREEN:SCREEN function now accepts a SCREEN-TYPE argument allowing create non-standard
+  screens.
 ")
   (0.20.2 2026-03-09
           "
