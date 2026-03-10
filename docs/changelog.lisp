@@ -12,6 +12,16 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.21.0 2026-03-10
+          "
+Added
+=====
+
+* It is possible now to send a message of type list to the chat actor to execute code in it's context.
+  This is useful when you want to switch to another state externally with delay, not during processing an
+  update object.
+
+")
   (0.20.2 2026-03-09
           "
 Fixed
