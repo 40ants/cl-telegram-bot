@@ -277,29 +277,39 @@ FUNCTION."
 
 
 (defun get-or-create-chat-actor (bot chat-id)
-  (labels ((local-process-update (update)
+  (labels ((local-process-update (update-or-command)
              (restart-case
                  (with-log-unhandled ()
                    (handler-bind ((serious-condition (lambda (condition)
                                                        (when 40ants-slynk:*connections*
                                                          (invoke-debugger condition)))))
-                     (let ((*current-bot* bot)
-                           (*current-state* (car *state*))
-                           (*current-chat* (get-chat update))
-                           (*current-user* (get-user update))
-                           (*token* (cl-telegram-bot2/bot::token bot))
-                           (*print-readably*
-                             ;; bordeaux-threads sets this var to T and this breaks logging
-                             ;; our objects. So we have to turn this off.
-                             nil))
-                       (process-update bot update))))
+                     (let* ((*current-bot* bot)
+                            (*token* (cl-telegram-bot2/bot::token bot))
+                            (*current-state* (car *state*))
+                            (*print-readably*
+                              ;; bordeaux-threads sets this var to T and this breaks logging
+                              ;; our objects. So we have to turn this off.
+                              nil))
+                       (etypecase update-or-command
+                         (cl-telegram-bot2/api:update
+                             (let* ((update update-or-command)
+                                    (*current-chat* (get-chat update))
+                                    (*current-user* (get-user update)))
+                               (process-update bot update)))
+                         ;; A list of form '(funcallable-symbol arg1 arg2 ...) can be sent to the
+                         ;; chat actor to make it execute the function in the chat actor context
+                         ;; 
+                         ;; This way switching to a new state may be done on some event.
+                         (list
+                            (apply (car update-or-command)
+                                   (cdr update-or-command)))))))
                (abort ()
                  :report "Abort processing current Telegram update"
                  (log:warn "Aborting processing of the current update")
                  (return-from local-process-update))
                (retry ()
                  :report "Retry processing current Telegram update"
-                 (local-process-update update)))))
+                 (local-process-update update-or-command)))))
     (let* ((actor-name (fmt "chat-~A" chat-id))
            (system (cl-telegram-bot2/bot::actors-system bot))
            (actor (or (first
@@ -309,19 +319,19 @@ FUNCTION."
                       (let* ((initial-state
                                (etypecase (initial-state bot)
                                  (symbol
-                                  (make-instance
-                                   (initial-state bot)))
+                                    (make-instance
+                                     (initial-state bot)))
                                  (base-state
-                                  ;; Here we need to copy a state
-                                  ;; to prevent results sharing between different chats
-                                  (deep-copy
-                                   (initial-state bot)))))
+                                    ;; Here we need to copy a state
+                                    ;; to prevent results sharing between different chats
+                                    (deep-copy
+                                     (initial-state bot)))))
                              ;; TODO: here we call on-state activation
                              ;; only once, however we should do this
                              ;; until  new state is returned from
                              ;; the call:
                              (state-stack
-                               (probably-switch-to-new-state
+                               (%probably-switch-to-new-state
                                 initial-state
                                 nil)))
                         (log:info "Creating new actor with" actor-name)
@@ -334,7 +344,7 @@ FUNCTION."
       (values actor))))
 
 
-(defun probably-switch-to-new-state (new-state state-stack)
+(defun %probably-switch-to-new-state (new-state state-stack)
   "Returns two values, probably new stack as first value and a flag. If flag is NIL, then the state stack was not changed."
   (let ((*current-state* (car state-stack)))
     (cond
@@ -344,7 +354,7 @@ FUNCTION."
          ;; If next state is a symbol, we need to instantiate it
          ;; using either as a function or as a class name:
          ((symbolp new-state)
-          (probably-switch-to-new-state
+          (%probably-switch-to-new-state
            (cond
              ((fboundp new-state)
               (funcall new-state))
@@ -395,12 +405,12 @@ FUNCTION."
                             (cl-telegram-bot2/generics:on-result *current-state*
                                                                  ;; Result might be empty
                                                                  result)))
-                     (probably-switch-to-new-state on-result-return-value
+                     (%probably-switch-to-new-state on-result-return-value
                                                    new-stack)))
                   ;; When result was not returned to the previous state, then
                   ;; we call on-activation on the new-state.
                   (t
-                   (probably-switch-to-new-state
+                   (%probably-switch-to-new-state
                     (on-state-activation *current-state*)
                     *state*)))))))
          ((typep new-state 'base-state)
@@ -409,7 +419,7 @@ FUNCTION."
           (let ((*state* (list* new-state
                                 state-stack))
                 (*current-state* new-state))
-            (probably-switch-to-new-state
+            (%probably-switch-to-new-state
              (on-state-activation new-state)
              *state*)))
          (t
@@ -422,12 +432,17 @@ FUNCTION."
                nil)))))
 
 
+(defun probably-switch-to-new-state (new-state)
+  (setf *state*
+        (%probably-switch-to-new-state new-state *state*))
+  (values))
+
+
 (defmethod process-update ((bot bot) (update cl-telegram-bot2/api:update))
   (log:info "Processing chat update"
             update)
   (let* ((new-state (process-state bot *current-state* update)))
 
-    (setf *state*
-          (probably-switch-to-new-state new-state *state*)))
+    (probably-switch-to-new-state new-state))
   (values))
 
