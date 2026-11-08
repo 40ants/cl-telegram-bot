@@ -12,6 +12,13 @@
                               "CL-TELEGRAM-BOT/MESSAGE:REPLY"
                               "HTTP"
                               "SECRET-VALUES:SECRET-VALUE"))
+  (0.22.0 2026-11-08
+          "
+Added
+=====
+
+* New CL-TELEGRAM-BOT2/ENTITIES system module with TO-MARKDOWN function to convert message entities into Markdown, and EXTRACT-HASHTAGS to retrieve hashtags from a message.
+")
   (0.21.0 2026-03-10
           "
 Added

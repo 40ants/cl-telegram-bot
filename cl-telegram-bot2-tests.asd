@@ -7,7 +7,8 @@
   :source-control (:git "https://github.com/40ants/cl-telegram-bot")
   :bug-tracker "https://github.com/40ants/cl-telegram-bot/issues"
   :pathname "t2"
-  :depends-on ("cl-telegram-bot2-tests/matchers/regex")
+  :depends-on ("cl-telegram-bot2-tests/matchers/regex"
+               "cl-telegram-bot2-tests/entities")
   :perform (test-op (op c)
                     (unless (symbol-call :rove :run c)
                       (error "Tests failed"))))
