@@ -8,7 +8,8 @@
   :bug-tracker "https://github.com/40ants/cl-telegram-bot/issues"
   :pathname "t2"
   :depends-on ("cl-telegram-bot2-tests/matchers/regex"
-               "cl-telegram-bot2-tests/entities")
+               "cl-telegram-bot2-tests/entities"
+               "cl-telegram-bot2-tests/message-utils")
   :perform (test-op (op c)
                     (unless (symbol-call :rove :run c)
                       (error "Tests failed"))))
