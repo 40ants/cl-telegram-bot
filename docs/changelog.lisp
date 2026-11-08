@@ -19,6 +19,7 @@ Added
 
 * New CL-TELEGRAM-BOT2/ENTITIES system module with TO-MARKDOWN function to convert message entities into Markdown, and EXTRACT-HASHTAGS to retrieve hashtags from a message.
 * New CL-TELEGRAM-BOT2/MESSAGE-UTILS module with GET-CHAT-ID-AND-MESSAGE-ID and TRIM-CHANNEL-ID functions.
+* New CL-TELEGRAM-BOT2/FILES module with DOWNLOAD-FILE, DOWNLOAD-PHOTO, DOWNLOAD-VIDEO functions and a LARGEST-PHOTO-SIZE helper.
 ")
   (0.21.0 2026-03-10
           "

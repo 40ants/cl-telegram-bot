@@ -15,6 +15,7 @@
                "cl-telegram-bot2/state"
                "cl-telegram-bot2/entities"
                "cl-telegram-bot2/message-utils"
+               "cl-telegram-bot2/files"
                "cl-telegram-bot2/actions/delete-messages"
                "cl-telegram-bot2/actions/edit-message-media"
                "cl-telegram-bot2/actions/send-invoice"
